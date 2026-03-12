@@ -29,6 +29,11 @@ export async function POST(request: NextRequest) {
       message: 'Sesión cerrada exitosamente'
     })
     
+    // Disable caching for logout
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
     response.cookies.set('session_token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -49,6 +54,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Sesión cerrada'
     })
+    
+    // Disable caching for logout
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
     
     response.cookies.set('session_token', '', {
       httpOnly: true,
