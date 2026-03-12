@@ -5,7 +5,7 @@ export default {
   out: './lib/db/migrations',
   driver: 'pg',
   dbCredentials: {
-    connectionString: 'postgresql://postgres.sfbsplymrielpfkoalsd@aws-0-us-east-1.pooler.supabase.com:5432/postgres',
+    connectionString: 'postgresql://postgres.sfbsplymrielpfkoalsd:Yhefri123Chipana@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
   },
   verbose: true,
   strict: true,
