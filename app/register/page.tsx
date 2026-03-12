@@ -2,10 +2,13 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, User, Mail, Phone, Lock, Building2, MapPin, CheckCircle2, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { MinimalButton } from "@/components/ui/minimal-button"
@@ -14,6 +17,7 @@ import { MinimalInput } from "@/components/ui/minimal-input"
 import { MinimalSelect } from "@/components/ui/minimal-select"
 import { PasswordStrength } from "@/components/ui/password-strength"
 import Navbar from "@/components/layout/navbar"
+import { useAuth } from '@/contexts/AuthContext'
 
 const registerSchema = z.object({
   nombres: z.string()
@@ -47,6 +51,9 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  
+  const router = useRouter()
+  const { login } = useAuth()
   
   const {
     register,
@@ -91,8 +98,13 @@ export default function RegisterPage() {
         throw new Error(result.error || 'Error al crear la cuenta')
       }
 
-      setSubmitSuccess(true)
-      // Aquí iría la lógica real de envío a Supabase
+      // LOGIN AUTOMÁTICO DESPUÉS DEL REGISTRO
+      await login(data.email, data.password)
+      
+      // REDIRECCIÓN DIRECTA A HOMEPAGE LOGUEADO
+      router.push('/')
+      router.refresh()
+      
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Error al crear la cuenta. Por favor, intenta nuevamente.')
       console.error('Error:', error)
@@ -186,13 +198,9 @@ export default function RegisterPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">¡Cuenta Creada!</h2>
           <p className="text-gray-600 mb-6">
-            Tu cuenta ha sido creada exitosamente. Ahora puedes iniciar sesión.
+            Tu cuenta ha sido creada exitosamente. Redirigiendo...
           </p>
-          <MinimalButton asChild className="w-full">
-            <Link href="/login">
-              Iniciar Sesión
-            </Link>
-          </MinimalButton>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600 mx-auto"></div>
         </div>
       </div>
     )
