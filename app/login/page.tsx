@@ -2,21 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { MinimalButton } from "@/components/ui/minimal-button"
 import { MinimalInput } from "@/components/ui/minimal-input"
 import Navbar from "@/components/layout/navbar"
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [user, setUser] = useState<any>(null)
   
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { login } = useAuth()
+  
+  const returnTo = searchParams.get('returnTo') || '/'
   
   useEffect(() => {
     // Check if user is already logged in
@@ -24,9 +28,8 @@ export default function LoginPage() {
       try {
         const response = await fetch('/api/auth/me')
         if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
-          router.push('/profile')
+          // User is already logged in, redirect to returnTo or homepage
+          router.push(returnTo)
         }
       } catch (error) {
         // User not logged in, continue with login page
@@ -34,7 +37,7 @@ export default function LoginPage() {
     }
     
     checkAuth()
-  }, [router])
+  }, [router, returnTo])
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -46,23 +49,11 @@ export default function LoginPage() {
     const password = formData.get('password') as string
     
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Error al iniciar sesión')
-      }
-
+      await login(email, password)
+      
       setSuccess(true)
       setTimeout(() => {
-        router.push('/profile')
+        router.push(returnTo)
         router.refresh()
       }, 1500)
       
@@ -82,7 +73,7 @@ export default function LoginPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">¡Bienvenido!</h2>
           <p className="text-gray-600 mb-6">
-            Redirigiendo a tu perfil...
+            Redirigiendo...
           </p>
         </div>
       </div>
@@ -91,12 +82,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {!user && <Navbar user={null} />}
+      <Navbar />
       
-      <div className={cn(
-        "flex items-center justify-center",
-        !user ? "min-h-screen" : "min-h-screen"
-      )}>
+      <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">

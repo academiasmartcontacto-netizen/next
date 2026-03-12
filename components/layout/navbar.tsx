@@ -16,31 +16,13 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MinimalButton } from '@/components/ui/minimal-button'
+import { useAuth } from '@/contexts/AuthContext'
 
-interface NavbarProps {
-  user?: {
-    id: string
-    email: string
-    firstName?: string
-    lastName?: string
-    profile?: {
-      firstName?: string
-      lastName?: string
-      avatar?: string
-    }
-    store?: {
-      id: string
-      name: string
-      link: string
-      isPublished: boolean
-    } | null
-  } | null
-}
-
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const router = useRouter()
+  const { user, logout, isLoading } = useAuth()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,32 +36,7 @@ export default function Navbar({ user }: NavbarProps) {
   }, [isDropdownOpen])
 
   const handleLogout = async () => {
-    try {
-      console.log('🚨 LOGOUT DEBUG: INICIANDO PROCESO DE LOGOUT COMPLETO')
-      console.log('🔍 FRONTEND DEBUG: Current URL:', window.location.href)
-      console.log('🔍 FRONTEND DEBUG: Cookies disponibles:', document.cookie)
-      console.log('🔍 FRONTEND DEBUG: Estado actual del usuario:', user ? 'LOGUEADO' : 'NO LOGUEADO')
-      
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-      console.log('🔍 FRONTEND DEBUG: Response logout:', response.status)
-      
-      if (response.ok) {
-        console.log('🚨 LOGOUT DEBUG: API RESPONDIO OK, LIMPIANDO ESTADO COMPLETO')
-        
-        // Forzar limpieza completa del estado
-        localStorage.clear()
-        sessionStorage.clear()
-        
-        console.log('🚨 LOGOUT DEBUG: ESTADO LIMPIADO, REDIRIGIENDO A LOGIN')
-        
-        // Forzar recarga completa para limpiar todo el estado
-        window.location.href = '/login'
-      } else {
-        console.error('🚨 LOGOUT DEBUG: ERROR EN API LOGOUT:', response.statusText)
-      }
-    } catch (error) {
-      console.error('🚨 LOGOUT DEBUG: ERROR GENERAL EN LOGOUT:', error)
-    }
+    await logout()
   }
 
   const displayName = user?.profile?.firstName && user?.profile?.lastName 
@@ -92,6 +49,28 @@ export default function Navbar({ user }: NavbarProps) {
     .join('')
     .toUpperCase()
     .slice(0, 2)
+
+  // Mostrar estado de carga mientras se verifica la autenticación
+  if (isLoading) {
+    return (
+      <nav className="bg-orange-600 border-b border-orange-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center">
+                <img 
+                  src="/assets/img/doneback.svg" 
+                  alt="Done Logo" 
+                  className="h-10 w-auto"
+                />
+              </Link>
+            </div>
+            <div className="w-8 h-8 bg-orange-700 rounded-full animate-pulse" />
+          </div>
+        </div>
+      </nav>
+    )
+  }
 
   return (
     <nav className="bg-orange-600 border-b border-orange-700 sticky top-0 z-50">
