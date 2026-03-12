@@ -64,8 +64,8 @@ export default function Navbar({ user }: NavbarProps) {
       
       if (response.ok) {
         console.log('🔍 FRONTEND DEBUG: Logout exitoso, redirigiendo a /login')
-        router.push('/login')
-        router.refresh()
+        // Forzar redirección completa en producción
+        window.location.href = '/login'
       } else {
         console.error('🔍 FRONTEND DEBUG: Error en logout:', response.statusText)
       }
