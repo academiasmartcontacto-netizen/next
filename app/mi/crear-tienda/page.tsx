@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Store, ArrowLeft, Check } from 'lucide-react'
 
-export default function CrearTiendaPage() {
+function CrearTiendaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
@@ -424,5 +424,13 @@ export default function CrearTiendaPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CrearTiendaPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <CrearTiendaContent />
+    </Suspense>
   )
 }
