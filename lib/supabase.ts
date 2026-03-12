@@ -11,6 +11,7 @@ export type Database = {
       profiles: {
         Row: {
           id: string
+          user_id: string
           username: string | null
           full_name: string | null
           avatar_url: string | null
@@ -18,7 +19,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          id: string
+          id?: string
+          user_id: string
           username?: string | null
           full_name?: string | null
           avatar_url?: string | null
@@ -27,11 +29,38 @@ export type Database = {
         }
         Update: {
           id?: string
+          user_id?: string
           username?: string | null
           full_name?: string | null
           avatar_url?: string | null
           website?: string | null
           updated_at?: string | null
+        }
+      }
+      waitlist: {
+        Row: {
+          id: string
+          email: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          created_at?: string
+        }
+      }
+    }
+    Views: {
+      waitlist_stats: {
+        Row: {
+          total_subscribers: number
+          subscription_date: string
+          today_subscribers: number
         }
       }
     }

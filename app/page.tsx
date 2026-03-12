@@ -3,32 +3,14 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { supabase } from '@/lib/supabase'
+import { WaitlistForm } from '@/components/supabase/waitlist-form'
 
 export default function Home() {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
 
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-
-    try {
-      const { error } = await supabase
-        .from('waitlist')
-        .insert([{ email }])
-
-      if (error) throw error
-
-      setMessage('¡Gracias por suscribirte! Te mantendremos informado.')
-      setEmail('')
-    } catch (error) {
-      setMessage('Error al suscribirte. Por favor intenta de nuevo.')
-    } finally {
-      setLoading(false)
-    }
+  const handleSubscribeSuccess = () => {
+    setShowSuccess(true)
+    setTimeout(() => setShowSuccess(false), 5000)
   }
 
   return (
@@ -57,27 +39,16 @@ export default function Home() {
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">
               Únete a la Lista de Espera
             </h2>
-            <form onSubmit={handleSubscribe} className="space-y-4">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full"
+            <WaitlistForm onSuccess={handleSubscribeSuccess} />
+            
+            {showSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm"
               >
-                {loading ? 'Suscribiendo...' : 'Suscribirse'}
-              </Button>
-            </form>
-            {message && (
-              <p className={`mt-4 text-center ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
-                {message}
-              </p>
+                ¡Gracias por tu interés! Te contactaremos pronto.
+              </motion.div>
             )}
           </motion.div>
 
