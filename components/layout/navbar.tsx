@@ -55,27 +55,30 @@ export default function Navbar({ user }: NavbarProps) {
 
   const handleLogout = async () => {
     try {
-      console.log('🔍 FRONTEND DEBUG: Iniciando logout')
+      console.log('🚨 LOGOUT DEBUG: INICIANDO PROCESO DE LOGOUT COMPLETO')
       console.log('🔍 FRONTEND DEBUG: Current URL:', window.location.href)
       console.log('🔍 FRONTEND DEBUG: Cookies disponibles:', document.cookie)
+      console.log('🔍 FRONTEND DEBUG: Estado actual del usuario:', user ? 'LOGUEADO' : 'NO LOGUEADO')
       
       const response = await fetch('/api/auth/logout', { method: 'POST' })
       console.log('🔍 FRONTEND DEBUG: Response logout:', response.status)
       
       if (response.ok) {
-        console.log('🔍 FRONTEND DEBUG: Logout exitoso, limpiando estado y redirigiendo')
+        console.log('🚨 LOGOUT DEBUG: API RESPONDIO OK, LIMPIANDO ESTADO COMPLETO')
         
         // Forzar limpieza completa del estado
         localStorage.clear()
         sessionStorage.clear()
         
+        console.log('🚨 LOGOUT DEBUG: ESTADO LIMPIADO, REDIRIGIENDO A LOGIN')
+        
         // Forzar recarga completa para limpiar todo el estado
         window.location.href = '/login'
       } else {
-        console.error('🔍 FRONTEND DEBUG: Error en logout:', response.statusText)
+        console.error('🚨 LOGOUT DEBUG: ERROR EN API LOGOUT:', response.statusText)
       }
     } catch (error) {
-      console.error('🔍 FRONTEND DEBUG: Error en logout:', error)
+      console.error('🚨 LOGOUT DEBUG: ERROR GENERAL EN LOGOUT:', error)
     }
   }
 
