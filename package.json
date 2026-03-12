@@ -10,10 +10,10 @@
     "type-check": "tsc --noEmit",
     "test": "echo 'No tests configured yet' && exit 0",
     "audit:fix": "npm audit fix",
-    "db:generate": "drizzle-kit generate:pg",
-    "db:migrate": "drizzle-kit migrate:pg",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:studio": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 drizzle-kit studio",
-    "db:push": "drizzle-kit push:pg"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
@@ -25,7 +25,7 @@
     "@supabase/supabase-js": "^2.39.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "drizzle-orm": "^0.29.3",
+    "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.5.1",
     "framer-motion": "^10.16.16",
     "lucide-react": "^0.303.0",
@@ -47,7 +47,7 @@
     "autoprefixer": "^10.4.16",
     "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
-    "drizzle-kit": "^0.20.14",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^8.56.0",
     "eslint-config-next": "15.1.0",
     "pg": "^8.20.0",
