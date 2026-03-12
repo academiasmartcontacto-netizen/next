@@ -15,6 +15,7 @@ function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -23,12 +24,10 @@ function LoginPageContent() {
   const returnTo = searchParams.get('returnTo') || '/'
   
   useEffect(() => {
-    // Check if user is already logged in
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/me')
         if (response.ok) {
-          // User is already logged in, redirect to returnTo or homepage
           router.push(returnTo)
         }
       } catch (error) {
@@ -86,96 +85,126 @@ function LoginPageContent() {
       
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-md">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="mx-auto w-12 h-12 bg-orange-600 rounded-lg mb-4" />
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Iniciar Sesión</h1>
             <p className="text-gray-600">Ingresa tus credenciales para acceder</p>
           </div>
 
-          {/* Login Form */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="p-8">
               <form onSubmit={onSubmit} className="space-y-6">
-                <MinimalInput
-                  name="email"
-                  label="Email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  required
-                />
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Correo Electrónico
+                  </label>
+                  <MinimalInput
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="tu@correo.com"
+                    disabled={isLoading}
+                  />
+                </div>
 
-                <MinimalInput
-                  name="password"
-                  label="Contraseña"
-                  type="password"
-                  placeholder="Ingresa tu contraseña"
-                  required
-                />
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                    Contraseña
+                  </label>
+                  <div className="relative">
+                    <MinimalInput
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      required
+                      placeholder="••••••"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
 
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <div className="flex items-center space-x-3 text-red-700">
-                      <AlertCircle className="w-5 h-5" />
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
                       <p className="text-sm font-medium">{error}</p>
                     </div>
                   </div>
                 )}
 
-                <MinimalButton 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isLoading}
-                  loading={isLoading}
-                >
-                  {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-                </MinimalButton>
+                <div>
+                  <MinimalButton 
+                    type="submit" 
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Iniciando sesión...
+                      </div>
+                    ) : (
+                      'Iniciar Sesión'
+                    )}
+                  </MinimalButton>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    ¿No tienes cuenta?{' '}
+                    <Link href="/register" className="font-medium text-orange-600 hover:text-orange-500">
+                      Regístrate
+                    </Link>
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-sm">
+                    <Link href="/forgot-password" className="font-medium text-gray-600 hover:text-gray-700">
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </p>
+                </div>
+
+                <div className="text-center mt-8">
+                  <p className="text-xs text-gray-500">
+                    Al iniciar sesión, aceptas nuestros{' '}
+                    <Link href="/terms" className="text-gray-600 hover:text-gray-700">
+                      términos de servicio
+                    </Link>
+                    {' '}y{' '}
+                    <Link href="/privacy" className="text-gray-600 hover:text-gray-700">
+                      política de privacidad
+                    </Link>
+                  </p>
+                </div>
               </form>
             </div>
           </div>
-
-          {/* Footer Links */}
-          <div className="text-center mt-6 space-y-2">
-            <p className="text-sm text-gray-600">
-              ¿No tienes cuenta?{' '}
-              <Link href="/register" className="font-medium text-orange-600 hover:text-orange-700">
-                Regístrate aquí
-              </Link>
-            </p>
-            <p className="text-sm">
-              <Link href="/forgot-password" className="font-medium text-gray-600 hover:text-gray-700">
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </p>
-          </div>
-
-          {/* Terms */}
-          <div className="text-center mt-8">
-            <p className="text-xs text-gray-500">
-              Al iniciar sesión, aceptas nuestros{' '}
-              <Link href="/terms" className="text-gray-600 hover:text-gray-700">
-                términos de servicio
-              </Link>
-              {' '}y{' '}
-              <Link href="/privacy" className="text-gray-600 hover:text-gray-700">
-                política de privacidad
-              </Link>
-            </p>
-          </div>
-        <div className="text-center mt-8">
-          <p className="text-xs text-gray-500">
-            Al iniciar sesión, aceptas nuestros{' '}
-            <Link href="/terms" className="text-gray-600 hover:text-gray-700">
-              términos de servicio
-            </Link>
-            {' '}y{' '}
-            <Link href="/privacy" className="text-gray-600 hover:text-gray-700">
-              política de privacidad
-            </Link>
-          </p>
-        </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600" />
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   )
 }
