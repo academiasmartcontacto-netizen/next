@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Button } from './ui/button'
 import { Menu, X } from 'lucide-react'
 
+
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -32,11 +34,8 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <Button variant="secondary" asChild>
-                <Link href="/registrarse">Registrarse</Link>
-              </Button>
-              <Button variant="default" asChild>
-                <Link href="/iniciar-sesion">Iniciar Sesión</Link>
+                                          <Button variant="secondary" asChild>
+                <Link href="/register">Registrarse</Link>
               </Button>
             </div>
           </div>
@@ -71,7 +70,7 @@ export function Navbar() {
           </div>
           <div className="pt-4 pb-3 border-t border-orange-700">
             <div className="px-2 space-y-2">
-              <Button variant="secondary" className="w-full" asChild>
+                            <Button variant="secondary" className="w-full" asChild>
                 <Link href="/registrarse">Registrarse</Link>
               </Button>
               <Button variant="default" className="w-full" asChild>

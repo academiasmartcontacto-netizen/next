@@ -1,0 +1,164 @@
+/* ESTILOS ESPECÍFICOS PARA EDITOR - FUERZA DISEÑO WINDSURF-PROYECT */
+
+/* Variables forzadas */
+:root {
+  --ff-primary: #ff6b1a !important;
+  --ff-primary-dark: #e85e00 !important;
+  --ff-secondary: #2C3E50 !important;
+  --ff-gray: #6c757d !important;
+  --ff-border: #dee2e6 !important;
+  --ff-bg-light: #f8f9fa !important;
+}
+
+/* Header forzado */
+.editor-header {
+  background: white !important;
+  border-bottom: 1px solid var(--ff-border) !important;
+}
+
+.editor-header .logo-container {
+  background: var(--ff-primary) !important;
+}
+
+.editor-header .title {
+  color: var(--ff-secondary) !important;
+}
+
+/* Status bar forzado */
+.status-bar {
+  background: var(--ff-primary) !important;
+  color: white !important;
+  border-bottom: 1px solid var(--ff-border) !important;
+}
+
+/* Accordions forzados */
+.accordion-item {
+  background: white !important;
+  border: 1px solid var(--ff-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+.accordion-header {
+  background: white !important;
+  color: var(--ff-secondary) !important;
+}
+
+.accordion-header:hover {
+  background: var(--ff-bg-light) !important;
+}
+
+.accordion-icon {
+  background: #fff3e0 !important;
+  color: var(--ff-primary) !important;
+}
+
+/* Inputs forzados */
+.editor-input {
+  background: white !important;
+  border: 1px solid var(--ff-border) !important;
+  border-radius: 8px !important;
+  color: var(--ff-secondary) !important;
+}
+
+.editor-input:focus {
+  border-color: var(--ff-primary) !important;
+  box-shadow: 0 0 0 2px var(--ff-primary) !important;
+}
+
+/* Botones forzados */
+.btn-primary {
+  background: var(--ff-primary) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background: var(--ff-primary-dark) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Switches forzados */
+.switch input:checked + .slider {
+  background: var(--ff-primary) !important;
+}
+
+/* Canvas forzado */
+.editor-canvas {
+  background: var(--ff-bg-light) !important;
+}
+
+.canvas-container {
+  background: white !important;
+  border: 1px solid var(--ff-border) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+/* Drawers forzados */
+.drawer {
+  background: white !important;
+  border-left: 1px solid var(--ff-border) !important;
+}
+
+.drawer-header {
+  background: white !important;
+  border-bottom: 1px solid var(--ff-border) !important;
+  color: var(--ff-secondary) !important;
+}
+
+/* Footer forzado */
+.editor-footer {
+  background: white !important;
+  border-top: 1px solid var(--ff-border) !important;
+}
+
+.editor-footer .brand {
+  color: var(--ff-primary) !important;
+}
+
+/* Redes sociales forzadas */
+.social-btn {
+  border: 2px solid var(--ff-border) !important;
+  border-radius: 8px !important;
+  background: white !important;
+}
+
+.social-btn:hover {
+  border-color: var(--ff-primary) !important;
+  background: #fff3e0 !important;
+}
+
+.social-btn.active {
+  border-color: var(--ff-primary) !important;
+  background: #fff3e0 !important;
+}
+
+/* Override de Tailwind forzado */
+.bg-\[ff6b1a\] {
+  background-color: var(--ff-primary) !important;
+}
+
+.border-\[dee2e6\] {
+  border-color: var(--ff-border) !important;
+}
+
+.text-\[2C3E50\] {
+  color: var(--ff-secondary) !important;
+}
+
+.text-\[6c757d\] {
+  color: var(--ff-gray) !important;
+}
+
+.bg-\[f8f9fa\] {
+  background-color: var(--ff-bg-light) !important;
+}
+
+.hover\:text-\[ff6b1a\]:hover {
+  color: var(--ff-primary) !important;
+}
+
+.hover\:bg-\[fff3e0\]:hover {
+  background-color: #fff3e0 !important;
+}

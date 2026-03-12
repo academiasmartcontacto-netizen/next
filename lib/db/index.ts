@@ -3,8 +3,9 @@ import postgres from 'postgres'
 import * as schema from './schema'
 
 // Connection for queries
-const connectionString = process.env.DATABASE_URL || 
-  process.env.NEXT_PUBLIC_SUPABASE_URL + '?pgbouncer=true'
+const connectionString = (process.env.NEXT_PUBLIC_SUPABASE_URL + '?pgbouncer=true') || 
+  process.env.DATABASE_URL || 
+  'postgresql://localhost:5432/default'
 
 const client = postgres(connectionString, { 
   prepare: false,
