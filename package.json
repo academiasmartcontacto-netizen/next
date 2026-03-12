@@ -12,7 +12,7 @@
     "audit:fix": "npm audit fix",
     "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "drizzle-kit migrate:pg",
-    "db:studio": "drizzle-kit studio",
+    "db:studio": "NODE_TLS_REJECT_UNAUTHORIZED=0 drizzle-kit studio",
     "db:push": "drizzle-kit push:pg"
   },
   "dependencies": {
