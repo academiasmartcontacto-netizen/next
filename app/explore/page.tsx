@@ -239,7 +239,7 @@ export default function ExplorePage() {
                 label=""
                 placeholder="Tipo"
                 value={filterType}
-                onValueChange={setFilterType}
+                onValueChange={(value) => setFilterType(value as 'all' | 'store' | 'publication' | 'course' | 'service')}
                 options={[
                   { value: 'all', label: 'Todos' },
                   { value: 'store', label: 'Tiendas' },
