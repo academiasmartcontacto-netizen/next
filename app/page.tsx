@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { WaitlistForm } from '@/components/supabase/waitlist-form'
+import { DrizzleWaitlistForm } from '@/components/drizzle/waitlist-form'
 
 export default function Home() {
   const [showSuccess, setShowSuccess] = useState(false)
@@ -27,7 +27,7 @@ export default function Home() {
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Descubre la próxima generación de aplicaciones web construidas con 
-            las tecnologías más modernas: Next.js 15, Supabase, y Tailwind CSS.
+            las tecnologías más modernas: Next.js 15, Drizzle ORM, Supabase, y Tailwind CSS.
           </p>
 
           <motion.div
@@ -39,7 +39,7 @@ export default function Home() {
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">
               Únete a la Lista de Espera
             </h2>
-            <WaitlistForm onSuccess={handleSubscribeSuccess} />
+            <DrizzleWaitlistForm onSuccess={handleSubscribeSuccess} />
             
             {showSuccess && (
               <motion.div
@@ -62,14 +62,14 @@ export default function Home() {
               <div className="text-3xl mb-4">⚡</div>
               <h3 className="text-xl font-semibold mb-2">Rendimiento Ultra Rápido</h3>
               <p className="text-gray-600">
-                Optimizado para velocidad con Next.js 15 y las últimas prácticas de rendimiento.
+                Optimizado para velocidad con Next.js 15 y Drizzle ORM.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="text-3xl mb-4">🔒</div>
-              <h3 className="text-xl font-semibold mb-2">Seguridad Moderna</h3>
+              <h3 className="text-xl font-semibold mb-2">Base de Datos Moderna</h3>
               <p className="text-gray-600">
-                Autenticación segura y gestión de datos con Supabase.
+                Type safety extremo con Drizzle ORM y Supabase PostgreSQL.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
