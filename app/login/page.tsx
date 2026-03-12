@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
@@ -11,7 +11,7 @@ import { MinimalInput } from "@/components/ui/minimal-input"
 import Navbar from "@/components/layout/navbar"
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -93,63 +93,75 @@ export default function LoginPage() {
             <p className="text-gray-600">Ingresa tus credenciales para acceder</p>
           </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-8">
-            <form onSubmit={onSubmit} className="space-y-6">
-              <MinimalInput
-                name="email"
-                label="Email"
-                type="email"
-                placeholder="tu@email.com"
-                required
-              />
+          {/* Login Form */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="p-8">
+              <form onSubmit={onSubmit} className="space-y-6">
+                <MinimalInput
+                  name="email"
+                  label="Email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  required
+                />
 
-              <MinimalInput
-                name="password"
-                label="Contraseña"
-                type="password"
-                placeholder="Ingresa tu contraseña"
-                required
-              />
+                <MinimalInput
+                  name="password"
+                  label="Contraseña"
+                  type="password"
+                  placeholder="Ingresa tu contraseña"
+                  required
+                />
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center space-x-3 text-red-700">
-                    <AlertCircle className="w-5 h-5" />
-                    <p className="text-sm font-medium">{error}</p>
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 text-red-700">
+                      <AlertCircle className="w-5 h-5" />
+                      <p className="text-sm font-medium">{error}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <MinimalButton 
-                type="submit" 
-                className="w-full"
-                disabled={isLoading}
-                loading={isLoading}
-              >
-                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-              </MinimalButton>
-            </form>
+                <MinimalButton 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isLoading}
+                  loading={isLoading}
+                >
+                  {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                </MinimalButton>
+              </form>
+            </div>
           </div>
-        </div>
 
-        {/* Footer Links */}
-        <div className="text-center mt-6 space-y-2">
-          <p className="text-sm text-gray-600">
-            ¿No tienes cuenta?{' '}
-            <Link href="/register" className="font-medium text-orange-600 hover:text-orange-700">
-              Regístrate aquí
-            </Link>
-          </p>
-          <p className="text-sm">
-            <Link href="/forgot-password" className="font-medium text-gray-600 hover:text-gray-700">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </p>
-        </div>
+          {/* Footer Links */}
+          <div className="text-center mt-6 space-y-2">
+            <p className="text-sm text-gray-600">
+              ¿No tienes cuenta?{' '}
+              <Link href="/register" className="font-medium text-orange-600 hover:text-orange-700">
+                Regístrate aquí
+              </Link>
+            </p>
+            <p className="text-sm">
+              <Link href="/forgot-password" className="font-medium text-gray-600 hover:text-gray-700">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
+          </div>
 
-        {/* Terms */}
+          {/* Terms */}
+          <div className="text-center mt-8">
+            <p className="text-xs text-gray-500">
+              Al iniciar sesión, aceptas nuestros{' '}
+              <Link href="/terms" className="text-gray-600 hover:text-gray-700">
+                términos de servicio
+              </Link>
+              {' '}y{' '}
+              <Link href="/privacy" className="text-gray-600 hover:text-gray-700">
+                política de privacidad
+              </Link>
+            </p>
+          </div>
         <div className="text-center mt-8">
           <p className="text-xs text-gray-500">
             Al iniciar sesión, aceptas nuestros{' '}
