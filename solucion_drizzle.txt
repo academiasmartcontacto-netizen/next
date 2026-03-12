@@ -1,0 +1,60 @@
+### Diagnóstico del Problema de Drizzle Studio
+
+El problema que impedía el funcionamiento de Drizzle Studio era una combinación de dos errores distintos que se solapaban, haciendo el diagnóstico muy complicado:
+
+1.  **Instalación Corrupta de Dependencias:** La carpeta `node_modules` del proyecto estaba en un estado inconsistente o corrupto. Esto provocaba que los comandos de `drizzle-kit` no fueran reconocidos por el sistema (`"drizzle-kit" no se reconoce como un comando...`), aunque estuvieran listados en el `package.json`.
+
+2.  **Conflicto de Certificado SSL:** Un software de seguridad en el entorno local (probablemente un antivirus o firewall) interceptaba las conexiones seguras (SSL). Esto causaba que, incluso cuando lográbamos lanzar la herramienta, esta se colgara o crasheara con el error `self-signed certificate in certificate chain`.
+
+---
+
+### Solución Definitiva (en 3 Pasos)
+
+La solución consiste en arreglar ambos problemas en el orden correcto:
+
+**Paso 1: Sincronizar la Configuración y Versiones**
+
+Nos aseguramos de que el proyecto usara la misma configuración que otro proyecto donde sí funcionaba:
+
+-   **`package.json`**: Se ajustaron las versiones de las dependencias clave para usar versiones estables conocidas:
+    -   `drizzle-orm`: `^0.45.1`
+    -   `drizzle-kit`: `^0.31.9`
+    -   Se eliminaron otros drivers como `@neondatabase/serverless` para evitar conflictos.
+
+-   **`drizzle.config.ts`**: Se reescribió el archivo de configuración con la sintaxis moderna y el parámetro `ssl: 'require'` explícito, que es fundamental para la conexión con Neon/Supabase.
+
+    ```typescript
+    import 'dotenv/config';
+    import { defineConfig } from 'drizzle-kit';
+
+    export default defineConfig({
+      schema: './lib/db/schema.ts', // Ajustar a la ruta de tu esquema
+      out: './drizzle',
+      dialect: 'postgresql',
+      dbCredentials: {
+        url: process.env.DATABASE_URL!,
+        ssl: 'require',
+      },
+    });
+    ```
+
+**Paso 2: Reinstalación Limpia de Dependencias (El Paso Crucial)**
+
+Para solucionar la corrupción de la instalación, es indispensable empezar desde cero:
+
+1.  **Borrar manualmente** la carpeta `node_modules` y el archivo `package-lock.json` de la raíz del proyecto.
+2.  Ejecutar el comando `npm install` en la terminal para descargar e instalar todas las dependencias de forma limpia.
+
+**Paso 3: Ejecutar Drizzle Studio con la Solución SSL**
+
+Para evitar el problema del certificado, se debe lanzar Drizzle Studio con una variable de entorno que le indica a Node.js que ignore esos errores. El comando final y correcto es:
+
+```bash
+npx cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 drizzle-kit studio
+```
+
+Para mayor comodidad, este comando se guardó en el `package.json` bajo el script `db:studio`, permitiendo ejecutarlo simplemente con:
+
+```bash
+npm run db:studio
+```
