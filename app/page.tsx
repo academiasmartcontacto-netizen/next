@@ -13,7 +13,7 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState<{nombre: string; email: string; foto_perfil: null} | null>(null)
   const recognitionRef = useRef(null)
   const userMenuRef = useRef(null)
 
