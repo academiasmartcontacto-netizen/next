@@ -42,7 +42,7 @@ export default function HomePage() {
     setIsLoggedIn(true)
     
     // Cerrar menús al hacer clic fuera
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setUserMenuOpen(false)
       }
