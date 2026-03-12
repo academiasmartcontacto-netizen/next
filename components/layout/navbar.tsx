@@ -55,11 +55,22 @@ export default function Navbar({ user }: NavbarProps) {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      router.push('/login')
-      router.refresh()
+      console.log('🔍 FRONTEND DEBUG: Iniciando logout')
+      console.log('🔍 FRONTEND DEBUG: Current URL:', window.location.href)
+      console.log('🔍 FRONTEND DEBUG: Cookies disponibles:', document.cookie)
+      
+      const response = await fetch('/api/auth/logout', { method: 'POST' })
+      console.log('🔍 FRONTEND DEBUG: Response logout:', response.status)
+      
+      if (response.ok) {
+        console.log('🔍 FRONTEND DEBUG: Logout exitoso, redirigiendo a /login')
+        router.push('/login')
+        router.refresh()
+      } else {
+        console.error('🔍 FRONTEND DEBUG: Error en logout:', response.statusText)
+      }
     } catch (error) {
-      console.error('Error al cerrar sesión:', error)
+      console.error('🔍 FRONTEND DEBUG: Error en logout:', error)
     }
   }
 
