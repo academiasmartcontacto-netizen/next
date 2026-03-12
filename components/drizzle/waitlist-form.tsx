@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { db } from '@/lib/db'
-import { waitlist } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { addToWaitlist } from '@/app/actions'
 
 interface WaitlistFormProps {
   onSuccess?: () => void
@@ -23,31 +21,19 @@ export function DrizzleWaitlistForm({ onSuccess }: WaitlistFormProps) {
     setMessageType('')
 
     try {
-      // Check if email already exists
-      const existing = await db
-        .select()
-        .from(waitlist)
-        .where(eq(waitlist.email, email))
-        .limit(1)
+      const result = await addToWaitlist(email)
 
-      if (existing.length > 0) {
-        setMessage('Este email ya está registrado en nuestra lista de espera.')
+      setMessage(result.message)
+      if (result.success) {
+        setMessageType('success')
+        setEmail('')
+        onSuccess?.()
+      } else {
         setMessageType('error')
-        return
       }
-
-      // Insert new email
-      await db.insert(waitlist).values({
-        email: email.toLowerCase().trim(),
-      })
-
-      setMessage('¡Gracias por suscribirte! Te mantendremos informado.')
-      setMessageType('success')
-      setEmail('')
-      onSuccess?.()
     } catch (error) {
-      console.error('Error subscribing to waitlist:', error)
-      setMessage('Error al suscribirte. Por favor intenta de nuevo.')
+      console.error('Error submitting form:', error)
+      setMessage('Ocurrió un error inesperado. Por favor intenta de nuevo.')
       setMessageType('error')
     } finally {
       setLoading(false)
