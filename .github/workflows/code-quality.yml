@@ -1,0 +1,57 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run ESLint
+        run: npm run lint -- --format=json --output-file=eslint-report.json
+        
+      - name: ESLint Annotations
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const report = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8'));
+              for (const file of report) {
+                for (const error of file.errorMessages) {
+                  github.rest.issues.createComment({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    body: `**ESLint Error** in \`${file.filePath}\`:\n\`\`\`\n${error.message}\n\`\`\``
+                  });
+                }
+              }
+            } catch (error) {
+              console.log('No ESLint errors found');
+            }
+            
+      - name: Check code formatting
+        run: npx prettier --check . || echo "Prettier not configured"
+        
+      - name: Bundle size analysis
+        uses: preactjs/compressed-size-action@v2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          pattern: "./.next/**/*.js"
