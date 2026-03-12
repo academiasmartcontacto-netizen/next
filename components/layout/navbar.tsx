@@ -94,36 +94,17 @@ export default function Navbar({ user }: NavbarProps) {
     .slice(0, 2)
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-orange-600 border-b border-orange-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-600 rounded-lg" />
-              <span className="text-xl font-semibold text-gray-900">Academia Smart</span>
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/explore" 
-              className="text-gray-700 hover:text-orange-600 transition-colors font-medium"
-            >
-              Explorar
-            </Link>
-            <Link 
-              href="/marketplace" 
-              className="text-gray-700 hover:text-orange-600 transition-colors font-medium"
-            >
-              Marketplace
-            </Link>
-            <Link 
-              href="/about" 
-              className="text-gray-700 hover:text-orange-600 transition-colors font-medium"
-            >
-              Nosotros
+            <Link href="/" className="flex items-center">
+              <img 
+                src="/assets/img/doneback.svg" 
+                alt="Done Logo" 
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 
@@ -133,7 +114,7 @@ export default function Navbar({ user }: NavbarProps) {
               <div className="relative user-dropdown">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-orange-700 transition-colors"
                 >
                   {/* User Avatar */}
                   <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
@@ -142,14 +123,14 @@ export default function Navbar({ user }: NavbarProps) {
                   
                   {/* User Info */}
                   <div className="hidden lg:block text-left">
-                    <p className="text-sm font-medium text-gray-900">{displayName}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="text-sm font-medium text-white">{displayName}</p>
+                    <p className="text-xs text-orange-200">{user.email}</p>
                   </div>
                   
                   {/* Dropdown Arrow */}
                   <ChevronDown 
                     className={cn(
-                      "w-4 h-4 text-gray-400 transition-transform",
+                      "w-4 h-4 text-orange-200 transition-transform",
                       isDropdownOpen && "rotate-180"
                     )}
                   />
@@ -236,12 +217,12 @@ export default function Navbar({ user }: NavbarProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-50 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-orange-700 transition-colors"
             >
               {isMobileMenuOpen ? (
-                <X className="w-5 h-5 text-gray-700" />
+                <X className="w-5 h-5 text-white" />
               ) : (
-                <Menu className="w-5 h-5 text-gray-700" />
+                <Menu className="w-5 h-5 text-white" />
               )}
             </button>
           </div>
@@ -249,32 +230,32 @@ export default function Navbar({ user }: NavbarProps) {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-orange-700 py-4">
             <div className="space-y-3">
               <Link
                 href="/explore"
-                className="block px-3 py-2 text-gray-700 hover:text-orange-600 transition-colors font-medium"
+                className="block px-4 py-2 text-white hover:bg-orange-700 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Explorar
               </Link>
               <Link
                 href="/marketplace"
-                className="block px-3 py-2 text-gray-700 hover:text-orange-600 transition-colors font-medium"
+                className="block px-4 py-2 text-white hover:bg-orange-700 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Marketplace
               </Link>
               <Link
                 href="/about"
-                className="block px-3 py-2 text-gray-700 hover:text-orange-600 transition-colors font-medium"
+                className="block px-4 py-2 text-white hover:bg-orange-700 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Nosotros
               </Link>
               
               {!user && (
-                <div className="pt-3 border-t border-gray-200 space-y-2">
+                <div className="pt-3 border-t border-orange-700 space-y-2">
                   <MinimalButton variant="outline" asChild className="w-full">
                     <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                       Iniciar Sesión
