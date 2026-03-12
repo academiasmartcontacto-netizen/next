@@ -373,11 +373,33 @@ export default function HomePage() {
                     <button
                       onClick={async () => {
                         try {
-                          await fetch('/api/auth/logout', { method: 'POST' })
-                          router.push('/login')
-                          router.refresh()
+                          console.log('🚨 LOGOUT DEBUG: INICIANDO LOGOUT DESDE app/page.tsx')
+                          console.log('🔍 FRONTEND DEBUG: Current URL:', window.location.href)
+                          console.log('🔍 FRONTEND DEBUG: Cookies disponibles:', document.cookie)
+                          console.log('🔍 FRONTEND DEBUG: Estado actual del usuario:', isLoggedIn ? 'LOGUEADO' : 'NO LOGUEADO')
+                          
+                          const response = await fetch('/api/auth/logout', { method: 'POST' })
+                          console.log('🔍 FRONTEND DEBUG: Response logout:', response.status)
+                          
+                          if (response.ok) {
+                            console.log('🚨 LOGOUT DEBUG: API RESPONDIO OK, LIMPIANDO ESTADO')
+                            
+                            // Forzar limpieza completa del estado
+                            localStorage.clear()
+                            sessionStorage.clear()
+                            setIsLoggedIn(false)
+                            setCurrentUser(null)
+                            
+                            console.log('🚨 LOGOUT DEBUG: ESTADO LIMPIADO, REDIRIGIENDO A LOGIN')
+                            
+                            // Forzar recarga completa para limpiar todo el estado
+                            window.location.href = '/login'
+                          } else {
+                            console.error('🚨 LOGOUT DEBUG: ERROR EN API LOGOUT:', response.statusText)
+                            router.push('/login')
+                          }
                         } catch (error) {
-                          console.error('Error al cerrar sesión:', error)
+                          console.error('🚨 LOGOUT DEBUG: ERROR GENERAL EN LOGOUT:', error)
                           router.push('/login')
                         }
                       }}
