@@ -73,6 +73,15 @@ const SearchBar = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto"
     >
+      {/* Logo encima del buscador */}
+      <div className="flex justify-center mb-8">
+        <img 
+          src="/assets/img/done.png"
+          alt="Done Logo"
+          className="w-24 h-24 object-contain"
+        />
+      </div>
+      
       <div className="relative bg-white rounded-full border-2 border-[#ff6b1a] shadow-lg overflow-hidden">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#ff6b1a]" />
         
