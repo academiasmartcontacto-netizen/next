@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { MinimalButton } from "@/components/ui/minimal-button"
@@ -14,7 +14,6 @@ import { useAuth } from '@/contexts/AuthContext'
 function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   
   const router = useRouter()
@@ -50,33 +49,15 @@ function LoginPageContent() {
     try {
       await login(email, password)
       
-      setSuccess(true)
-      setTimeout(() => {
-        router.push(returnTo)
-        router.refresh()
-      }, 1500)
+      // Redirección directa sin mensaje intermedio
+      router.push(returnTo)
+      router.refresh()
       
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al iniciar sesión')
     } finally {
       setIsLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center max-w-md w-full">
-          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-            <CheckCircle2 className="w-8 h-8 text-green-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">¡Bienvenido!</h2>
-          <p className="text-gray-600 mb-6">
-            Redirigiendo...
-          </p>
-        </div>
-      </div>
-    )
   }
 
   return (
