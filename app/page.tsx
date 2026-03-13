@@ -81,51 +81,17 @@ export default function HomePage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
       <Navbar />
       
-      {/* Hero Section */}
+      {/* Main Content */}
       <div style={{
-        backgroundColor: 'white',
-        padding: '4rem 2rem',
-        textAlign: 'center'
+        padding: '2rem',
+        maxWidth: '1200px',
+        margin: '0 auto'
       }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '2rem'
-        }}>
-          <img 
-            src="/assets/img/done.png"
-            alt="Academia Smart"
-            style={{
-              width: '120px',
-              height: '120px',
-              marginBottom: '1rem'
-            }}
-          />
-          <h1 style={{ 
-            fontSize: '3rem', 
-            fontWeight: 'bold', 
-            marginBottom: '1rem',
-            color: '#333',
-            fontFamily: 'Inter, sans-serif'
-          }}>
-            Academia Smart
-          </h1>
-          <p style={{ 
-            fontSize: '1.25rem', 
-            marginBottom: '2rem', 
-            opacity: 0.8,
-            color: '#666',
-            fontFamily: 'Inter, sans-serif'
-          }}>
-            Tu marketplace inteligente para conectar con lo mejor de tu comunidad
-          </p>
-        </div>
         
         {/* Search Bar */}
         <form onSubmit={handleSearch} style={{
           maxWidth: '600px',
-          margin: '0 auto',
+          margin: '0 auto 4rem',
           position: 'relative'
         }}>
           <div style={{
