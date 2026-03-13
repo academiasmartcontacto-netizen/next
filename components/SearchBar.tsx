@@ -82,7 +82,7 @@ const SearchBar = () => {
         />
       </div>
       
-      <div className="relative bg-white rounded-full border-2 border-[#ff6b1a] shadow-lg overflow-hidden">
+      <div className="relative bg-white rounded-full border-[1.6px] border-[#ff6b1a] shadow-lg overflow-hidden transition-all duration-300">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#ff6b1a]" />
         
         <input
@@ -91,7 +91,7 @@ const SearchBar = () => {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
           placeholder={isListening ? "Escuchando..." : "Buscar en Done!"}
-          className="w-full pl-12 pr-16 py-4 outline-none text-gray-700 placeholder-gray-400"
+          className="w-full pl-12 pr-16 py-4 outline-none text-gray-700 placeholder-gray-400 focus:border-[#ff8c42] focus:shadow-xl focus:shadow-[#ff6b1a]/20 transition-all duration-300"
         />
         
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
