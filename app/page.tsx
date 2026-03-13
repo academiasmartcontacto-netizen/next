@@ -78,22 +78,49 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
       <Navbar />
       
       {/* Hero Section */}
       <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        backgroundColor: 'white',
         padding: '4rem 2rem',
-        textAlign: 'center',
-        color: 'white'
+        textAlign: 'center'
       }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-          Academia Smart
-        </h1>
-        <p style={{ fontSize: '1.25rem', marginBottom: '2rem', opacity: 0.9 }}>
-          Tu marketplace inteligente para conectar con lo mejor de tu comunidad
-        </p>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '2rem'
+        }}>
+          <img 
+            src="/assets/img/done.png"
+            alt="Academia Smart"
+            style={{
+              width: '120px',
+              height: '120px',
+              marginBottom: '1rem'
+            }}
+          />
+          <h1 style={{ 
+            fontSize: '3rem', 
+            fontWeight: 'bold', 
+            marginBottom: '1rem',
+            color: '#333',
+            fontFamily: 'Inter, sans-serif'
+          }}>
+            Academia Smart
+          </h1>
+          <p style={{ 
+            fontSize: '1.25rem', 
+            marginBottom: '2rem', 
+            opacity: 0.8,
+            color: '#666',
+            fontFamily: 'Inter, sans-serif'
+          }}>
+            Tu marketplace inteligente para conectar con lo mejor de tu comunidad
+          </p>
+        </div>
         
         {/* Search Bar */}
         <form onSubmit={handleSearch} style={{
