@@ -53,7 +53,7 @@ export default function Navbar() {
   // Mostrar estado de carga mientras se verifica la autenticación
   if (isLoading) {
     return (
-      <nav className="bg-orange-600 border-b border-orange-700 sticky top-0 z-50">
+      <nav className="bg-[#ff6b1a] border-b border-[#e55a15] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -65,7 +65,7 @@ export default function Navbar() {
                 />
               </Link>
             </div>
-            <div className="w-8 h-8 bg-orange-700 rounded-full animate-pulse" />
+            <div className="w-8 h-8 bg-[#e55a15] rounded-full animate-pulse" />
           </div>
         </div>
       </nav>
@@ -73,7 +73,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-orange-600 border-b border-orange-700 sticky top-0 z-50">
+    <nav className="bg-[#ff6b1a] border-b border-[#e55a15] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -93,23 +93,23 @@ export default function Navbar() {
               <div className="relative user-dropdown">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-orange-700 transition-colors"
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-[#e55a15] transition-colors"
                 >
                   {/* User Avatar */}
-                  <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  <div className="w-8 h-8 bg-[#ff6b1a] rounded-full flex items-center justify-center text-white text-sm font-medium">
                     {userInitials}
                   </div>
                   
                   {/* User Info */}
                   <div className="hidden lg:block text-left">
                     <p className="text-sm font-medium text-white">{displayName}</p>
-                    <p className="text-xs text-orange-200">{user.email}</p>
+                    <p className="text-xs text-[#ffcc99]">{user.email}</p>
                   </div>
                   
                   {/* Dropdown Arrow */}
                   <ChevronDown 
                     className={cn(
-                      "w-4 h-4 text-orange-200 transition-transform",
+                      "w-4 h-4 text-[#ffcc99] transition-transform",
                       isDropdownOpen && "rotate-180"
                     )}
                   />
@@ -196,7 +196,7 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-orange-700 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-[#e55a15] transition-colors"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5 text-white" />
@@ -209,32 +209,32 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-orange-700 py-4">
+          <div className="md:hidden border-t border-[#e55a15] py-4">
             <div className="space-y-3">
               <Link
                 href="/explore"
-                className="block px-4 py-2 text-white hover:bg-orange-700 transition-colors"
+                className="block px-4 py-2 text-white hover:bg-[#e55a15] transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Explorar
               </Link>
               <Link
                 href="/marketplace"
-                className="block px-4 py-2 text-white hover:bg-orange-700 transition-colors"
+                className="block px-4 py-2 text-white hover:bg-[#e55a15] transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Marketplace
               </Link>
               <Link
                 href="/about"
-                className="block px-4 py-2 text-white hover:bg-orange-700 transition-colors"
+                className="block px-4 py-2 text-white hover:bg-[#e55a15] transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Nosotros
               </Link>
               
               {!user && (
-                <div className="pt-3 border-t border-orange-700 space-y-2">
+                <div className="pt-3 border-t border-[#e55a15] space-y-2">
                   <MinimalButton variant="outline" asChild className="w-full">
                     <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                       Iniciar Sesión
