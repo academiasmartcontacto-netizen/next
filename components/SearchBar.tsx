@@ -73,15 +73,16 @@ const SearchBar = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto"
     >
-      <div className="relative bg-white rounded-full shadow-lg overflow-hidden">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <div className="relative bg-white rounded-full border-2 border-[#ff6b1a] shadow-lg overflow-hidden">
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#ff6b1a]" />
         
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
           placeholder={isListening ? "Escuchando..." : "Buscar en Done!"}
-          className="w-full pl-12 pr-32 py-4 outline-none text-gray-700 placeholder-gray-400"
+          className="w-full pl-12 pr-16 py-4 outline-none text-gray-700 placeholder-gray-400"
         />
         
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
@@ -106,8 +107,8 @@ const SearchBar = () => {
             className={`
               relative p-3 rounded-full transition-all duration-300
               ${isListening 
-                ? 'bg-[#ff6b1a] text-white shadow-lg' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'text-[#ff6b1a] bg-[rgba(255,107,26,0.1)]' 
+                : 'text-[#999] hover:text-[#ff6b1a] hover:bg-[rgba(255,107,26,0.1)]'
               }
             `}
           >
@@ -125,16 +126,6 @@ const SearchBar = () => {
                 />
               )}
             </AnimatePresence>
-          </motion.button>
-          
-          <motion.button
-            type="submit"
-            onClick={() => handleSearch(query)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-3 bg-[#ff6b1a] text-white rounded-full hover:bg-[#e55a15] transition-colors"
-          >
-            <Search className="w-4 h-4" />
           </motion.button>
         </div>
       </div>
