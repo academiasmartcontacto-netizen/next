@@ -1,18 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, Mic, MapPin, Star, Store, Heart, User } from 'lucide-react'
+import { useEffect } from 'react'
+import { Search, MapPin, Star, Store, Heart } from 'lucide-react'
 import Link from 'next/link'
+
 import Navbar from '@/components/layout/navbar'
+import SearchBar from '@/components/SearchBar'
 
 export default function HomePage() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isListening, setIsListening] = useState(false)
-  const [showVoiceSearch, setShowVoiceSearch] = useState(false)
-  const recognitionRef = useRef<any>(null)
-
   // Mock de categorías
   const categories = [
     { id: 1, name: 'Vehículos', icon: '🚗', slug: 'vehiculos' },
@@ -24,58 +19,6 @@ export default function HomePage() {
     { id: 7, name: 'Hogar', icon: '🏡', slug: 'hogar' },
     { id: 8, name: 'Trabajo', icon: '💼', slug: 'trabajo' }
   ]
-
-  useEffect(() => {
-    checkVoiceSupport()
-  }, [])
-
-  const checkVoiceSupport = () => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      recognitionRef.current = new SpeechRecognition()
-      recognitionRef.current.continuous = false
-      recognitionRef.current.interimResults = false
-      recognitionRef.current.lang = 'es-BO'
-
-      recognitionRef.current.onstart = () => {
-        setIsListening(true)
-      }
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false)
-      }
-
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript
-        setSearchQuery(transcript)
-      }
-
-      recognitionRef.current.onerror = () => {
-        setIsListening(false)
-      }
-
-      setShowVoiceSearch(true)
-    }
-  }
-
-  const startVoiceSearch = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.start()
-    }
-  }
-
-  const stopVoiceSearch = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-    }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      router.push(`/explore?q=${encodeURIComponent(searchQuery)}`)
-    }
-  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
@@ -89,65 +32,7 @@ export default function HomePage() {
       }}>
         
         {/* Search Bar */}
-        <form onSubmit={handleSearch} style={{
-          maxWidth: '600px',
-          margin: '0 auto 4rem',
-          position: 'relative'
-        }}>
-          <div style={{
-            display: 'flex',
-            backgroundColor: 'white',
-            borderRadius: '50px',
-            overflow: 'hidden',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
-          }}>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar productos, servicios o tiendas..."
-              style={{
-                flex: 1,
-                border: 'none',
-                padding: '1rem 1.5rem',
-                fontSize: '1rem',
-                outline: 'none'
-              }}
-            />
-            
-            {showVoiceSearch && (
-              <button
-                type="button"
-                onClick={isListening ? stopVoiceSearch : startVoiceSearch}
-                style={{
-                  border: 'none',
-                  background: isListening ? '#dc3545' : '#28a745',
-                  color: 'white',
-                  padding: '0 1.5rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                <Mic size={20} />
-              </button>
-            )}
-            
-            <button
-              type="submit"
-              style={{
-                border: 'none',
-                background: '#007bff',
-                color: 'white',
-                padding: '0 2rem',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: 'bold'
-              }}
-            >
-              <Search size={20} />
-            </button>
-          </div>
-        </form>
+        <SearchBar />
       </div>
 
       {/* Categories Section */}
