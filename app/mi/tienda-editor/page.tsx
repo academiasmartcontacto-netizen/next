@@ -109,7 +109,6 @@ export default function TiendaEditorPage() {
         className="w-[520px] flex flex-col" 
         style={{
           background: '#ffffff',
-          borderRight: '3px solid #ff6b6b',
           boxShadow: '0 0 20px rgba(0,0,0,0.1)'
         }}
       >
@@ -117,21 +116,10 @@ export default function TiendaEditorPage() {
         <div 
           className="flex items-center justify-between px-6 py-4"
           style={{
-            borderBottom: '3px solid #4ecdc4',
-            background: 'linear-gradient(90deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%)'
+            background: '#ff6b1a'
           }}
         >
           <div className="flex items-center gap-3">
-            <div 
-              className="w-12 h-12 flex items-center justify-center"
-              style={{
-                background: '#ffffff',
-                borderRadius: '50%',
-                border: '3px solid #feca57'
-              }}
-            >
-              <Store size={24} style={{ color: '#ff6b6b' }} />
-            </div>
             <div>
               <h2 
                 className="text-xl font-bold"
@@ -144,104 +132,71 @@ export default function TiendaEditorPage() {
               >
                 EDITOR
               </h2>
-              <p 
-                className="text-sm font-bold"
-                style={{
-                  color: '#ffffff',
-                  fontWeight: '600',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                  marginTop: '2px'
-                }}
-              >
-                STORE CONFIGURATION
-              </p>
             </div>
           </div>
-          <div 
-            className="flex items-center gap-1"
-            style={{
-              background: 'rgba(255,255,255,0.9)',
-              borderRadius: '25px',
-              padding: '8px',
-              border: '2px solid #feca57'
-            }}
-          >
+          <div className="flex items-center gap-3">
             <Link 
-              href={store?.link ? `/tienda/${store.link}` : '#'}
-              target={store?.link ? '_blank' : '_self'}
-              onClick={(e) => {
-                if (!store?.link || store.error) {
-                  e.preventDefault()
-                  alert(store?.error || 'Cargando tienda...')
-                }
-              }}
-              className="p-2 transition-all duration-300"
-              style={{
-                color: store?.link ? '#ff6b6b' : '#ccc',
-                background: 'transparent',
-                borderRadius: '15px',
-                cursor: store?.link ? 'pointer' : 'not-allowed'
-              }}
-              title={store?.error || (store?.link ? 'Preview' : 'Cargando...')}
-            >
-              <Eye size={18} />
-            </Link>
-            <button
-              onClick={() => setDeviceMode('desktop')}
-              className="p-2 transition-all duration-300"
-              style={{
-                color: deviceMode === 'desktop' ? '#ffffff' : '#4ecdc4',
-                background: deviceMode === 'desktop' ? '#4ecdc4' : 'transparent',
-                borderRadius: '15px'
-              }}
-              title="Desktop"
-            >
-              <Monitor size={18} />
-            </button>
-            <button
-              onClick={() => setDeviceMode('mobile')}
-              className="p-2 transition-all duration-300"
-              style={{
-                color: deviceMode === 'mobile' ? '#ffffff' : '#4ecdc4',
-                background: deviceMode === 'mobile' ? '#4ecdc4' : 'transparent',
-                borderRadius: '15px'
-              }}
-              title="Mobile"
-            >
-              <Smartphone size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Status Bar Colorida */}
-        <div 
-          className="px-6 py-3 text-sm font-bold transition-all duration-300"
-          style={{
-            borderBottom: '3px solid #feca57',
-            background: 'linear-gradient(90deg, #feca57 0%, #ff6b6b 100%)',
-            color: '#ffffff',
-            fontSize: '12px',
-            fontWeight: '700',
-            textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <div 
-                className="w-3 h-3 rounded-full animate-pulse"
-                style={{
-                  backgroundColor: '#ffffff',
-                  boxShadow: '0 0 10px rgba(255,255,255,0.8)'
+                href={store?.link ? `/tienda/${store.link}` : '#'}
+                target={store?.link ? '_blank' : '_self'}
+                onClick={(e) => {
+                  if (!store?.link || store.error) {
+                    e.preventDefault()
+                  }
                 }}
-              ></div>
-              {autoSaveStatus === 'saved' && '✓ ALL CHANGES SAVED'}
-              {autoSaveStatus === 'saving' && '⟳ SAVING...'}
-              {autoSaveStatus === 'error' && '⚠ ERROR SAVING'}
-            </span>
-            <span style={{ color: '#ffffff' }}>
-              {new Date().toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
+                className="p-3 transition-all duration-300 flex items-center justify-center"
+                style={{
+                  color: store?.link ? '#ffffff' : '#ffaa80',
+                  background: store?.link ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  cursor: store?.link ? 'pointer' : 'not-allowed',
+                  border: store?.link ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: store?.link ? '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 4px 15px rgba(0,0,0,0.05)',
+                  minHeight: '40px',
+                  minWidth: '40px'
+                }}
+                title={store?.error || (store?.link ? 'Preview' : 'Cargando...')}
+              >
+                <Eye size={20} strokeWidth={2.5} />
+              </Link>
+              <button
+                onClick={() => setDeviceMode('desktop')}
+                className="p-3 transition-all duration-300 flex items-center justify-center"
+                style={{
+                  color: deviceMode === 'desktop' ? '#ff6b1a' : '#ffffff',
+                  background: deviceMode === 'desktop' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.15)',
+                  borderRadius: '12px',
+                  border: deviceMode === 'desktop' ? '1px solid rgba(255,255,255,0.8)' : '1px solid rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: deviceMode === 'desktop' ? '0 4px 15px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)' : '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  minHeight: '40px',
+                  minWidth: '40px'
+                }}
+                title="Desktop"
+              >
+                <Monitor size={20} strokeWidth={2.5} />
+              </button>
+              <button
+                onClick={() => setDeviceMode('mobile')}
+                className="p-3 transition-all duration-300 flex items-center justify-center"
+                style={{
+                  color: deviceMode === 'mobile' ? '#ff6b1a' : '#ffffff',
+                  background: deviceMode === 'mobile' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.15)',
+                  borderRadius: '12px',
+                  border: deviceMode === 'mobile' ? '1px solid rgba(255,255,255,0.8)' : '1px solid rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: deviceMode === 'mobile' ? '0 4px 15px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)' : '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  minHeight: '40px',
+                  minWidth: '40px'
+                }}
+                title="Mobile"
+              >
+                <Smartphone size={20} strokeWidth={2.5} />
+              </button>
+            </div>
         </div>
 
         {/* SYMBALOO GRID SYSTEM */}
