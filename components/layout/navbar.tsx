@@ -39,6 +39,28 @@ export default function Navbar() {
     await logout()
   }
 
+  const handleStoreClick = async () => {
+    // Lógica inteligente: Verificar si el usuario tiene tienda
+    try {
+      const response = await fetch('/api/stores?user-store=true')
+      const data = await response.json()
+      
+      if (data.store) {
+        // Tiene tienda -> Ir al editor (cuando lo creemos)
+        router.push('/mi/tienda-editor')
+      } else {
+        // No tiene tienda -> Ir a crear tienda directamente
+        router.push('/mi/crear-tienda')
+      }
+    } catch (error) {
+      console.error('Error checking store:', error)
+      // En caso de error, ir a crear tienda
+      router.push('/mi/crear-tienda')
+    }
+    
+    setIsDropdownOpen(false)
+  }
+
   const displayName = user?.profile?.firstName && user?.profile?.lastName 
     ? `${user.profile.firstName} ${user.profile.lastName}`
     : user?.email?.split('@')[0] || 'Usuario'
@@ -152,9 +174,9 @@ export default function Navbar() {
                       </Link>
                       
                       <Link
-                        href="/mi"
+                        href="#"
+                        onClick={handleStoreClick}
                         className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
                       >
                         <ShoppingBag className="w-4 h-4" />
                         <span>Mi Tienda</span>

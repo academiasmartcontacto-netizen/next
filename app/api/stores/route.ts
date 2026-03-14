@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     
     const session = await getUserSession(request)
     console.log('🔍 DEBUG: Session obtenida:', session ? '✅' : '❌')
+    console.log('🔍 DEBUG: Session completa:', JSON.stringify(session, null, 2))
     
     if (!session?.id) {
       console.log('🔍 DEBUG: Sin session.id - Unauthorized')
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     console.log('🔍 DEBUG: Usuario ID:', session.id)
 
     const body = await request.json()
-    console.log('🔍 DEBUG: Body recibido:', body)
+    console.log('🔍 DEBUG: Body recibido:', JSON.stringify(body, null, 2))
     
     const { nombre, slug, whatsapp, feria_sector, feria_city, feria_pos } = body
 
@@ -95,7 +96,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Esa URL ya está en uso. Por favor elige otra.' }, { status: 400 })
     }
 
-    console.log('🔍 DEBUG: Creando tienda...')
+    console.log('🔍 DEBUG: Creando tienda con datos:', {
+      userId: session.id,
+      name: nombre,
+      link: slug,
+      domain: `donebolivia.com/tienda/${slug}`,
+      phone: whatsapp,
+      isActive: true,
+      isPublished: false,
+      theme: 'claro'
+    })
 
     // Create store con los campos del PHP original
     const [newStore] = await db
@@ -106,6 +116,7 @@ export async function POST(request: NextRequest) {
         link: slug,
         domain: `donebolivia.com/tienda/${slug}`,
         phone: whatsapp, // WhatsApp como teléfono
+        whatsapp: whatsapp, // También guardar en campo específico
         isActive: true,
         isPublished: false,
         theme: 'claro', // Tema por defecto del PHP
@@ -119,9 +130,10 @@ export async function POST(request: NextRequest) {
       })
       .returning()
 
-    console.log('🔍 DEBUG: Tienda creada:', newStore)
+    console.log('🔍 DEBUG: Tienda creada exitosamente:', JSON.stringify(newStore, null, 2))
 
     // Log activity
+    console.log('🔍 DEBUG: Registrando actividad...')
     await db.insert(userActivityLog).values({
       userId: session.id,
       action: 'store_created',
@@ -136,6 +148,8 @@ export async function POST(request: NextRequest) {
       }),
     })
 
+    console.log('🔍 DEBUG: Actividad registrada')
+
     // Notificación a Telegram (como el PHP)
     console.log(`🏪 Nueva Tienda Creada\n\n🛒 Nombre: ${nombre}\n🔗 Slug: /tienda/${slug}\n📱 WhatsApp: ${whatsapp}\n👤 Usuario ID: ${session.id}`)
 
@@ -145,7 +159,7 @@ export async function POST(request: NextRequest) {
       redirectUrl = `/feria?dept=${feria_city}&success=created_and_assigned`
     }
 
-    console.log('🔍 DEBUG: Respuesta exitosa')
+    console.log('🔍 DEBUG: Respuesta exitosa, redirectUrl:', redirectUrl)
 
     return NextResponse.json({ 
       success: true,
@@ -156,7 +170,31 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('🔍 DEBUG: Error completo:', error)
     console.error('🔍 DEBUG: Error stack:', error instanceof Error ? error.stack : 'No stack available')
-    return NextResponse.json({ error: 'Error del servidor' }, { status: 500 })
+    console.error('🔍 DEBUG: Error message:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('🔍 DEBUG: Error type:', typeof error)
+    
+    // Manejar errores específicos de base de datos
+    if (error instanceof Error) {
+      if (error.message.includes('duplicate key')) {
+        console.log('🔍 DEBUG: Error de llave duplicada')
+        return NextResponse.json({ error: 'La URL ya está en uso' }, { status: 400 })
+      }
+      
+      if (error.message.includes('violates foreign key')) {
+        console.log('🔍 DEBUG: Error de llave foránea')
+        return NextResponse.json({ error: 'Error de referencia de usuario' }, { status: 400 })
+      }
+      
+      if (error.message.includes('not-null')) {
+        console.log('🔍 DEBUG: Error de campo nulo')
+        return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 })
+      }
+    }
+    
+    return NextResponse.json({ 
+      error: 'Error del servidor',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 

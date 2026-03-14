@@ -1,8 +1,9 @@
-import { pgTable, text, timestamp, uuid, boolean, integer } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid, boolean, integer, decimal } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { relations } from 'drizzle-orm'
 
-
+// Importar products desde el archivo separado
+import { products, type Product } from './schema-products'
 
 // Users table - Enhanced for complete auth system
 export const users = pgTable('users', {
@@ -71,12 +72,44 @@ export const stores = pgTable('stores', {
   domain: text('domain').notNull(), // Full domain like "dominio.com/store/samsung"
   isActive: boolean('is_active').default(true),
   isPublished: boolean('is_published').default(false),
+  
+  // Campos adicionales para replicar PHP
+  whatsapp: text('whatsapp'), // WhatsApp para contacto
+  emailContacto: text('email_contacto'), // Email de contacto
+  direccion: text('direccion'), // Dirección física
+  googleMapsUrl: text('google_maps_url'), // URL a Google Maps
+  descripcion: text('descripcion'), // Descripción de la tienda
+  slogan: text('slogan'), // Slogan o tagline
+  
+  // Campos de apariencia
+  colorPrimario: text('color_primario'), // Color primario de la marca
+  logo: text('logo'), // URL del logo
+  logoPrincipal: text('logo_principal'), // Logo principal
+  mostrarLogo: boolean('mostrar_logo').default(true),
+  mostrarNombre: boolean('mostrar_nombre').default(true),
+  
+  // Banners
+  bannerImagen: text('banner_imagen'), // Banner principal
+  bannerImagen2: text('banner_imagen_2'), // Banner secundario 2
+  bannerImagen3: text('banner_imagen_3'), // Banner secundario 3
+  bannerImagen4: text('banner_imagen_4'), // Banner secundario 4
+  mostrarBanner: boolean('mostrar_banner').default(false),
+  
+  // Redes sociales (JSON)
+  redesSociales: text('redes_sociales'), // JSON con URLs de redes sociales
+  
+  // Campos de sistema
   settings: text('settings'), // JSON string for store settings
-  theme: text('theme').default('default'), // Store theme/template
+  theme: text('theme').default('claro'), // Store theme/template
   seoTitle: text('seo_title'),
   seoDescription: text('seo_description'),
-  logo: text('logo'), // URL to store logo
   favicon: text('favicon'), // URL to favicon
+  
+  // Campos de PHP
+  estado: text('estado').default('activo'), // activo, suspendido, eliminado
+  suspensionFin: timestamp('suspension_fin'), // Fecha fin de suspensión
+  visitas: integer('visitas').default(0), // Contador de visitas
+  
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
@@ -155,6 +188,7 @@ export const storesRelations = relations(stores, ({ one, many }) => ({
     references: [users.id],
   }),
   pages: many(storePages),
+  products: many(products), // Agregar relación con productos
 }))
 
 export const storePagesRelations = relations(storePages, ({ one, many }) => ({
@@ -260,6 +294,13 @@ export type StoreWithPages = Store & {
   pages: StorePage[]
 }
 
+export type StoreWithProducts = Store & {
+  products: Product[]
+}
+
 export type StorePageWithSections = StorePage & {
   sections: StoreSection[]
 }
+
+// Re-exportar products para que esté disponible globalmente
+export { products, type Product }

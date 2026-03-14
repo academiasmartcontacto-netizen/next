@@ -60,23 +60,36 @@ function CrearTiendaContent() {
     setError('')
     setSuccess('')
 
+    console.log('🔍 FRONTEND: Iniciando envío de formulario')
+    console.log('🔍 FRONTEND: FormData:', JSON.stringify(formData, null, 2))
+    console.log('🔍 FRONTEND: Feria context:', JSON.stringify(feriaContext, null, 2))
+
     try {
+      const requestBody = {
+        ...formData,
+        feria_sector: feriaContext.sector,
+        feria_city: feriaContext.city,
+        feria_pos: feriaContext.position
+      }
+
+      console.log('🔍 FRONTEND: Request body:', JSON.stringify(requestBody, null, 2))
+
       const response = await fetch('/api/stores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          feria_sector: feriaContext.sector,
-          feria_city: feriaContext.city,
-          feria_pos: feriaContext.position
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('🔍 FRONTEND: Response status:', response.status)
+      console.log('🔍 FRONTEND: Response headers:', Object.fromEntries(response.headers.entries()))
+
       const data = await response.json()
+      console.log('🔍 FRONTEND: Response data:', JSON.stringify(data, null, 2))
 
       if (response.ok) {
+        console.log('🔍 FRONTEND: Tienda creada exitosamente')
         if (feriaContext.sector && feriaContext.city) {
           setSuccess('¡Tienda creada y puesto asignado! Redirigiendo a la feria...')
           setTimeout(() => {
@@ -89,9 +102,13 @@ function CrearTiendaContent() {
           }, 2000)
         }
       } else {
+        console.log('🔍 FRONTEND: Error en respuesta:', data.error)
         setError(data.error || 'Error al crear la tienda')
       }
     } catch (error) {
+      console.error('🔍 FRONTEND: Error completo:', error)
+      console.error('🔍 FRONTEND: Error message:', error instanceof Error ? error.message : 'Unknown error')
+      console.error('🔍 FRONTEND: Error stack:', error instanceof Error ? error.stack : 'No stack')
       setError('Error del sistema. Intenta más tarde.')
     } finally {
       setIsLoading(false)
@@ -352,7 +369,7 @@ function CrearTiendaContent() {
               <div className="space-y-4">
                 <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                   <span className="bg-gray-50 text-gray-600 text-sm font-medium px-4 py-3 border-r border-gray-300 whitespace-nowrap">
-                    donebolivia.com/tienda/
+                    localhost:3000/tienda/
                   </span>
                   <input
                     type="text"
@@ -366,7 +383,7 @@ function CrearTiendaContent() {
                   />
                 </div>
                 <div className="text-gray-500 text-sm">
-                  Esta será tu dirección única para compartir en redes sociales.
+                  Esta será tu dirección única para compartir con tus clientes.
                 </div>
                 {error && error.includes('slug') && (
                   <div className="text-red-600 text-sm mt-2">❌ Debes ingresar una dirección web para tu tienda</div>

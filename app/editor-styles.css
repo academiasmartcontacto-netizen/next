@@ -1,0 +1,103 @@
+/*
+  EDITOR-STYLES.CSS
+  Estilos base para replicar el editor de tienda del proyecto PHP.
+  Estos estilos establecen el layout principal y la apariencia de los componentes core.
+*/
+
+/* === Layout Principal === */
+.editor-split-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: #f8f9fa; /* Color de fondo general */
+}
+
+/* === Panel Lateral (Sidebar) === */
+.editor-sidebar {
+  width: 380px; /* Ancho fijo para el panel de control */
+  min-width: 380px;
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-header h2 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.sidebar-content {
+  flex-grow: 1;
+  overflow-y: auto; /* Permite scroll si el contenido es largo */
+  padding: 16px;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8f9fa;
+}
+
+
+/* === Lienzo de Previsualización (Canvas) === */
+.editor-canvas-container {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background-color: #e2e8f0; /* Fondo del área del canvas */
+}
+
+.canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.store-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: #ffffff;
+}
+
+/* === Componentes de UI del Editor === */
+
+/* Grupo de Controles */
+.control-group {
+  margin-bottom: 20px;
+}
+
+.control-group label {
+  display: block;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.control-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.control-group-header label {
+    margin-bottom: 0;
+}
