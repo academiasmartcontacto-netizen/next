@@ -1,5 +1,6 @@
 import './globals.css'
 import 'tippy.js/dist/tippy.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import type { Metadata } from 'next'
 import { Inter, Geist } from 'next/font/google'
 import { cn } from "@/lib/utils";
