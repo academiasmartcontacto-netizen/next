@@ -59,6 +59,7 @@ export async function GET(
         descripcion: stores.descripcion,
         slogan: stores.slogan,
         colorPrimario: stores.colorPrimario,
+        navbarColor: stores.navbarColor,
         direccion: stores.direccion,
         googleMapsUrl: stores.googleMapsUrl,
         redesSociales: stores.redesSociales,
@@ -132,13 +133,43 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
+    // Whitelist updatable fields from the body to prevent mass assignment vulnerabilities
+    const {
+      name, phone, whatsapp, emailContacto, direccion, googleMapsUrl,
+      descripcion, slogan, colorPrimario, navbarColor, logo, logoPrincipal,
+      mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
+      bannerImagen4, mostrarBanner, redesSociales, settings, theme,
+      seoTitle, seoDescription, favicon, estado
+    } = body;
+
+    const updateData: { [key: string]: any } = {
+      name, phone, whatsapp, emailContacto, direccion, googleMapsUrl,
+      descripcion, slogan, colorPrimario, navbarColor, logo, logoPrincipal,
+      mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
+      bannerImagen4, mostrarBanner, redesSociales, settings, theme,
+      seoTitle, seoDescription, favicon, estado
+    };
+
+    // Remove properties that are undefined in the body, so we don't null them out in the DB
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
+    
+    // Always set the updatedAt timestamp
+    updateData.updatedAt = new Date();
+
+    if (Object.keys(updateData).length <= 1) {
+      // Only updatedAt is present, so nothing to update. Return current store data.
+      const [currentStore] = await db.select().from(stores).where(eq(stores.id, store.id));
+      return NextResponse.json({ store: currentStore });
+    }
+    
     // Actualizar tienda
     const updatedStore = await db
       .update(stores)
-      .set({
-        ...body,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(stores.id, store.id))
       .returning()
 

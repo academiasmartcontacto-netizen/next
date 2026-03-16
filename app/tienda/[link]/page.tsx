@@ -39,6 +39,28 @@ export default function TiendaPublicPage() {
     }
   }, [storeLink])
 
+  const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
+
+  useEffect(() => {
+    if (store) {
+      setNavbarColor(store.navbarColor || store.colorPrimario || '#1a73e8');
+    }
+  }, [store]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'UPDATE_NAVBAR_COLOR') {
+        setNavbarColor(event.data.color);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
   if (loading && !store) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -72,21 +94,8 @@ export default function TiendaPublicPage() {
     )
   }
 
-  const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'UPDATE_NAVBAR_COLOR') {
-        setNavbarColor(event.data.color);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, []);
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navbar de la tienda */}
       <header 
         className="sticky top-0 z-50 border-b"

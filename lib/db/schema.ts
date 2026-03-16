@@ -83,6 +83,7 @@ export const stores = pgTable('stores', {
   
   // Campos de apariencia
   colorPrimario: text('color_primario'), // Color primario de la marca
+  navbarColor: text('navbar_color'), // Color de la barra de navegación
   logo: text('logo'), // URL del logo
   logoPrincipal: text('logo_principal'), // Logo principal
   mostrarLogo: boolean('mostrar_logo').default(true),
