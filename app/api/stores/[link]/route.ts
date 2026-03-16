@@ -5,6 +5,8 @@ import { products } from '@/lib/db/schema-products'
 import { eq } from 'drizzle-orm'
 import { AuthService } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic' // No cachear esta ruta
+
 // Get real user session from cookies
 const getUserSession = async (request: NextRequest) => {
   const sessionToken = request.cookies.get('session_token')?.value
