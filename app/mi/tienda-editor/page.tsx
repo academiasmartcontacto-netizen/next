@@ -270,7 +270,7 @@ export default function TiendaEditorPage() {
                       letterSpacing: '0.5px'
                     }}
                   >
-                    BARRA DE<br />NAVEGACIÓN
+                    Barra de<br />Navegación
                   </h3>
                 </div>
 
@@ -316,7 +316,7 @@ export default function TiendaEditorPage() {
                       letterSpacing: '0.5px'
                     }}
                   >
-                    IDENTIDAD VISUAL
+                    Identidad Visual
                   </h3>
                 </div>
 
@@ -362,7 +362,7 @@ export default function TiendaEditorPage() {
                       letterSpacing: '0.5px'
                     }}
                   >
-                    APARIENCIA
+                    Apariencia
                   </h3>
                 </div>
               </div>
@@ -410,7 +410,7 @@ export default function TiendaEditorPage() {
                       letterSpacing: '0.5px'
                     }}
                   >
-                    PRODUCTOS
+                    Productos
                   </h3>
                 </div>
 
