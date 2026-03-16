@@ -72,13 +72,26 @@ export default function TiendaPublicPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+  const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'UPDATE_NAVBAR_COLOR') {
+        setNavbarColor(event.data.color);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
       {/* Navbar de la tienda */}
       <header 
         className="sticky top-0 z-50 border-b"
         style={{
-          backgroundColor: store.colorPrimario || '#1a73e8',
+          backgroundColor: navbarColor,
           borderColor: 'rgba(0,0,0,0.1)'
         }}
       >

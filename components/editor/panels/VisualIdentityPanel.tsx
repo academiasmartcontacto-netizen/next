@@ -6,6 +6,7 @@ import LogoControl from "../controls/LogoControl"
 import BrandColorControl from "../controls/BrandColorControl"
 import NavbarStyleControl from "../controls/NavbarStyleControl"
 import BackgroundStyleControl from "../controls/BackgroundStyleControl"
+import NavbarColorControl from "../controls/NavbarColorControl"
 
 export default function VisualIdentityPanel() {
     const { store } = useEditor()
@@ -16,6 +17,7 @@ export default function VisualIdentityPanel() {
             <LogoControl />
             <BrandColorControl />
             <NavbarStyleControl />
+            <NavbarColorControl />
             <BackgroundStyleControl />
         </div>
     )

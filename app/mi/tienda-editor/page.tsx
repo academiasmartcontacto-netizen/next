@@ -60,7 +60,8 @@ export default function TiendaEditorPage() {
               estilo_fotos: 'cuadrado',
               grid_density: 'auto',
               tipografia: 'system',
-              tamano_texto: 'normal'
+              tamano_texto: 'normal',
+              navbarColor: data.store.navbarColor ?? '#ff6b1a',
             })
           }
         }
@@ -100,6 +101,14 @@ export default function TiendaEditorPage() {
     setStore((prev: any) => ({ ...prev, [field]: value }))
     setAutoSaveStatus('saving')
     handleSave()
+
+    // Real-time communication with iframe
+    if (field === 'navbarColor' && iframeRef.current) {
+      iframeRef.current.contentWindow?.postMessage(
+        { type: 'UPDATE_NAVBAR_COLOR', color: value },
+        '*' // En producción, deberías usar el origen de tu tienda
+      )
+    }
   }
 
   const openProductDrawer = (product: any = null) => {
