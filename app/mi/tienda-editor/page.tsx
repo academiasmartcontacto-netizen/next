@@ -316,7 +316,7 @@ export default function TiendaEditorPage() {
                       letterSpacing: '0.5px'
                     }}
                   >
-                    IDENTIDAD
+                    IDENTIDAD VISUAL
                   </h3>
                 </div>
 
