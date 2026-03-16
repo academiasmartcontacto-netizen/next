@@ -12,6 +12,18 @@ import Link from 'next/link'
 // Importar CSS específico para forzar estilos
 import './tienda-editor.css'
 
+function NavbarDrawer({ onClose }: { onClose: () => void }) {
+  return (
+    <div style={{ padding: '16px' }}>
+      <button onClick={onClose} style={{ marginBottom: '16px', color: 'black', background: 'white', border: '1px solid black', padding: '8px 16px', cursor: 'pointer' }}>
+        &larr; Volver
+      </button>
+      <h2 style={{color: 'black'}}>Editar Barra de Navegación</h2>
+      <p style={{color: 'black'}}>Aquí irán las opciones para la barra de navegación.</p>
+    </div>
+  )
+}
+
 export default function TiendaEditorPage() {
   const [store, setStore] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -24,6 +36,7 @@ export default function TiendaEditorPage() {
   const [showFeriaDrawer, setShowFeriaDrawer] = useState(false)
   const [showSectionsDrawer, setShowSectionsDrawer] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [isNavbarDrawerOpen, setIsNavbarDrawerOpen] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Cargar datos reales de la tienda del usuario
@@ -227,257 +240,263 @@ export default function TiendaEditorPage() {
             </div>
           ) : (
             <div>
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                {/* TILE 1: BARRA DE NAVEGACIÓN - GLASSMORPHISM */}
-                <div
-                  onClick={() => toggleAccordion('navbar')}
-                  className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
-                  style={{
-                    background: 'rgba(173, 216, 230, 0.25)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    padding: '16px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 8px 32px rgba(173, 216, 230, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    top: '-50%',
-                    left: '-50%',
-                    width: '200%',
-                    height: '200%',
-                    background: 'radial-gradient(circle, rgba(173, 216, 230, 0.1) 0%, transparent 70%)',
-                    pointerEvents: 'none'
-                  }} />
-                  <Menu size={32} style={{ color: '#0d6efd', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(13, 110, 253, 0.3))' }} />
-                  <h3 
-                    style={{
-                      color: '#084298',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      margin: '0',
-                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
-                      letterSpacing: '0.5px'
-                    }}
-                  >
-                    Barra de<br />Navegación
-                  </h3>
-                </div>
+              {isNavbarDrawerOpen ? (
+                <NavbarDrawer onClose={() => setIsNavbarDrawerOpen(false)} />
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    {/* TILE 1: BARRA DE NAVEGACIÓN - GLASSMORPHISM */}
+                    <div
+                      onClick={() => setIsNavbarDrawerOpen(true)}
+                      className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
+                      style={{
+                        background: 'rgba(173, 216, 230, 0.25)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        boxShadow: '0 8px 32px rgba(173, 216, 230, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(173, 216, 230, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                      }} />
+                      <Menu size={32} style={{ color: '#0d6efd', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(13, 110, 253, 0.3))' }} />
+                      <h3 
+                        style={{
+                          color: '#084298',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          textAlign: 'center',
+                          margin: '0',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Barra de<br />Navegación
+                      </h3>
+                    </div>
 
-                {/* TILE 2: IDENTIDAD - GLASSMORPHISM */}
-                <div
-                  onClick={() => toggleAccordion('identidad')}
-                  className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
-                  style={{
-                    background: 'rgba(255, 182, 193, 0.25)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    padding: '16px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 8px 32px rgba(255, 182, 193, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    top: '-50%',
-                    left: '-50%',
-                    width: '200%',
-                    height: '200%',
-                    background: 'radial-gradient(circle, rgba(255, 182, 193, 0.1) 0%, transparent 70%)',
-                    pointerEvents: 'none'
-                  }} />
-                  <Store size={32} style={{ color: '#d63384', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(214, 51, 132, 0.3))' }} />
-                  <h3 
-                    style={{
-                      color: '#831943',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      margin: '0',
-                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
-                      letterSpacing: '0.5px'
-                    }}
-                  >
-                    Identidad Visual
-                  </h3>
-                </div>
+                    {/* TILE 2: IDENTIDAD - GLASSMORPHISM */}
+                    <div
+                      onClick={() => toggleAccordion('identidad')}
+                      className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
+                      style={{
+                        background: 'rgba(255, 182, 193, 0.25)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        boxShadow: '0 8px 32px rgba(255, 182, 193, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(255, 182, 193, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                      }} />
+                      <Store size={32} style={{ color: '#d63384', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(214, 51, 132, 0.3))' }} />
+                      <h3 
+                        style={{
+                          color: '#831943',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          textAlign: 'center',
+                          margin: '0',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Identidad Visual
+                      </h3>
+                    </div>
 
-                {/* TILE 3: APARIENCIA - GLASSMORPHISM */}
-                <div
-                  onClick={() => toggleAccordion('apariencia')}
-                  className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
-                  style={{
-                    background: 'rgba(176, 224, 230, 0.25)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    padding: '16px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 8px 32px rgba(176, 224, 230, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    top: '-50%',
-                    left: '-50%',
-                    width: '200%',
-                    height: '200%',
-                    background: 'radial-gradient(circle, rgba(176, 224, 230, 0.1) 0%, transparent 70%)',
-                    pointerEvents: 'none'
-                  }} />
-                  <Palette size={32} style={{ color: '#20c997', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(32, 201, 151, 0.3))' }} />
-                  <h3 
-                    style={{
-                      color: '#0f5132',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      margin: '0',
-                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
-                      letterSpacing: '0.5px'
-                    }}
-                  >
-                    Apariencia
-                  </h3>
-                </div>
-              </div>
+                    {/* TILE 3: APARIENCIA - GLASSMORPHISM */}
+                    <div
+                      onClick={() => toggleAccordion('apariencia')}
+                      className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
+                      style={{
+                        background: 'rgba(176, 224, 230, 0.25)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        boxShadow: '0 8px 32px rgba(176, 224, 230, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(176, 224, 230, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                      }} />
+                      <Palette size={32} style={{ color: '#20c997', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(32, 201, 151, 0.3))' }} />
+                      <h3 
+                        style={{
+                          color: '#0f5132',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          textAlign: 'center',
+                          margin: '0',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Apariencia
+                      </h3>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {/* TILE 4: PRODUCTOS - GLASSMORPHISM */}
-                <div
-                  onClick={() => setShowProductDrawer(true)}
-                  className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
-                  style={{
-                    background: 'rgba(255, 218, 185, 0.25)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    padding: '16px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 8px 32px rgba(255, 218, 185, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    top: '-50%',
-                    left: '-50%',
-                    width: '200%',
-                    height: '200%',
-                    background: 'radial-gradient(circle, rgba(255, 218, 185, 0.1) 0%, transparent 70%)',
-                    pointerEvents: 'none'
-                  }} />
-                  <Plus size={32} style={{ color: '#fd7e14', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(253, 126, 20, 0.3))' }} />
-                  <h3 
-                    style={{
-                      color: '#664d03',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      margin: '0',
-                      textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
-                      letterSpacing: '0.5px'
-                    }}
-                  >
-                    Productos
-                  </h3>
-                </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {/* TILE 4: PRODUCTOS - GLASSMORPHISM */}
+                    <div
+                      onClick={() => setShowProductDrawer(true)}
+                      className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
+                      style={{
+                        background: 'rgba(255, 218, 185, 0.25)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        boxShadow: '0 8px 32px rgba(255, 218, 185, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(255, 218, 185, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                      }} />
+                      <Plus size={32} style={{ color: '#fd7e14', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(253, 126, 20, 0.3))' }} />
+                      <h3 
+                        style={{
+                          color: '#664d03',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          textAlign: 'center',
+                          margin: '0',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Productos
+                      </h3>
+                    </div>
 
-                {/* TILE 5: ESPACIO VACÍO PARA FUTURO */}
-                <div
-                  className="cursor-not-allowed opacity-50"
-                  style={{
-                    background: 'rgba(240, 240, 240, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                    borderRadius: '20px',
-                    padding: '16px',
-                    border: '1px dashed rgba(255, 255, 255, 0.2)',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    position: 'relative'
-                  }}
-                >
-                  <Plus size={32} style={{ color: '#ccc', marginBottom: '8px' }} />
-                  <h3 
-                    style={{
-                      color: '#999',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      margin: '0'
-                    }}
-                  >
-                    PRÓXIMO
-                  </h3>
-                </div>
+                    {/* TILE 5: ESPACIO VACÍO PARA FUTURO */}
+                    <div
+                      className="cursor-not-allowed opacity-50"
+                      style={{
+                        background: 'rgba(240, 240, 240, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px dashed rgba(255, 255, 255, 0.2)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative'
+                      }}
+                    >
+                      <Plus size={32} style={{ color: '#ccc', marginBottom: '8px' }} />
+                      <h3 
+                        style={{
+                          color: '#999',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          margin: '0'
+                        }}
+                      >
+                        PRÓXIMO
+                      </h3>
+                    </div>
 
-                {/* TILE 6: ESPACIO VACÍO ADICIONAL */}
-                <div
-                  className="cursor-not-allowed opacity-50"
-                  style={{
-                    background: 'rgba(240, 240, 240, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                    borderRadius: '20px',
-                    padding: '16px',
-                    border: '1px dashed rgba(255, 255, 255, 0.2)',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    position: 'relative'
-                  }}
-                >
-                  <Plus size={32} style={{ color: '#ccc', marginBottom: '8px' }} />
-                  <h3 
-                    style={{
-                      color: '#999',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      margin: '0'
-                    }}
-                  >
-                    PRÓXIMO
-                  </h3>
-                </div>
-              </div>
+                    {/* TILE 6: ESPACIO VACÍO ADICIONAL */}
+                    <div
+                      className="cursor-not-allowed opacity-50"
+                      style={{
+                        background: 'rgba(240, 240, 240, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px dashed rgba(255, 255, 255, 0.2)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative'
+                      }}
+                    >
+                      <Plus size={32} style={{ color: '#ccc', marginBottom: '8px' }} />
+                      <h3 
+                        style={{
+                          color: '#999',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          margin: '0'
+                        }}
+                      >
+                        PRÓXIMO
+                      </h3>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
