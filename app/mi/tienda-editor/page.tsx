@@ -116,7 +116,7 @@ export default function TiendaEditorPage() {
         <div 
           className="flex items-center justify-between px-6 py-4"
           style={{
-            background: '#ff6b1a'
+            background: 'red'
           }}
         >
           <div className="flex items-center gap-3">
