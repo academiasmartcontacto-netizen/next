@@ -8,49 +8,12 @@ import {
   Save, Search, Filter, Grid, List, Edit, Trash2, Menu
 } from 'lucide-react'
 import Link from 'next/link'
+import ColorPickerSimple from '@/components/editor/ColorPickerSimple'
 
 // Importar CSS específico para forzar estilos
 import './tienda-editor.css'
 
-
-const colorOptions = [
-  { name: 'Rojo', value: '#FF0000' },
-  { name: 'Rosa Instagram', value: '#E1306C' },
-  { name: 'Fucsia', value: '#FF017B' },
-  { name: 'Rosa Oscuro', value: '#BA2C5D' },
-  { name: 'Naranja Done', value: '#ff6a00' },
-  { name: 'Naranja Salmón', value: '#F16253' },
-  { name: 'Naranja Ladrillo', value: '#D85427' },
-  { name: 'Terracota', value: '#E07A5F' },
-  { name: 'Camel', value: '#C19A6B' },
-  { name: 'Marrón Café', value: '#794C1E' },
-  { name: 'Amarillo', value: '#F7B500' },
-  { name: 'Dorado', value: '#D4AF37' },
-  { name: 'Bronce', value: '#B57E0A' },
-  { name: 'Verde', value: '#4CAF50' },
-  { name: 'Verde Lima', value: '#8BC34A' },
-  { name: 'Verde Oscuro', value: '#3A5829' },
-  { name: 'Verde Oliva', value: '#8C8733' },
-  { name: 'Verde Musgo', value: '#666229' },
-  { name: 'Azul Facebook', value: '#1a73e8' },
-  { name: 'Azul Cielo', value: '#038CB4' },
-  { name: 'Azul Marino', value: '#026E8F' },
-  { name: 'Azul Petróleo', value: '#00374A' },
-  { name: 'Azul Acero', value: '#8C92AC' },
-  { name: 'Azul Corporativo', value: '#22226B' },
-  { name: 'Púrpura', value: '#6C4DF2' },
-  { name: 'Morado Real', value: '#6A0DAD' },
-  { name: 'Lavanda', value: '#5A54A4' },
-  { name: 'Lila', value: '#BDB0D0' },
-  { name: 'Morado', value: '#602A7B' },
-  { name: 'Gris Pizarra', value: '#34495E' },
-  { name: 'Gris', value: '#999999' },
-  { name: 'Negro', value: '#000000' },
-]
-
 function NavbarDrawer({ onClose, store, updateStore }: { onClose: () => void, store: any, updateStore: (field: string, value: any) => void }) {
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-
   return (
     <div style={{ padding: '16px', color: '#333' }}>
       <button onClick={onClose} style={{ marginBottom: '24px', color: '#333', background: '#f0f0f0', border: '1px solid #ccc', padding: '8px 16px', cursor: 'pointer', borderRadius: '8px', fontWeight: '600' }}>
@@ -60,72 +23,11 @@ function NavbarDrawer({ onClose, store, updateStore }: { onClose: () => void, st
       
       <div className="control-group">
         <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Color de Fondo</label>
-        <div style={{ position: 'relative' }}>
-          <button 
-            onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              background: 'white',
-              cursor: 'pointer',
-              textAlign: 'left'
-            }}
-          >
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              backgroundColor: store.navbarColor,
-              border: '1px solid #ddd'
-            }} />
-            <span>{store.navbarColor}</span>
-          </button>
-
-          {isColorPickerOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '0',
-              marginTop: '8px',
-              background: 'white',
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              padding: '12px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              zIndex: 100,
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '12px',
-              width: '100%'
-            }}>
-              {colorOptions.map(color => (
-                <button 
-                  key={color.value} 
-                  onClick={() => {
-                    updateStore('navbarColor', color.value);
-                    setIsColorPickerOpen(false);
-                  }}
-                  style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      backgroundColor: color.value,
-                      border: `1px solid ${color.value === '#ffffff' ? '#ccc' : 'transparent'}`,
-                      cursor: 'pointer'
-                  }}
-                  title={color.name}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <ColorPickerSimple
+          currentColor={store.navbarColor}
+          onColorChange={(color: string) => updateStore('navbarColor', color)}
+        />
       </div>
-
     </div>
   )
 }
@@ -268,7 +170,7 @@ export default function TiendaEditorPage() {
         <div 
           className="flex items-center justify-between px-6 py-4"
           style={{
-            background: 'red'
+            background: '#22226B'
           }}
         >
           <div className="flex items-center gap-3">

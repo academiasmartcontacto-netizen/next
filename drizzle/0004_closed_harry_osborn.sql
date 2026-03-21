@@ -1,0 +1,35 @@
+CREATE TABLE "products" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"store_id" uuid NOT NULL,
+	"name" text NOT NULL,
+	"description" text,
+	"price" numeric(10, 2) NOT NULL,
+	"original_price" numeric(10, 2),
+	"category" text,
+	"image" text,
+	"images" text,
+	"is_active" boolean DEFAULT true,
+	"featured" boolean DEFAULT false,
+	"stock" integer DEFAULT 0,
+	"sku" text,
+	"tags" text,
+	"metadata" text,
+	"titulo" text,
+	"descripcion" text,
+	"precio" numeric(10, 2),
+	"precio_original" numeric(10, 2),
+	"imagen" text,
+	"imagenes" text,
+	"activo" boolean DEFAULT true,
+	"destacado" boolean DEFAULT false,
+	"categoria" text,
+	"categoria_tienda" text,
+	"visitas" integer DEFAULT 0,
+	"likes" integer DEFAULT 0,
+	"fecha_publicacion" timestamp DEFAULT now(),
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+ALTER TABLE "stores" ADD COLUMN "navbar_color" text;--> statement-breakpoint
+ALTER TABLE "stores" ADD COLUMN "section_position" text DEFAULT 'center';
