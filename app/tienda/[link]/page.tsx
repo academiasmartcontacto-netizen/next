@@ -40,6 +40,7 @@ export default function TiendaPublicPage() {
   }, [storeLink])
 
   const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
+  const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
 
   useEffect(() => {
     if (store) {
@@ -51,6 +52,8 @@ export default function TiendaPublicPage() {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'UPDATE_NAVBAR_COLOR') {
         setNavbarColor(event.data.color);
+      } else if (event.data.type === 'UPDATE_DEVICE_MODE') {
+        setDeviceMode(event.data.mode);
       }
     };
 
@@ -95,7 +98,7 @@ export default function TiendaPublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className={`min-h-screen bg-gray-50 flex flex-col ${deviceMode === 'mobile' ? 'max-w-[375px] mx-auto' : ''}`}>
       {/* Navbar de la tienda */}
       <header 
         className="sticky top-0 z-50 border-b"
@@ -121,17 +124,17 @@ export default function TiendaPublicPage() {
               )}
             </div>
             
-            <nav className="hidden md:flex items-center space-x-6">
-              <a href="#inicio" className="text-white hover:text-gray-200 transition-colors">
+            <nav className={`${deviceMode === 'mobile' ? 'flex' : 'hidden md:flex'} items-center space-x-6`}>
+              <a href="#inicio" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
                 Inicio
               </a>
-              <a href="#productos" className="text-white hover:text-gray-200 transition-colors">
+              <a href="#productos" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
                 Productos
               </a>
-              <a href="#contacto" className="text-white hover:text-gray-200 transition-colors">
+              <a href="#contacto" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
                 Contacto
               </a>
-              <a href="#acerca" className="text-white hover:text-gray-200 transition-colors">
+              <a href="#acerca" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
                 Acerca de
               </a>
             </nav>

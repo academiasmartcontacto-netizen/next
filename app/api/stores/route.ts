@@ -220,6 +220,7 @@ export async function GET(request: NextRequest) {
           isPublished: stores.isPublished,
           theme: stores.theme,
           logo: stores.logo,
+          navbarColor: stores.navbarColor,
           createdAt: stores.createdAt,
         })
         .from(stores)
@@ -227,7 +228,7 @@ export async function GET(request: NextRequest) {
         .limit(1)
 
       return NextResponse.json({ 
-        store: userStores[0] || null 
+        store: userStores[0] || null
       })
     }
 

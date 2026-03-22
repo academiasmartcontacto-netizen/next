@@ -8,7 +8,7 @@ import {
   Save, Search, Filter, Grid, List, Edit, Trash2, Menu
 } from 'lucide-react'
 import Link from 'next/link'
-import ColorPickerSimple from '@/components/editor/ColorPickerSimple'
+import ColorPickerNew from '@/components/editor/ColorPickerNew'
 
 // Importar CSS específico para forzar estilos
 import './tienda-editor.css'
@@ -23,7 +23,7 @@ function NavbarDrawer({ onClose, store, updateStore }: { onClose: () => void, st
       
       <div className="control-group">
         <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Color de Fondo</label>
-        <ColorPickerSimple
+        <ColorPickerNew
           currentColor={store.navbarColor}
           onColorChange={(color: string) => updateStore('navbarColor', color)}
         />
@@ -69,7 +69,7 @@ export default function TiendaEditorPage() {
               grid_density: 'auto',
               tipografia: 'system',
               tamano_texto: 'normal',
-              navbarColor: data.store.navbarColor ?? '#ff6b1a',
+              navbarColor: data.store.navbarColor,
             })
           }
         }
@@ -134,12 +134,19 @@ export default function TiendaEditorPage() {
     setStore((prev: any) => ({ ...prev, [field]: value }))
     setAutoSaveStatus('saving')
 
-    // Real-time communication with iframe is still instant
-    if (field === 'navbarColor' && iframeRef.current) {
-      iframeRef.current.contentWindow?.postMessage(
-        { type: 'UPDATE_NAVBAR_COLOR', color: value },
-        '*'
-      )
+    // Real-time communication with iframe
+    if (iframeRef.current) {
+      if (field === 'navbarColor') {
+        iframeRef.current.contentWindow?.postMessage(
+          { type: 'UPDATE_NAVBAR_COLOR', color: value },
+          '*'
+        )
+      } else if (field === 'deviceMode') {
+        iframeRef.current.contentWindow?.postMessage(
+          { type: 'UPDATE_DEVICE_MODE', mode: value },
+          '*'
+        )
+      }
     }
   }
 
@@ -215,7 +222,10 @@ export default function TiendaEditorPage() {
                 <Eye size={20} strokeWidth={2.5} />
               </Link>
               <button
-                onClick={() => setDeviceMode('desktop')}
+                onClick={() => {
+                  setDeviceMode('desktop')
+                  updateStore('deviceMode', 'desktop')
+                }}
                 className="p-3 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: deviceMode === 'desktop' ? '#ff6b1a' : '#ffffff',
@@ -233,7 +243,10 @@ export default function TiendaEditorPage() {
                 <Monitor size={20} strokeWidth={2.5} />
               </button>
               <button
-                onClick={() => setDeviceMode('mobile')}
+                onClick={() => {
+                  setDeviceMode('mobile')
+                  updateStore('deviceMode', 'mobile')
+                }}
                 className="p-3 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: deviceMode === 'mobile' ? '#ff6b1a' : '#ffffff',
@@ -562,12 +575,16 @@ export default function TiendaEditorPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-6 flex items-center justify-center">
           <iframe
             ref={iframeRef}
             src={`/tienda/${store.link}`}
-            className="w-full h-full rounded-lg border-2 border-white"
-            style={{ background: '#ffffff' }}
+            className="rounded-lg border-2 border-white bg-white"
+            style={{ 
+              width: deviceMode === 'mobile' ? '375px' : '100%',
+              height: deviceMode === 'mobile' ? '667px' : '100%',
+              maxWidth: '100%'
+            }}
             title="Store Preview"
           />
         </div>

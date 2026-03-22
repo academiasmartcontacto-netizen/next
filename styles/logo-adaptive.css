@@ -1,0 +1,175 @@
+/* Estilos para adaptación automática de logos en navbar - Opción 1: Contenedor Fixed */
+
+/* Navbar con altura fija profesional */
+.navbar {
+  height: 64px !important; /* Altura fija desktop */
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+/* Logo container con límites estrictos */
+.logo-container {
+  display: flex;
+  align-items: center;
+  height: 48px !important; /* 75% de navbar = 48px */
+  width: auto;
+  max-width: 200px;
+  overflow: hidden;
+}
+
+.logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* Adaptación según orientación del logo - CON LÍMITES */
+.logo-horizontal {
+  max-height: 48px;
+  width: auto;
+  max-width: 200px;
+}
+
+.logo-vertical {
+  height: 48px;
+  width: auto;
+  max-width: 48px; /* Limitar ancho para logos verticales */
+}
+
+.logo-square {
+  height: 48px;
+  width: auto;
+  max-width: 48px;
+  aspect-ratio: 1;
+}
+
+/* POSICIONES DE NAVBAR - NUEVA ESTRUCTURA */
+.navbar-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* POSICIONAMIENTO SIMPLE Y DIRECTO */
+.order-1 {
+  order: 1;
+}
+
+.order-2 {
+  order: 2;
+}
+
+/* Responsive - Altura navbar adaptativa */
+@media (max-width: 768px) {
+  .navbar {
+    height: 56px !important; /* Tablet */
+  }
+  
+  .logo-container {
+    height: 40px !important; /* 75% de 56px */
+    max-width: 160px;
+  }
+  
+  .logo-horizontal {
+    max-height: 40px;
+    max-width: 160px;
+  }
+  
+  .logo-vertical {
+    height: 40px;
+    max-width: 40px;
+  }
+  
+  .logo-square {
+    height: 40px;
+    max-width: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    height: 48px !important; /* Mobile */
+  }
+  
+  .logo-container {
+    height: 32px !important; /* 75% de 48px */
+    max-width: 120px;
+  }
+  
+  .logo-horizontal {
+    max-height: 32px;
+    max-width: 120px;
+  }
+  
+  .logo-vertical {
+    height: 32px;
+    max-width: 32px;
+  }
+  
+  .logo-square {
+    height: 32px;
+    max-width: 32px;
+  }
+}
+
+/* Estados de carga */
+.logo-loading {
+  opacity: 0.6;
+  filter: blur(1px);
+}
+
+.logo-error {
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+
+/* Animaciones */
+.logo-container .logo-img {
+  animation: logoFadeIn 0.5s ease-out;
+}
+
+@keyframes logoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Forzar altura en la tienda pública */
+.store-navbar {
+  min-height: 64px !important;
+  max-height: 64px !important;
+}
+
+@media (max-width: 768px) {
+  .store-navbar {
+    min-height: 56px !important;
+    max-height: 56px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .store-navbar {
+    min-height: 48px !important;
+    max-height: 48px !important;
+  }
+}
