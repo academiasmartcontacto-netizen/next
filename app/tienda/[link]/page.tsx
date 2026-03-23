@@ -43,6 +43,42 @@ export default function TiendaPublicPage() {
   const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
   const [currentLogo, setCurrentLogo] = useState(store?.logo || null);
+  const [activeSection, setActiveSection] = useState('productos');
+
+  // Toggle Sections (SPA Feel) - Replicando lógica de D:/FUNCIONAL
+  const showSection = (sectionId: string, menuElement: HTMLElement | null) => {
+    // Esta función ahora SOLO maneja mostrar las secciones principales de la página.
+    setActiveSection(sectionId);
+    
+    const productsSection = document.getElementById('productos');
+    const aboutSection = document.getElementById('acerca');
+    const contactSection = document.getElementById('contacto');
+
+    // Ocultar todas las secciones principales primero
+    if (productsSection) productsSection.style.display = 'none';
+    if (aboutSection) aboutSection.style.display = 'none';
+    if (contactSection) contactSection.style.display = 'none';
+
+    if (sectionId === 'acerca' || sectionId === 'contacto') {
+      // Para las páginas estáticas, manejar el menú y la visibilidad aquí
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      if (menuElement) {
+        menuElement.classList.add('active');
+      }
+
+      if (sectionId === 'acerca' && aboutSection) {
+        aboutSection.style.display = 'block';
+      } else if (sectionId === 'contacto' && contactSection) {
+        contactSection.style.display = 'block';
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else { // 'productos' o cualquier categoría
+      // Para las secciones de productos, solo asegurarse de que el contenedor principal esté visible.
+      if (productsSection) productsSection.style.display = 'block';
+    }
+  };
 
   useEffect(() => {
     if (store) {
@@ -132,37 +168,234 @@ export default function TiendaPublicPage() {
             </div>
             
             <nav className={`${deviceMode === 'mobile' ? 'flex' : 'hidden md:flex'} items-center space-x-6`}>
-              <a href="#inicio" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
+              <a 
+                href="#productos" 
+                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
+              >
                 Inicio
               </a>
-              <a href="#productos" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
+              <a 
+                href="#productos" 
+                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
+              >
                 Productos
               </a>
-              <a href="#contacto" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
+              <a 
+                href="#contacto" 
+                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'contacto' ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); showSection('contacto', e.currentTarget); }}
+              >
                 Contacto
               </a>
-              <a href="#acerca" className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors`}>
-                Acerca de
+              <a 
+                href="#acerca" 
+                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'acerca' ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); showSection('acerca', e.currentTarget); }}
+              >
+                Acerca de Nosotros
               </a>
             </nav>
           </div>
         </div>
       </header>
 
-      {/* Contenido vacío */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShoppingBag className="w-12 h-12 text-orange-600" />
+      {/* Contenido de la tienda */}
+      <main className="flex-1">
+        {/* Sección Productos */}
+        <section id="productos" className="products-section">
+          <div className="flex-1 flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShoppingBag className="w-12 h-12 text-orange-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                {store.nombre}
+              </h2>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Bienvenido a nuestra tienda. Estamos trabajando para traerte los mejores productos muy pronto.
+              </p>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
-            {store.nombre}
-          </h2>
-          <p className="text-gray-600 max-w-md mx-auto">
-            Bienvenido a nuestra tienda. Estamos trabajando para traerte los mejores productos muy pronto.
-          </p>
-        </div>
-      </div>
+        </section>
+
+        {/* SECCIÓN ACERCA DE NOSOTROS (Rediseño PRO) */}
+        <section id="acerca" className="products-section" style={{display: 'none'}}>
+          <div className="about-pro-container max-w-6xl mx-auto px-4 py-16">
+            <div className="about-header text-center mb-12">
+              <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Acerca de Nosotros</h2>
+            </div>
+            
+            <div className="about-grid grid lg:grid-cols-1 gap-8">
+              {/* Columna Texto (Centrada y única) */}
+              <div className="about-text-column">
+                <div className="about-description-text text-gray-700 leading-relaxed text-lg">
+                  {store.descripcion || "Bienvenido a nuestra tienda. Somos un equipo apasionado por ofrecer productos de calidad que superen las expectativas de nuestros clientes. Trabajamos cada día con el compromiso de brindar soluciones confiables y accesibles; nuestra prioridad es que cada persona que confía en nosotros reciba excelencia en cada detalle."}
+                </div>
+              </div>
+            </div>
+            
+            {/* Fila de Valores (Value Props) */}
+            <div className="about-values-row grid md:grid-cols-3 gap-8 mt-12">
+              <div className="value-item text-center">
+                <div className="value-icon w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-shield-alt text-orange-600 text-xl"></i>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Calidad Garantizada</h4>
+                <p className="text-gray-600">Ofrecemos productos que cumplen con los más altos estándares de calidad.</p>
+              </div>
+              <div className="value-item text-center">
+                <div className="value-icon w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-lock text-orange-600 text-xl"></i>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Compra Segura</h4>
+                <p className="text-gray-600">Tu confianza es lo más importante para nosotros.</p>
+              </div>
+              <div className="value-item text-center">
+                <div className="value-icon w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-shipping-fast text-orange-600 text-xl"></i>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Entrega Eficiente</h4>
+                <p className="text-gray-600">Nos esforzamos por procesar tus pedidos con la mayor rapidez.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECCIÓN CONTACTO CORPORATE (Estilo The7 Company) */}
+        <section id="contacto" className="products-section" style={{display: 'none'}}>
+          <div className="contact-corporate-container max-w-6xl mx-auto px-4 py-16">
+            <div className="contact-corporate-header text-center mb-12">
+              <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Contáctanos</h2>
+              <p className="contact-subtitle text-gray-600 text-lg">Estamos aquí para ayudarte. Ponte en contacto con nosotros por cualquiera de estos medios.</p>
+            </div>
+            
+            <div className="contact-info-cards grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Card 1: Llámanos (WhatsApp) */}
+              {store.whatsapp && (
+                <div className="info-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                  <div className="info-icon-wrapper w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-phone-alt text-green-600"></i>
+                  </div>
+                  <h3 className="info-title text-lg font-semibold text-gray-900 mb-2">Llámanos</h3>
+                  <p className="info-text text-gray-600 text-sm mb-3">Estamos disponibles para atenderte.</p>
+                  <a 
+                    href={`https://wa.me/591${store.whatsapp}`} 
+                    target="_blank" 
+                    className="info-link big-black-link text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    {store.whatsapp}
+                  </a>
+                </div>
+              )}
+              
+              {/* Card 2: Correo */}
+              {store.email_contacto && (
+                <div className="info-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                  <div className="info-icon-wrapper w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-envelope text-blue-600"></i>
+                  </div>
+                  <h3 className="info-title text-lg font-semibold text-gray-900 mb-2">Correo</h3>
+                  <p className="info-text text-gray-600 text-sm mb-3">Escríbenos para consultas detalladas.</p>
+                  <a 
+                    href={`mailto:${store.email_contacto}`} 
+                    className="info-link big-black-link text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    {store.email_contacto}
+                  </a>
+                </div>
+              )}
+              
+              {/* Card 3: Ubicación */}
+              {(store.direccion || store.google_maps_url) && (
+                <div className="info-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                  <div className="info-icon-wrapper w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-map-marker-alt text-red-600"></i>
+                  </div>
+                  <h3 className="info-title text-lg font-semibold text-gray-900 mb-2">Ubicación</h3>
+                  <p className="info-text text-gray-600 text-sm mb-3">
+                    {store.direccion || 'Dirección disponible en mapa'}
+                  </p>
+                  {store.google_maps_url && (
+                    <a 
+                      href={store.google_maps_url} 
+                      target="_blank" 
+                      className="info-link big-black-link text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Ver en Google Maps
+                    </a>
+                  )}
+                </div>
+              )}
+              
+              {/* Card 4: Redes Sociales */}
+              {(store.facebook_url || store.instagram_url || store.tiktok_url || store.telegram_user || store.youtube_url) && (
+                <div className="info-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                  <div className="info-icon-wrapper w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-share-alt text-purple-600"></i>
+                  </div>
+                  <h3 className="info-title text-lg font-semibold text-gray-900 mb-2">Síguenos</h3>
+                  <p className="info-text text-gray-600 text-sm mb-3">Nuestras redes sociales.</p>
+                  
+                  <div className="social-links-row flex justify-center space-x-2">
+                    {store.facebook_url && (
+                      <a 
+                        href={store.facebook_url} 
+                        target="_blank" 
+                        className="social-icon-btn facebook w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors" 
+                        title="Facebook"
+                      >
+                        <i className="fab fa-facebook-f text-xs"></i>
+                      </a>
+                    )}
+                    {store.instagram_url && (
+                      <a 
+                        href={store.instagram_url} 
+                        target="_blank" 
+                        className="social-icon-btn instagram w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors" 
+                        title="Instagram"
+                      >
+                        <i className="fab fa-instagram text-xs"></i>
+                      </a>
+                    )}
+                    {store.tiktok_url && (
+                      <a 
+                        href={store.tiktok_url} 
+                        target="_blank" 
+                        className="social-icon-btn tiktok w-8 h-8 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors" 
+                        title="TikTok"
+                      >
+                        <i className="fab fa-tiktok text-xs"></i>
+                      </a>
+                    )}
+                    {store.telegram_user && (
+                      <a 
+                        href={`https://t.me/${store.telegram_user}`} 
+                        target="_blank" 
+                        className="social-icon-btn telegram w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors" 
+                        title="Telegram"
+                      >
+                        <i className="fab fa-telegram-plane text-xs"></i>
+                      </a>
+                    )}
+                    {store.youtube_url && (
+                      <a 
+                        href={store.youtube_url} 
+                        target="_blank" 
+                        className="social-icon-btn youtube w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-colors" 
+                        title="YouTube"
+                      >
+                        <i className="fab fa-youtube text-xs"></i>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* Footer de D:/FUNCIONAL */}
       <StoreFooter />
