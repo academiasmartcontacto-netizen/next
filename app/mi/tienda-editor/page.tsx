@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { 
-  Store, Eye, Monitor, Smartphone, Plus, X, ChevronDown, 
-  ChevronUp, Upload, Palette, Type, Layout, Settings,
-  Facebook, Instagram, Youtube, MapPin,
-  Save, Search, Filter, Grid, List, Edit, Trash2, Menu
+  Search, Plus, Edit2, Trash2, Eye, EyeOff, GripVertical, Home, Package, Phone, Info, 
+  ChevronDown, ChevronUp, Filter, RotateCcw, Monitor, Smartphone, Menu, Layout, Store, Palette,
+  MoreVertical, Copy
 } from 'lucide-react'
 import Link from 'next/link'
 import ColorPickerNew from '@/components/editor/ColorPickerNew'
@@ -13,6 +12,526 @@ import LogoUploader from '@/components/editor/LogoUploader'
 
 // Importar CSS específico para forzar estilos
 import './tienda-editor.css'
+
+// Componente Enterprise de gestión de secciones
+function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void, store: any, updateStore: (field: string, value: any) => void }) {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedSections, setSelectedSections] = useState<string[]>([])
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  
+  // Secciones del sistema (fijas)
+  const systemSections = [
+    { id: 'inicio', name: 'Inicio', products: 0, visible: store.mostrarInicio ?? true, status: 'system', category: 'Página Principal' },
+    { id: 'productos', name: 'Productos', products: 0, visible: store.mostrarProductos ?? true, status: 'system', category: 'Catálogo' },
+    { id: 'contacto', name: 'Contacto', products: 0, visible: store.mostrarContacto ?? true, status: 'system', category: 'Información' },
+    { id: 'acerca-de', name: 'Acerca de Nosotros', products: 0, visible: store.mostrarAcercaDe ?? false, status: 'system', category: 'Información' }
+  ]
+  
+  // Secciones personalizadas (ejemplo)
+  const [customSections, setCustomSections] = useState<any[]>([
+  ])
+  
+  const allSections = [...systemSections, ...customSections]
+  const filteredSections = allSections.filter(section => 
+    section.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+  
+  const visibleCount = allSections.filter(s => s.visible).length
+  const hiddenCount = allSections.filter(s => !s.visible).length
+  const customCount = customSections.length
+  
+  // Acciones de sección
+  const toggleSectionVisibility = (sectionId: string) => {
+    const systemSection = systemSections.find(s => s.id === sectionId)
+    if (systemSection) {
+      const fieldMap: Record<string, string> = {
+        'inicio': 'mostrarInicio',
+        'productos': 'mostrarProductos', 
+        'contacto': 'mostrarContacto',
+        'acerca-de': 'mostrarAcercaDe'
+      }
+      const field = fieldMap[sectionId]
+      if (field) updateStore(field, !store[field])
+    } else {
+      setCustomSections(prev => prev.map(section => 
+        section.id === sectionId ? { ...section, visible: !section.visible } : section
+      ))
+    }
+  }
+  
+  const editSection = (sectionId: string) => {
+    const section = customSections.find(s => s.id === sectionId)
+    if (section) {
+      const newName = prompt('Editar nombre de sección:', section.name)
+      if (newName && newName.trim() && newName !== section.name) {
+        setCustomSections(prev => prev.map(s => 
+          s.id === sectionId ? { ...s, name: newName.trim() } : s
+        ))
+      }
+    }
+  }
+  
+  const deleteSection = (sectionId: string) => {
+    const section = customSections.find(s => s.id === sectionId)
+    if (section && confirm(`¿Eliminar sección "${section.name}"? Los productos volverán a Inicio.`)) {
+      setCustomSections(prev => prev.filter(s => s.id !== sectionId))
+    }
+  }
+  
+  const duplicateSection = (sectionId: string) => {
+    const section = [...systemSections, ...customSections].find(s => s.id === sectionId)
+    if (section) {
+      const newName = prompt('Duplicar sección:', `${section.name} (Copia)`)
+      if (newName && newName.trim()) {
+        const newSection = {
+          id: newName.toLowerCase().replace(/\s+/g, '-'),
+          name: newName.trim(),
+          products: 0,
+          visible: true,
+          status: 'custom' as const,
+          category: section.category
+        }
+        setCustomSections(prev => [...prev, newSection])
+      }
+    }
+  }
+  
+  const toggleSelectAll = () => {
+    if (selectedSections.length === filteredSections.length) {
+      setSelectedSections([])
+    } else {
+      setSelectedSections(filteredSections.map(s => s.id))
+    }
+  }
+  
+  const bulkDelete = () => {
+    if (selectedSections.length === 0) return
+    if (confirm(`¿Eliminar ${selectedSections.length} secciones seleccionadas?`)) {
+      setCustomSections(prev => prev.filter(s => !selectedSections.includes(s.id)))
+      setSelectedSections([])
+    }
+  }
+  
+  const bulkToggleVisibility = () => {
+    if (selectedSections.length === 0) return
+    selectedSections.forEach(sectionId => {
+      toggleSectionVisibility(sectionId)
+    })
+    setSelectedSections([])
+  }
+  
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
+      {/* Header Enterprise */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
+        color: 'white', 
+        padding: '20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            onClick={onClose} 
+            style={{ 
+              background: 'rgba(255,255,255,0.1)', 
+              border: '1px solid rgba(255,255,255,0.2)', 
+              color: 'white', 
+              padding: '8px 12px', 
+              cursor: 'pointer', 
+              borderRadius: '6px', 
+              fontSize: '13px',
+              transition: 'all 0.2s'
+            }}
+          >
+            ← Volver
+          </button>
+          <div>
+            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Secciones</h2>
+            <div style={{ fontSize: '12px', opacity: 0.8 }}>Administra las secciones de tu tienda</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => {
+              const name = prompt('Nombre de nueva sección:')
+              if (name && name.trim()) {
+                const newSection = {
+                  id: name.toLowerCase().replace(/\s+/g, '-'),
+                  name: name.trim(),
+                  products: 0,
+                  visible: true,
+                  status: 'custom' as const,
+                  category: 'Personalizada'
+                }
+                setCustomSections(prev => [...prev, newSection])
+              }
+            }}
+            style={{
+              background: '#10b981',
+              border: 'none',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Plus size={16} /> Nueva Sección
+          </button>
+        </div>
+      </div>
+      
+      {/* Estadísticas Enterprise */}
+      <div style={{ 
+        background: 'white', 
+        padding: '16px 20px', 
+        borderBottom: '1px solid #e2e8f0',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', gap: '32px' }}>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{allSections.length}</div>
+            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Total Secciones</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#10b981' }}>{visibleCount}</div>
+            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Visibles</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#f59e0b' }}>{hiddenCount}</div>
+            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Ocultas</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#8b5cf6' }}>{customCount}</div>
+            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Personalizadas</div>
+          </div>
+        </div>
+        <div style={{ fontSize: '12px', color: '#64748b' }}>
+          {selectedSections.length > 0 && `${selectedSections.length} seleccionadas`}
+        </div>
+      </div>
+      
+      {/* Filtros Enterprise */}
+      <div style={{ 
+        background: 'white', 
+        padding: '16px 20px', 
+        borderBottom: '1px solid #e2e8f0',
+        display: 'flex',
+        gap: '16px',
+        alignItems: 'center'
+      }}>
+        <div style={{ flex: 1, position: 'relative', maxWidth: '400px' }}>
+          <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <input
+            type="text"
+            placeholder="Buscar sección por nombre..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ 
+              width: '100%', 
+              padding: '10px 14px 10px 44px', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '8px', 
+              fontSize: '14px',
+              background: '#f8fafc'
+            }}
+          />
+        </div>
+        
+        {selectedSections.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={bulkToggleVisibility}
+              style={{
+                padding: '8px 12px',
+                background: '#3b82f6',
+                border: 'none',
+                color: 'white',
+                borderRadius: '6px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Toggle Visibilidad
+            </button>
+            <button
+              onClick={bulkDelete}
+              style={{
+                padding: '8px 12px',
+                background: '#ef4444',
+                border: 'none',
+                color: 'white',
+                borderRadius: '6px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Eliminar Seleccionadas
+            </button>
+          </div>
+        )}
+      </div>
+      
+      {/* Tabla Enterprise */}
+      <div style={{ flex: 1, overflow: 'auto', background: 'white' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedSections.length === filteredSections.length && filteredSections.length > 0}
+                  onChange={toggleSelectAll}
+                  style={{ marginRight: '8px' }}
+                />
+                Sección
+              </th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Estado</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredSections.map((section, index) => (
+              <tr 
+                key={section.id}
+                style={{ 
+                  borderBottom: '1px solid #f1f5f9',
+                  background: index % 2 === 0 ? 'white' : '#f8fafc',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                onMouseLeave={(e) => e.currentTarget.style.background = index % 2 === 0 ? 'white' : '#f8fafc'}
+              >
+                <td style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSections.includes(section.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedSections(prev => [...prev, section.id])
+                        } else {
+                          setSelectedSections(prev => prev.filter(id => id !== section.id))
+                        }
+                      }}
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>
+                        {section.name}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td style={{ padding: '16px', textAlign: 'center' }}>
+                  <button
+                    onClick={() => toggleSectionVisibility(section.id)}
+                    style={{
+                      padding: '6px 12px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      background: section.visible ? '#dcfce7' : '#f1f5f9',
+                      color: section.visible ? '#166534' : '#64748b',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {section.visible ? '✓ Visible' : '○ Oculto'}
+                  </button>
+                </td>
+                <td style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <button
+                      onClick={() => setActiveDropdown(activeDropdown === section.id ? null : section.id)}
+                      style={{
+                        padding: '8px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '6px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <MoreVertical size={16} color="#64748b" />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {activeDropdown === section.id && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: '0',
+                        background: 'white',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                        zIndex: 1000,
+                        minWidth: '180px',
+                        marginTop: '4px'
+                      }}>
+                        <button
+                          onClick={() => {
+                            toggleSectionVisibility(section.id)
+                            setActiveDropdown(null)
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            border: 'none',
+                            background: 'none',
+                            textAlign: 'left',
+                            fontSize: '13px',
+                            color: '#374151',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            transition: 'background 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                        >
+                          {section.visible ? <EyeOff size={16} color="#64748b" /> : <Eye size={16} color="#64748b" />}
+                          {section.visible ? 'Ocultar sección' : 'Mostrar sección'}
+                        </button>
+                        
+                        {section.status === 'custom' && (
+                          <>
+                            <button
+                              onClick={() => {
+                                editSection(section.id)
+                                setActiveDropdown(null)
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                background: 'none',
+                                textAlign: 'left',
+                                fontSize: '13px',
+                                color: '#374151',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                            >
+                              <Edit2 size={16} color="#64748b" />
+                              Editar sección
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                duplicateSection(section.id)
+                                setActiveDropdown(null)
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                background: 'none',
+                                textAlign: 'left',
+                                fontSize: '13px',
+                                color: '#374151',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                            >
+                              <Copy size={16} color="#64748b" />
+                              Duplicar sección
+                            </button>
+                            
+                            <div style={{ height: '1px', background: '#e5e7eb', margin: '4px 0' }}></div>
+                            
+                            <button
+                              onClick={() => {
+                                deleteSection(section.id)
+                                setActiveDropdown(null)
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                background: 'none',
+                                textAlign: 'left',
+                                fontSize: '13px',
+                                color: '#dc2626',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                            >
+                              <Trash2 size={16} color="#dc2626" />
+                              Eliminar sección
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {filteredSections.length === 0 && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px', 
+            color: '#94a3b8' 
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}>📂</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>No se encontraron secciones</div>
+            <div style={{ fontSize: '14px' }}>Intenta con otra búsqueda o crea una nueva sección</div>
+          </div>
+        )}
+      </div>
+      
+      {/* Footer Enterprise */}
+      <div style={{ 
+        background: '#f8fafc', 
+        padding: '16px 20px', 
+        borderTop: '1px solid #e2e8f0',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{ fontSize: '12px', color: '#64748b' }}>
+          {filteredSections.length} de {allSections.length} secciones
+        </div>
+        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+          Sistema de Gestión Enterprise v2.0
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function NavbarDrawer({ onClose, store, updateStore }: { onClose: () => void, store: any, updateStore: (field: string, value: any) => void }) {
   return (
@@ -55,6 +574,7 @@ export default function TiendaEditorPage() {
   const [showSectionsDrawer, setShowSectionsDrawer] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [isNavbarDrawerOpen, setIsNavbarDrawerOpen] = useState(false)
+  const [isSeccionesDrawerOpen, setIsSeccionesDrawerOpen] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Cargar datos reales de la tienda del usuario
@@ -311,6 +831,8 @@ export default function TiendaEditorPage() {
             <div>
               {isNavbarDrawerOpen ? (
                 <NavbarDrawer onClose={() => setIsNavbarDrawerOpen(false)} store={store} updateStore={updateStore} />
+              ) : isSeccionesDrawerOpen ? (
+                <SeccionesDrawer onClose={() => setIsSeccionesDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-3 mb-3">
@@ -360,7 +882,53 @@ export default function TiendaEditorPage() {
                       </h3>
                     </div>
 
-                    {/* TILE 2: IDENTIDAD - GLASSMORPHISM */}
+                    {/* TILE 2: SECCIONES - GLASSMORPHISM */}
+                    <div
+                      onClick={() => setIsSeccionesDrawerOpen(true)}
+                      className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
+                      style={{
+                        background: 'rgba(144, 238, 144, 0.25)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        boxShadow: '0 8px 32px rgba(144, 238, 144, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(144, 238, 144, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                      }} />
+                      <Layout size={32} style={{ color: '#198754', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(25, 135, 84, 0.3))' }} />
+                      <h3 
+                        style={{
+                          color: '#0f5132',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          textAlign: 'center',
+                          margin: '0',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Secciones
+                      </h3>
+                    </div>
+
+                    {/* TILE 3: IDENTIDAD - GLASSMORPHISM */}
                     <div
                       onClick={() => toggleAccordion('identidad')}
                       className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
@@ -406,7 +974,7 @@ export default function TiendaEditorPage() {
                       </h3>
                     </div>
 
-                    {/* TILE 3: APARIENCIA - GLASSMORPHISM */}
+                    {/* TILE 4: APARIENCIA - GLASSMORPHISM */}
                     <div
                       onClick={() => toggleAccordion('apariencia')}
                       className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
@@ -454,7 +1022,7 @@ export default function TiendaEditorPage() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
-                    {/* TILE 4: PRODUCTOS - GLASSMORPHISM */}
+                    {/* TILE 5: PRODUCTOS - GLASSMORPHISM */}
                     <div
                       onClick={() => setShowProductDrawer(true)}
                       className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
@@ -500,7 +1068,7 @@ export default function TiendaEditorPage() {
                       </h3>
                     </div>
 
-                    {/* TILE 5: ESPACIO VACÍO PARA FUTURO */}
+                    {/* TILE 6: ESPACIO VACÍO PARA FUTURO */}
                     <div
                       className="cursor-not-allowed opacity-50"
                       style={{
@@ -532,7 +1100,7 @@ export default function TiendaEditorPage() {
                       </h3>
                     </div>
 
-                    {/* TILE 6: ESPACIO VACÍO ADICIONAL */}
+                    {/* TILE 7: ESPACIO VACÍO ADICIONAL */}
                     <div
                       className="cursor-not-allowed opacity-50"
                       style={{
