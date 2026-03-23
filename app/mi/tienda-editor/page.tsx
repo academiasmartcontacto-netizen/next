@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { 
   Plus, Edit2, Trash2, Eye, EyeOff, GripVertical, Home, Package, Phone, Info, 
   ChevronDown, ChevronUp, Filter, RotateCcw, Monitor, Smartphone, Menu, Layout, Store, Palette,
-  MoreVertical, Copy
+  MoreVertical
 } from 'lucide-react'
 import Link from 'next/link'
 import ColorPickerNew from '@/components/editor/ColorPickerNew'
@@ -17,6 +17,8 @@ import './tienda-editor.css'
 function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void, store: any, updateStore: (field: string, value: any) => void }) {
   const [selectedSections, setSelectedSections] = useState<string[]>([])
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [customSections, setCustomSections] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
   
   // Secciones del sistema (fijas)
   const systemSections = [
@@ -26,9 +28,99 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
     { id: 'acerca-de', name: 'Acerca de Nosotros', products: 0, visible: store.mostrarAcercaDe ?? true, status: 'system', category: 'Información' }
   ]
   
-  // Secciones personalizadas (ejemplo)
-  const [customSections, setCustomSections] = useState<any[]>([
-  ])
+  // Cargar secciones personalizadas desde el API
+  const loadCustomSections = async () => {
+    if (!store?.id) return
+    
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/store-navigation-sections?storeId=${store.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        const sections = data.sections || []
+        setCustomSections(sections.map((section: any) => ({
+          id: section.slug,
+          name: section.name,
+          visible: section.isVisible,
+          status: 'custom' as const,
+          category: 'Personalizada'
+        })))
+      }
+    } catch (error) {
+      console.error('Error al cargar secciones personalizadas:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Crear nueva sección personalizada
+  const createCustomSection = async (name: string) => {
+    if (!store?.id) return
+    
+    try {
+      setLoading(true)
+      const slug = name.toLowerCase().replace(/\s+/g, '-')
+      
+      const response = await fetch('/api/store-navigation-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeId: store.id,
+          name: name.trim(),
+          slug: slug,
+          isVisible: true
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const newSection = data.section
+        
+        setCustomSections(prev => [...prev, {
+          id: newSection.slug,
+          name: newSection.name,
+          visible: newSection.isVisible,
+          status: 'custom' as const,
+          category: 'Personalizada'
+        }])
+      } else {
+        throw new Error('Error al crear sección')
+      }
+    } catch (error) {
+      console.error('Error al crear sección:', error)
+      alert('Error al crear sección. Por favor intenta nuevamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Eliminar sección personalizada
+  const deleteCustomSection = async (sectionId: string) => {
+    if (!store?.id) return
+    
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/store-navigation-sections/${sectionId}?storeId=${store.id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setCustomSections(prev => prev.filter(s => s.id !== sectionId))
+      } else {
+        throw new Error('Error al eliminar sección')
+      }
+    } catch (error) {
+      console.error('Error al eliminar sección:', error)
+      alert('Error al eliminar sección. Por favor intenta nuevamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Cargar secciones al montar el componente
+  useEffect(() => {
+    loadCustomSections()
+  }, [store?.id])
   
   const allSections = [...systemSections, ...customSections]
   
@@ -70,25 +162,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   const deleteSection = (sectionId: string) => {
     const section = customSections.find(s => s.id === sectionId)
     if (section && confirm(`¿Eliminar sección "${section.name}"? Los productos volverán a Inicio.`)) {
-      setCustomSections(prev => prev.filter(s => s.id !== sectionId))
-    }
-  }
-  
-  const duplicateSection = (sectionId: string) => {
-    const section = [...systemSections, ...customSections].find(s => s.id === sectionId)
-    if (section) {
-      const newName = prompt('Duplicar sección:', `${section.name} (Copia)`)
-      if (newName && newName.trim()) {
-        const newSection = {
-          id: newName.toLowerCase().replace(/\s+/g, '-'),
-          name: newName.trim(),
-          products: 0,
-          visible: true,
-          status: 'custom' as const,
-          category: section.category
-        }
-        setCustomSections(prev => [...prev, newSection])
-      }
+      deleteCustomSection(sectionId)
     }
   }
   
@@ -151,17 +225,9 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={() => {
-              const name = prompt('Nombre de nueva sección:')
+              const name = prompt('Nombre de la nueva sección:')
               if (name && name.trim()) {
-                const newSection = {
-                  id: name.toLowerCase().replace(/\s+/g, '-'),
-                  name: name.trim(),
-                  products: 0,
-                  visible: true,
-                  status: 'custom' as const,
-                  category: 'Personalizada'
-                }
-                setCustomSections(prev => [...prev, newSection])
+                createCustomSection(name.trim())
               }
             }}
             style={{
@@ -384,32 +450,6 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
                             >
                               <Edit2 size={16} color="#64748b" />
                               Editar sección
-                            </button>
-                            
-                            <button
-                              onClick={() => {
-                                duplicateSection(section.id)
-                                setActiveDropdown(null)
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '10px 14px',
-                                border: 'none',
-                                background: 'none',
-                                textAlign: 'left',
-                                fontSize: '13px',
-                                color: '#374151',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                transition: 'background 0.2s'
-                              }}
-                              onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
-                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                            >
-                              <Copy size={16} color="#64748b" />
-                              Duplicar sección
                             </button>
                             
                             <div style={{ height: '1px', background: '#e5e7eb', margin: '4px 0' }}></div>

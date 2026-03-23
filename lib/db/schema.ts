@@ -115,6 +115,19 @@ export const stores = pgTable('stores', {
   updatedAt: timestamp('updated_at').defaultNow(),
 })
 
+// Store navigation sections table - For custom navigation sections
+export const storeNavigationSections = pgTable('store_navigation_sections', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  storeId: uuid('store_id').notNull().references(() => stores.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  slug: text('slug').notNull(),
+  isVisible: boolean('is_visible').default(true),
+  isCustom: boolean('is_custom').default(false),
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
 // Store pages table - Individual pages within a store
 export const storePages = pgTable('store_pages', {
   id: uuid('id').primaryKey().defaultRandom(),

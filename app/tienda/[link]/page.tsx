@@ -15,6 +15,7 @@ export default function TiendaPublicPage() {
   const [store, setStore] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [customSections, setCustomSections] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStoreData = async () => {
@@ -27,6 +28,16 @@ export default function TiendaPublicPage() {
         
         const storeData = await storeResponse.json()
         setStore(storeData.store)
+        
+        // Cargar secciones personalizadas
+        if (storeData.store?.id) {
+          const sectionsResponse = await fetch(`/api/store-navigation-sections?storeId=${storeData.store.id}`)
+          if (sectionsResponse.ok) {
+            const sectionsData = await sectionsResponse.json()
+            const sections = sectionsData.sections || []
+            setCustomSections(sections.filter((section: any) => section.isVisible))
+          }
+        }
         
       } catch (err: any) {
         setError(err.message || 'Error al cargar la tienda')
@@ -47,36 +58,20 @@ export default function TiendaPublicPage() {
 
   // Toggle Sections (SPA Feel) - Replicando lógica de D:/FUNCIONAL
   const showSection = (sectionId: string, menuElement: HTMLElement | null) => {
-    // Esta función ahora SOLO maneja mostrar las secciones principales de la página.
+    // Esta función ahora maneja todas las secciones incluyendo personalizadas
     setActiveSection(sectionId);
     
-    const productsSection = document.getElementById('productos');
-    const aboutSection = document.getElementById('acerca');
-    const contactSection = document.getElementById('contacto');
+    // Ocultar todas las secciones primero
+    const allSections = document.querySelectorAll('.products-section');
+    allSections.forEach(section => {
+      section.style.display = 'none';
+    });
 
-    // Ocultar todas las secciones principales primero
-    if (productsSection) productsSection.style.display = 'none';
-    if (aboutSection) aboutSection.style.display = 'none';
-    if (contactSection) contactSection.style.display = 'none';
-
-    if (sectionId === 'acerca' || sectionId === 'contacto') {
-      // Para las páginas estáticas, manejar el menú y la visibilidad aquí
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      if (menuElement) {
-        menuElement.classList.add('active');
-      }
-
-      if (sectionId === 'acerca' && aboutSection) {
-        aboutSection.style.display = 'block';
-      } else if (sectionId === 'contacto' && contactSection) {
-        contactSection.style.display = 'block';
-      }
+    // Mostrar la sección solicitada
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+      targetSection.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else { // 'productos' o cualquier categoría
-      // Para las secciones de productos, solo asegurarse de que el contenedor principal esté visible.
-      if (productsSection) productsSection.style.display = 'block';
     }
   };
 
@@ -196,6 +191,18 @@ export default function TiendaPublicPage() {
               >
                 Acerca de Nosotros
               </a>
+              
+              {/* Secciones personalizadas */}
+              {customSections.map((section: any) => (
+                <a 
+                  key={section.id}
+                  href={`#${section.slug}`}
+                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === section.slug ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); showSection(section.slug, e.currentTarget); }}
+                >
+                  {section.name}
+                </a>
+              ))}
             </nav>
           </div>
         </div>
@@ -399,6 +406,30 @@ export default function TiendaPublicPage() {
           </div>
         </section>
         )}
+
+        {/* Secciones personalizadas */}
+        {customSections.map((section: any) => (
+          <section key={section.id} id={section.slug} className="products-section" style={{display: 'none'}}>
+            <div className="max-w-6xl mx-auto px-4 py-16">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">{section.name}</h2>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                  <p className="text-gray-600 text-lg">
+                    Esta es una sección personalizada: <strong>{section.name}</strong>
+                  </p>
+                  <p className="text-gray-500 mt-4">
+                    El contenido de esta sección se puede personalizar desde el editor de tiendas.
+                  </p>
+                  <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-blue-700 text-sm">
+                      Slug: {section.slug} | ID: {section.id}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        ))}
       </main>
 
       {/* Footer de D:/FUNCIONAL */}
