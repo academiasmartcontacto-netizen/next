@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { 
-  Search, Plus, Edit2, Trash2, Eye, EyeOff, GripVertical, Home, Package, Phone, Info, 
+  Plus, Edit2, Trash2, Eye, EyeOff, GripVertical, Home, Package, Phone, Info, 
   ChevronDown, ChevronUp, Filter, RotateCcw, Monitor, Smartphone, Menu, Layout, Store, Palette,
   MoreVertical, Copy
 } from 'lucide-react'
@@ -15,7 +15,6 @@ import './tienda-editor.css'
 
 // Componente Enterprise de gestión de secciones
 function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void, store: any, updateStore: (field: string, value: any) => void }) {
-  const [searchTerm, setSearchTerm] = useState('')
   const [selectedSections, setSelectedSections] = useState<string[]>([])
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   
@@ -24,7 +23,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
     { id: 'inicio', name: 'Inicio', products: 0, visible: store.mostrarInicio ?? true, status: 'system', category: 'Página Principal' },
     { id: 'productos', name: 'Productos', products: 0, visible: store.mostrarProductos ?? true, status: 'system', category: 'Catálogo' },
     { id: 'contacto', name: 'Contacto', products: 0, visible: store.mostrarContacto ?? true, status: 'system', category: 'Información' },
-    { id: 'acerca-de', name: 'Acerca de Nosotros', products: 0, visible: store.mostrarAcercaDe ?? false, status: 'system', category: 'Información' }
+    { id: 'acerca-de', name: 'Acerca de Nosotros', products: 0, visible: store.mostrarAcercaDe ?? true, status: 'system', category: 'Información' }
   ]
   
   // Secciones personalizadas (ejemplo)
@@ -32,9 +31,6 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   ])
   
   const allSections = [...systemSections, ...customSections]
-  const filteredSections = allSections.filter(section => 
-    section.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
   
   const visibleCount = allSections.filter(s => s.visible).length
   const hiddenCount = allSections.filter(s => !s.visible).length
@@ -97,10 +93,10 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   }
   
   const toggleSelectAll = () => {
-    if (selectedSections.length === filteredSections.length) {
+    if (selectedSections.length === allSections.length) {
       setSelectedSections([])
     } else {
-      setSelectedSections(filteredSections.map(s => s.id))
+      setSelectedSections(allSections.map(s => s.id))
     }
   }
   
@@ -187,7 +183,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         </div>
       </div>
       
-      {/* Filtros Enterprise */}
+      {/* Filtros Enterprise - Simplificado sin buscador */}
       <div style={{ 
         background: 'white', 
         padding: '16px 20px', 
@@ -196,22 +192,8 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <div style={{ flex: 1, position: 'relative', maxWidth: '400px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input
-            type="text"
-            placeholder="Buscar sección por nombre..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: '10px 14px 10px 44px', 
-              border: '1px solid #e2e8f0', 
-              borderRadius: '8px', 
-              fontSize: '14px',
-              background: '#f8fafc'
-            }}
-          />
+        <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b' }}>
+          Gestión de Secciones
         </div>
         
         {selectedSections.length > 0 && (
@@ -256,7 +238,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
               <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '50%' }}>
                 <input
                   type="checkbox"
-                  checked={selectedSections.length === filteredSections.length && filteredSections.length > 0}
+                  checked={selectedSections.length === allSections.length && allSections.length > 0}
                   onChange={toggleSelectAll}
                   style={{ marginRight: '8px' }}
                 />
@@ -267,7 +249,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
             </tr>
           </thead>
           <tbody>
-            {filteredSections.map((section, index) => (
+            {allSections.map((section, index) => (
               <tr 
                 key={section.id}
                 style={{ 
@@ -468,7 +450,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
           </tbody>
         </table>
         
-        {filteredSections.length === 0 && (
+        {allSections.length === 0 && (
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 20px', 

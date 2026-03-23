@@ -204,7 +204,7 @@ export default function TiendaPublicPage() {
       {/* Contenido de la tienda */}
       <main className="flex-1">
         {/* Sección Productos */}
-        <section id="productos" className="products-section">
+        <section id="productos" className="products-section" style={{display: 'block'}}>
           <div className="flex-1 flex items-center justify-center py-16">
             <div className="text-center">
               <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -221,7 +221,8 @@ export default function TiendaPublicPage() {
         </section>
 
         {/* SECCIÓN ACERCA DE NOSOTROS (Rediseño PRO) */}
-        <section id="acerca" className="products-section" style={{display: 'none'}}>
+        {store.mostrarAcercaDe !== false && (
+          <section id="acerca" className="products-section" style={{display: 'block'}}>
           <div className="about-pro-container max-w-6xl mx-auto px-4 py-16">
             <div className="about-header text-center mb-12">
               <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Acerca de Nosotros</h2>
@@ -262,9 +263,11 @@ export default function TiendaPublicPage() {
             </div>
           </div>
         </section>
+        )}
 
         {/* SECCIÓN CONTACTO CORPORATE (Estilo The7 Company) */}
-        <section id="contacto" className="products-section" style={{display: 'none'}}>
+        {store.mostrarContacto !== false && (
+          <section id="contacto" className="products-section" style={{display: 'block'}}>
           <div className="contact-corporate-container max-w-6xl mx-auto px-4 py-16">
             <div className="contact-corporate-header text-center mb-12">
               <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Contáctanos</h2>
@@ -395,6 +398,7 @@ export default function TiendaPublicPage() {
             </div>
           </div>
         </section>
+        )}
       </main>
 
       {/* Footer de D:/FUNCIONAL */}
