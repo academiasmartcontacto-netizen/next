@@ -20,6 +20,9 @@ export async function GET(request: NextRequest) {
       .where(eq(storeNavigationSections.storeId, storeId))
       .orderBy(storeNavigationSections.order)
 
+    console.log('GET API - Secciones encontradas:', sections)
+    console.log('GET API - StoreId:', storeId)
+
     return NextResponse.json({ sections })
   } catch (error) {
     console.error('Error al obtener secciones de navegación:', error)

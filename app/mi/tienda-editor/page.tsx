@@ -30,6 +30,8 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   
   // Cargar secciones personalizadas desde el API
   const loadCustomSections = async () => {
+    console.log('loadCustomSections - store.id:', store?.id)
+    
     if (!store?.id) return
     
     try {
@@ -38,8 +40,11 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
       if (response.ok) {
         const data = await response.json()
         const sections = data.sections || []
+        console.log('Secciones cargadas desde API:', sections)
+        
         setCustomSections(sections.map((section: any) => ({
-          id: section.slug,
+          id: section.slug, // Para navegación y UI
+          dbId: section.id, // Para API calls
           name: section.name,
           visible: section.isVisible,
           status: 'custom' as const,
@@ -78,6 +83,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         
         setCustomSections(prev => [...prev, {
           id: newSection.slug,
+          dbId: newSection.id,
           name: newSection.name,
           visible: newSection.isVisible,
           status: 'custom' as const,
@@ -117,6 +123,56 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
     }
   }
 
+  // Actualizar visibilidad de sección personalizada
+  const updateSectionVisibility = async (sectionId: string, isVisible: boolean) => {
+    if (!store?.id) return
+    
+    try {
+      setLoading(true)
+      
+      // Encontrar la sección local para obtener el dbId
+      const localSection = customSections.find(s => s.id === sectionId)
+      
+      console.log('Actualizando visibilidad:', { sectionId, isVisible, localSection, customSections })
+      
+      if (localSection && localSection.dbId) {
+        const response = await fetch(`/api/store-navigation-sections/${localSection.dbId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            isVisible,
+            sectionId: localSection.dbId // Enviar también en body como fallback
+          })
+        })
+
+        console.log('Response status:', response.status)
+        console.log('Response ok:', response.ok)
+
+        if (response.ok) {
+          const responseData = await response.json()
+          console.log('Response data:', responseData)
+          
+          setCustomSections(prev => prev.map(s => 
+            s.id === sectionId ? { ...s, visible: isVisible } : s
+          ))
+          console.log('Visibilidad actualizada correctamente')
+        } else {
+          const errorData = await response.json()
+          console.error('Error al actualizar visibilidad:', errorData)
+          throw new Error(errorData.error || 'Error al actualizar visibilidad')
+        }
+      } else {
+        console.error('Sección no encontrada o sin dbId:', sectionId, localSection)
+        throw new Error('Sección no encontrada o sin ID de base de datos')
+      }
+    } catch (error) {
+      console.error('Error al actualizar visibilidad:', error)
+      alert(`Error al actualizar visibilidad: ${error}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Cargar secciones al montar el componente
   useEffect(() => {
     loadCustomSections()
@@ -141,9 +197,11 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
       const field = fieldMap[sectionId]
       if (field) updateStore(field, !store[field])
     } else {
-      setCustomSections(prev => prev.map(section => 
-        section.id === sectionId ? { ...section, visible: !section.visible } : section
-      ))
+      // Es una sección personalizada - actualizar en la base de datos
+      const section = customSections.find(s => s.id === sectionId)
+      if (section) {
+        updateSectionVisibility(sectionId, !section.visible)
+      }
     }
   }
   
