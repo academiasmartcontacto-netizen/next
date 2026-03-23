@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import StoreFooter from '@/components/layout/store-footer'
+import LogoAdaptive from '@/components/editor/LogoAdaptive'
 
 export default function TiendaPublicPage() {
   const params = useParams()
@@ -41,10 +42,12 @@ export default function TiendaPublicPage() {
 
   const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [currentLogo, setCurrentLogo] = useState(store?.logo || null);
 
   useEffect(() => {
     if (store) {
       setNavbarColor(store.navbarColor || store.colorPrimario || '#1a73e8');
+      setCurrentLogo(store.logo || null);
     }
   }, [store]);
 
@@ -54,6 +57,8 @@ export default function TiendaPublicPage() {
         setNavbarColor(event.data.color);
       } else if (event.data.type === 'UPDATE_DEVICE_MODE') {
         setDeviceMode(event.data.mode);
+      } else if (event.data.type === 'UPDATE_LOGO') {
+        setCurrentLogo(event.data.logo);
       }
     };
 
@@ -101,20 +106,22 @@ export default function TiendaPublicPage() {
     <div className={`min-h-screen bg-gray-50 flex flex-col ${deviceMode === 'mobile' ? 'max-w-[375px] mx-auto' : ''}`}>
       {/* Navbar de la tienda */}
       <header 
-        className="sticky top-0 z-50 border-b"
+        className={`sticky top-0 z-50 border-b store-navbar`}
         style={{
           backgroundColor: navbarColor,
-          borderColor: 'rgba(0,0,0,0.1)'
+          borderColor: 'rgba(0,0,0,0.1)',
+          height: '64px',
+          display: 'flex',
+          alignItems: 'center'
         }}
       >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4" style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
-              {store.mostrarLogo && store.logo && (
-                <img 
-                  src={store.logo} 
-                  alt={store.nombre}
-                  className="h-10 w-auto rounded"
+              {currentLogo && (
+                <LogoAdaptive
+                  logoUrl={currentLogo}
+                  storeName={store.nombre}
                 />
               )}
               {store.mostrarNombre && (

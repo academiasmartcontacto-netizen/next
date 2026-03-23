@@ -31,14 +31,20 @@ export default function LogoAdaptive({ logoUrl, storeName, className = '' }: Log
   }
 
   return (
-    <div className={`logo-container ${className}`}>
+    <div style={{ height: '48px', display: 'flex', alignItems: 'center' }}>
       {isLoading ? (
         <div className="w-10 h-10 bg-gray-200 rounded animate-pulse" />
       ) : (
         <img
           src={logoUrl}
           alt={storeName}
-          className={`logo-img ${getLogoClass(orientation)}`}
+          style={{ 
+            maxHeight: '48px',
+            maxWidth: '200px',
+            objectFit: 'contain',
+            height: 'auto',
+            width: 'auto'
+          }}
         />
       )}
     </div>

@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
     const filepath = join(uploadDir, filename)
     await writeFile(filepath, buffer)
 
-    // Generar URL pública
-    const publicUrl = `/logos/${filename}`
+    // Generar URL pública - SIN /logos/ duplicado
+    const publicUrl = filename.startsWith('logos/') ? `/${filename}` : `/logos/${filename}`
 
     return NextResponse.json({
       success: true,

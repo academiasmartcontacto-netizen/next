@@ -86,13 +86,16 @@ export async function GET(
       return NextResponse.json({ error: 'Store not available' }, { status: 404 })
     }
 
-    // Formatear respuesta
+    // Formatear respuesta - LIMPIAR DUPLICADOS
+    const cleanLogo = store.logo || store.logoPrincipal
+    const logoUrl = cleanLogo ? cleanLogo.replace('/logos//logos/', '/logos/') : null
+    
     const formattedStore = {
       ...store,
       socialMedia: store.redesSociales ? JSON.parse(store.redesSociales) : null,
       phone: store.whatsapp || store.phone || null,
       email: store.emailContacto || null,
-      logo: store.logo || store.logoPrincipal ? `/uploads/logos/${store.logo || store.logoPrincipal}` : null,
+      logo: logoUrl,
       bannerImage: store.bannerImagen ? `/uploads/${store.bannerImagen}` : null,
       address: store.direccion || null,
     }
