@@ -121,7 +121,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   }
   
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', overflow: 'hidden' }}>
       {/* Header Enterprise */}
       <div style={{ 
         background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
@@ -187,45 +187,13 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         </div>
       </div>
       
-      {/* Estadísticas Enterprise */}
-      <div style={{ 
-        background: 'white', 
-        padding: '16px 20px', 
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div style={{ display: 'flex', gap: '32px' }}>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{allSections.length}</div>
-            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Total Secciones</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#10b981' }}>{visibleCount}</div>
-            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Visibles</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#f59e0b' }}>{hiddenCount}</div>
-            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Ocultas</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#8b5cf6' }}>{customCount}</div>
-            <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Personalizadas</div>
-          </div>
-        </div>
-        <div style={{ fontSize: '12px', color: '#64748b' }}>
-          {selectedSections.length > 0 && `${selectedSections.length} seleccionadas`}
-        </div>
-      </div>
-      
       {/* Filtros Enterprise */}
       <div style={{ 
         background: 'white', 
         padding: '16px 20px', 
         borderBottom: '1px solid #e2e8f0',
         display: 'flex',
-        gap: '16px',
+        justifyContent: 'space-between',
         alignItems: 'center'
       }}>
         <div style={{ flex: 1, position: 'relative', maxWidth: '400px' }}>
@@ -282,10 +250,10 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
       
       {/* Tabla Enterprise */}
       <div style={{ flex: 1, overflow: 'auto', background: 'white' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '50%' }}>
                 <input
                   type="checkbox"
                   checked={selectedSections.length === filteredSections.length && filteredSections.length > 0}
@@ -294,8 +262,8 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
                 />
                 Sección
               </th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Estado</th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Acciones</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '25%' }}>Estado</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '25%' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -513,22 +481,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         )}
       </div>
       
-      {/* Footer Enterprise */}
-      <div style={{ 
-        background: '#f8fafc', 
-        padding: '16px 20px', 
-        borderTop: '1px solid #e2e8f0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div style={{ fontSize: '12px', color: '#64748b' }}>
-          {filteredSections.length} de {allSections.length} secciones
-        </div>
-        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-          Sistema de Gestión Enterprise v2.0
-        </div>
-      </div>
+      {/* Footer Enterprise - Eliminado para optimizar espacio */}
     </div>
   )
 }
