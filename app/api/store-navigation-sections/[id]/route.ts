@@ -62,11 +62,22 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE - Eliminar sección de navegación
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    console.log('=== API DELETE SECCIÓN ===')
+    console.log('Request URL:', request.url)
+    console.log('Params recibidos:', params)
+    
+    const resolvedParams = await params
+    console.log('Params resueltos:', resolvedParams)
+    
     const { searchParams } = new URL(request.url)
     const storeId = searchParams.get('storeId')
-    const sectionId = params.id
+    const sectionId = resolvedParams.id
+
+    console.log('storeId:', storeId)
+    console.log('sectionId:', sectionId)
 
     if (!storeId || !sectionId) {
+      console.log('Faltan parámetros - storeId:', storeId, 'sectionId:', sectionId)
       return NextResponse.json({ error: 'Store ID y Section ID requeridos' }, { status: 400 })
     }
 
@@ -76,9 +87,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       .from(storeNavigationSections)
       .where(and(
         eq(storeNavigationSections.storeId, storeId),
-        eq(storeNavigationSections.slug, sectionId)
+        eq(storeNavigationSections.id, sectionId)  // Usar id en lugar de slug
       ))
       .limit(1)
+
+    console.log('Sección encontrada:', existingSection.length > 0 ? 'Sí' : 'No')
 
     if (existingSection.length === 0) {
       return NextResponse.json({ error: 'Sección no encontrada' }, { status: 404 })
@@ -89,9 +102,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       .delete(storeNavigationSections)
       .where(and(
         eq(storeNavigationSections.storeId, storeId),
-        eq(storeNavigationSections.slug, sectionId)
+        eq(storeNavigationSections.id, sectionId)  // Usar id en lugar de slug
       ))
       .returning()
+
+    console.log('Sección eliminada:', deletedSection[0])
 
     return NextResponse.json({ message: 'Sección eliminada correctamente' })
   } catch (error) {

@@ -102,15 +102,39 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
     if (!store?.id) return
     
     try {
+      console.log('=== ELIMINAR SECCIÓN ===')
+      console.log('sectionId (slug):', sectionId)
+      console.log('storeId:', store.id)
+      
+      // Buscar el dbId real de la sección
+      const section = customSections.find(s => s.id === sectionId)
+      const dbId = section?.dbId
+      
+      console.log('dbId encontrado:', dbId)
+      console.log('customSections completas:', customSections)
+      
+      if (!dbId) {
+        throw new Error('ID de base de datos no encontrado para la sección')
+      }
+      
       setLoading(true)
-      const response = await fetch(`/api/store-navigation-sections/${sectionId}?storeId=${store.id}`, {
+      const url = `/api/store-navigation-sections/${dbId}?storeId=${store.id}`
+      console.log('URL completa:', url)
+      
+      const response = await fetch(url, {
         method: 'DELETE'
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
       if (response.ok) {
         setCustomSections(prev => prev.filter(s => s.id !== sectionId))
+        console.log('Sección eliminada del estado local')
       } else {
-        throw new Error('Error al eliminar sección')
+        const errorData = await response.json()
+        console.log('Error response:', errorData)
+        throw new Error(errorData.error || 'Error al eliminar sección')
       }
     } catch (error) {
       console.error('Error al eliminar sección:', error)
@@ -130,7 +154,10 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
       // Encontrar la sección local para obtener el dbId
       const localSection = customSections.find(s => s.id === sectionId)
       
-      console.log('Actualizando visibilidad:', { sectionId, isVisible, localSection, customSections })
+      console.log('=== ACTUALIZAR VISIBILIDAD ===')
+      console.log('sectionId (slug):', sectionId)
+      console.log('isVisible:', isVisible)
+      console.log('dbId encontrado:', localSection?.dbId)
       
       if (localSection && localSection.dbId) {
         const response = await fetch(`/api/store-navigation-sections/${localSection.dbId}`, {
@@ -138,28 +165,23 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             isVisible,
-            sectionId: localSection.dbId // Enviar también en body como fallback
+            storeId: store.id 
           })
         })
 
-        console.log('Response status:', response.status)
-        console.log('Response ok:', response.ok)
-
         if (response.ok) {
-          const responseData = await response.json()
-          console.log('Response data:', responseData)
-          
-          setCustomSections(prev => prev.map(s => 
-            s.id === sectionId ? { ...s, visible: isVisible } : s
-          ))
-          console.log('Visibilidad actualizada correctamente')
+          setCustomSections(prev => 
+            prev.map(s => 
+              s.id === sectionId 
+                ? { ...s, visible: isVisible }
+                : s
+            )
+          )
         } else {
-          const errorData = await response.json()
-          console.error('Error al actualizar visibilidad:', errorData)
-          throw new Error(errorData.error || 'Error al actualizar visibilidad')
+          throw new Error('Error al actualizar visibilidad')
         }
       } else {
-        console.error('Sección no encontrada o sin dbId:', sectionId, localSection)
+        throw new Error('Sección no encontrada')
         throw new Error('Sección no encontrada o sin ID de base de datos')
       }
     } catch (error) {
