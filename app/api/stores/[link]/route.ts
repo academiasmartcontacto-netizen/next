@@ -75,9 +75,8 @@ export async function GET(
         createdAt: stores.createdAt,
         seoTitle: stores.seoTitle,
         seoDescription: stores.seoDescription,
-        // Campos de visibilidad de secciones
+        // Campos de visibilidad de secciones (sin mostrarProductos)
         mostrarInicio: stores.mostrarInicio,
-        mostrarProductos: stores.mostrarProductos,
         mostrarContacto: stores.mostrarContacto,
         mostrarAcercaDe: stores.mostrarAcercaDe,
       })
@@ -163,8 +162,8 @@ export async function POST(
       mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
       bannerImagen4, mostrarBanner, redesSociales, settings, theme,
       seoTitle, seoDescription, favicon, estado,
-      // Agregar campos de visibilidad
-      mostrarInicio, mostrarProductos, mostrarContacto, mostrarAcercaDe
+      // Agregar campos de visibilidad (sin mostrarProductos)
+      mostrarInicio, mostrarContacto, mostrarAcercaDe
     } = body;
 
     const updateData: { [key: string]: any } = {
@@ -173,8 +172,8 @@ export async function POST(
       mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
       bannerImagen4, mostrarBanner, redesSociales, settings, theme,
       seoTitle, seoDescription, favicon, estado,
-      // Agregar campos de visibilidad
-      mostrarInicio, mostrarProductos, mostrarContacto, mostrarAcercaDe
+      // Agregar campos de visibilidad (sin mostrarProductos)
+      mostrarInicio, mostrarContacto, mostrarAcercaDe
     };
 
     console.log('UpdateData antes de limpiar:', updateData)

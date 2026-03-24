@@ -23,7 +23,6 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   // Secciones del sistema (fijas)
   const systemSections = [
     { id: 'inicio', name: 'Inicio', products: 0, visible: store.mostrarInicio ?? true, status: 'system', category: 'Página Principal' },
-    { id: 'productos', name: 'Productos', products: 0, visible: store.mostrarProductos ?? true, status: 'system', category: 'Catálogo' },
     { id: 'contacto', name: 'Contacto', products: 0, visible: store.mostrarContacto ?? true, status: 'system', category: 'Información' },
     { id: 'acerca-de', name: 'Acerca de Nosotros', products: 0, visible: store.mostrarAcercaDe ?? true, status: 'system', category: 'Información' }
   ]
@@ -210,7 +209,6 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
     if (systemSection) {
       const fieldMap: Record<string, string> = {
         'inicio': 'mostrarInicio',
-        'productos': 'mostrarProductos', 
         'contacto': 'mostrarContacto',
         'acerca-de': 'mostrarAcercaDe'
       }

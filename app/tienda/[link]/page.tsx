@@ -82,8 +82,6 @@ export default function TiendaPublicPage() {
         shouldShow = false;
       } else if (sectionId === 'contacto' && store.mostrarContacto === false) {
         shouldShow = false;
-      } else if (sectionId === 'productos' && store.mostrarProductos === false) {
-        shouldShow = false;
       } else if (sectionId === 'inicio' && store.mostrarInicio === false) {
         shouldShow = false;
       }
@@ -190,15 +188,6 @@ export default function TiendaPublicPage() {
                   onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
                 >
                   Inicio
-                </a>
-              )}
-              {store.mostrarProductos !== false && (
-                <a 
-                  href="#productos" 
-                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
-                >
-                  Productos
                 </a>
               )}
               {store.mostrarContacto !== false && (
