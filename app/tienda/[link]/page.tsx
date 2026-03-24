@@ -16,6 +16,7 @@ export default function TiendaPublicPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [customSections, setCustomSections] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStoreData = async () => {
@@ -41,6 +42,17 @@ export default function TiendaPublicPage() {
             const sectionsData = await sectionsResponse.json()
             const sections = sectionsData.sections || []
             setCustomSections(sections.filter((section: any) => section.isVisible))
+          }
+
+          // Cargar productos de la tienda
+          console.log('=== CARGANDO PRODUCTOS DE LA TIENDA ===')
+          const productsResponse = await fetch(`/api/stores/${storeLink}/products`)
+          if (productsResponse.ok) {
+            const productsData = await productsResponse.json()
+            console.log('Productos recibidos:', productsData.products)
+            setProducts(productsData.products || [])
+          } else {
+            console.error('Error cargando productos:', productsResponse.status)
           }
         }
         
@@ -229,18 +241,50 @@ export default function TiendaPublicPage() {
       <main className="flex-1">
         {/* Sección Productos */}
         <section id="productos" className="products-section" style={{display: 'block'}}>
-          <div className="flex-1 flex items-center justify-center py-16">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ShoppingBag className="w-12 h-12 text-orange-600" />
+          <div className="max-w-6xl mx-auto px-4 py-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Nuestros Productos</h2>
+            
+            {products.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShoppingBag className="w-12 h-12 text-orange-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Próximamente</h3>
+                <p className="text-gray-600">Estamos preparando nuestros productos para ti.</p>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                {store.nombre}
-              </h2>
-              <p className="text-gray-600 max-w-md mx-auto">
-                Bienvenido a nuestra tienda. Estamos trabajando para traerte los mejores productos muy pronto.
-              </p>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product: any) => (
+                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    {product.image && (
+                      <div className="h-48 bg-gray-200">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          {product.onSale && product.originalPrice && (
+                            <span className="text-sm text-gray-500 line-through mr-2">
+                              ${parseFloat(product.originalPrice).toFixed(2)}
+                            </span>
+                          )}
+                          <span className="text-xl font-bold text-orange-500">
+                            ${parseFloat(product.price).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

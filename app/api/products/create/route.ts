@@ -1,14 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { AuthService } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { users, stores } from '@/lib/db/schema'
+import { products, productImages, productBadges, badges } from '@/lib/db/schema-products'
+import { eq, and } from 'drizzle-orm'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación
-    const session = await getServerSession()
-    if (!session?.user?.email) {
+    // Get session token from cookies (como en /api/auth/me)
+    const sessionToken = request.cookies.get('session_token')?.value
+    
+    if (!sessionToken) {
       return NextResponse.json(
-        { success: false, message: 'No autenticado' },
+        { success: false, message: 'No autenticado - Sesión no encontrada' },
+        { status: 401 }
+      )
+    }
+    
+    // Get user by session token
+    const user = await AuthService.getUserBySessionToken(sessionToken)
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'No autenticado - Sesión inválida' },
         { status: 401 }
       )
     }
@@ -94,74 +110,44 @@ export async function POST(request: NextRequest) {
 
     const estado_formateado = mapa_estados[estado] || estado
 
-    // Obtener usuario desde la base de datos
-    const userResult = await db.query(
-      'SELECT id FROM usuarios WHERE email = $1',
-      [session.user.email]
-    )
-
-    if (userResult.rows.length === 0) {
-      return NextResponse.json(
-        { success: false, message: 'Usuario no encontrado' },
-        { status: 404 }
-      )
-    }
-
-    const usuario_id = userResult.rows[0].id
+    const usuario_id = user.id
 
     // Validar que la tienda pertenece al usuario
-    const storeResult = await db.query(
-      'SELECT id FROM tiendas WHERE id = $1 AND usuario_id = $2',
-      [store_id, usuario_id]
-    )
+    const storeResult = await db.select()
+      .from(stores)
+      .where(and(eq(stores.id, store_id), eq(stores.userId, usuario_id)))
+      .limit(1)
 
-    if (storeResult.rows.length === 0) {
+    if (storeResult.length === 0) {
       return NextResponse.json(
         { success: false, message: 'Tienda no encontrada o no pertenece al usuario' },
         { status: 404 }
       )
     }
 
-    // Iniciar transacción
-    await db.query('BEGIN')
-
     try {
       // Insertar producto
-      const productResult = await db.query(`
-        INSERT INTO productos (
-          usuario_id, categoria_id, subcategoria_id, categoria_tienda,
-          titulo, descripcion, precio, estado,
-          departamento_codigo, municipio_codigo,
-          departamento_nombre, municipio_nombre,
-          activo, fecha_publicacion
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, NOW())
-        RETURNING id
-      `, [
-        usuario_id,
-        parseInt(categoria_id),
-        parseInt(subcategoria_id),
-        categoria_tienda || null,
-        titulo,
-        descripcion,
-        parseFloat(precio),
-        estado_formateado,
-        departamento,
-        municipio,
-        departamento, // TODO: Obtener nombre real del departamento
-        municipio     // TODO: Obtener nombre real del municipio
-      ])
+      const productResult = await db.insert(products)
+        .values({
+          storeId: store_id,
+          name: titulo, // Usar título como name
+          description: descripcion,
+          price: parseFloat(precio),
+          titulo,
+          descripcion,
+          precio: parseFloat(precio),
+          departamento,
+          municipio,
+          categoria_tienda: categoria_tienda || null,
+          activo: true,
+          fecha_publicacion: new Date()
+        })
+        .returning()
 
-      const producto_id = productResult.rows[0].id
+      const producto_id = productResult[0]?.id
 
-      // Insertar badges
-      if (badges.length > 0) {
-        for (const badge of badges) {
-          await db.query(
-            'INSERT INTO producto_badges (producto_id, badge_id) VALUES ($1, $2)',
-            [producto_id, badge]
-          )
-        }
-      }
+      // Omitir badges por ahora - requieren UUID de tabla badges
+      // TODO: Implementar búsqueda de badges por nombre y obtener UUID
 
       // Procesar imágenes
       let imagenes_subidas = 0
@@ -185,25 +171,38 @@ export async function POST(request: NextRequest) {
         
         // Guardar archivo en el sistema de archivos
         const buffer = Buffer.from(await imagen.arrayBuffer())
-        const fs = require('fs').promises
-        const path = require('path')
         
         const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'productos')
-        await fs.mkdir(uploadDir, { recursive: true })
+        await mkdir(uploadDir, { recursive: true })
         
         const filepath = path.join(uploadDir, filename)
-        await fs.writeFile(filepath, buffer)
+        await writeFile(filepath, buffer)
 
         // Insertar registro en la base de datos
-        await db.query(`
-          INSERT INTO producto_imagenes (producto_id, nombre_archivo, es_principal, orden)
-          VALUES ($1, $2, $3, $4)
-        `, [
-          producto_id,
-          `uploads/productos/${filename}`,
-          i === 0 ? 1 : 0, // La primera imagen es principal
-          i
-        ])
+        const isPrincipalValue = i === 0  // ✅ true/false para boolean
+        console.log('=== DEBUG productImages ===')
+        console.log('i:', i)
+        console.log('i === 0:', i === 0)
+        console.log('isPrincipalValue (boolean):', isPrincipalValue)
+        console.log('typeof isPrincipalValue:', typeof isPrincipalValue)
+        console.log('productId:', producto_id)
+        console.log('url:', `/uploads/productos/${filename}`)
+        console.log('order:', i)
+        
+        try {
+          await db.insert(productImages)
+            .values({
+              productId: producto_id,
+              url: `/uploads/productos/${filename}`,  // ✅ Con / al inicio
+              isPrincipal: isPrincipalValue, // ✅ true/false para boolean
+              order: i
+            })
+          console.log('✅ Insert productImages EXITOSO')
+        } catch (dbError) {
+          console.error('❌ ERROR en INSERT productImages:', dbError)
+          console.error('❌ Detalles del error:', JSON.stringify(dbError, null, 2))
+          throw dbError
+        }
 
         imagenes_subidas++
       }
@@ -211,9 +210,6 @@ export async function POST(request: NextRequest) {
       if (imagenes_subidas === 0) {
         throw new Error('No se pudo subir ninguna imagen válida')
       }
-
-      // Confirmar transacción
-      await db.query('COMMIT')
 
       return NextResponse.json({
         success: true,
@@ -223,8 +219,6 @@ export async function POST(request: NextRequest) {
       })
 
     } catch (error) {
-      // Revertir transacción en caso de error
-      await db.query('ROLLBACK')
       throw error
     }
 

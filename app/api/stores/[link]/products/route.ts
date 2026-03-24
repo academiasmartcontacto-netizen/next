@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { stores } from '@/lib/db/schema'
-import { products } from '@/lib/db/schema-products'
+import { products, productImages } from '@/lib/db/schema-products'
 import { eq } from 'drizzle-orm'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { link: string } }
+  { params }: { params: Promise<{ link: string }> }
 ) {
   try {
-    const { link } = params
+    console.log('=== INICIO GET STORE PRODUCTS ===')
+    const { link } = await params
+    console.log('Link recibido:', link)
 
     if (!link) {
+      console.log('❌ Error: Link no proporcionado')
       return NextResponse.json({ error: 'Store link is required' }, { status: 400 })
     }
 
@@ -23,21 +26,34 @@ export async function GET(
       .limit(1)
 
     if (!store) {
+      console.log('❌ Error: Tienda no encontrada')
       return NextResponse.json({ error: 'Store not found' }, { status: 404 })
     }
 
-    // Verificar que esté activa y publicada
+    console.log('✅ Tienda encontrada:', store.id)
+
+    // Verificar que esté activa (temporalmente permitir no publicadas para desarrollo)
     const [storeStatus] = await db
       .select({ isActive: stores.isActive, isPublished: stores.isPublished })
       .from(stores)
       .where(eq(stores.id, store.id))
       .limit(1)
 
-    if (!storeStatus?.isActive || !storeStatus?.isPublished) {
-      return NextResponse.json({ error: 'Store not available' }, { status: 404 })
+    // Temporalmente: Solo verificar que esté activa, no si está publicada
+    if (!storeStatus?.isActive) {
+      console.log('❌ Error: Tienda no activa')
+      return NextResponse.json({ error: 'Store not active' }, { status: 404 })
     }
 
-    // Obtener productos de la tienda
+    console.log('✅ Tienda activa:', storeStatus?.isActive)
+    console.log('📋 Tienda publicada:', storeStatus?.isPublished)
+
+    // Obtener productos de la tienda con sus imágenes
+    console.log('=== DEBUG STORE PRODUCTS ===')
+    console.log('Store ID:', store.id)
+    console.log('Store isActive:', storeStatus?.isActive)
+    console.log('Store isPublished:', storeStatus?.isPublished)
+    
     const storeProducts = await db
       .select({
         id: products.id,
@@ -58,10 +74,22 @@ export async function GET(
         likes: products.likes,
         createdAt: products.createdAt,
         updatedAt: products.updatedAt,
+        // Agregar imágenes de product_images
+        productImages: {
+          id: productImages.id,
+          url: productImages.url,
+          alt: productImages.alt,
+          order: productImages.order,
+          isPrincipal: productImages.isPrincipal
+        }
       })
       .from(products)
-      .where(eq(products.storeId, store.id) && eq(products.isActive, true))
+      .leftJoin(productImages, eq(products.id, productImages.productId))
+      .where(eq(products.storeId, store.id))
       .orderBy(products.createdAt)
+
+    console.log('Productos encontrados (sin filtro):', storeProducts.length)
+    console.log('Productos activos:', storeProducts.filter(p => p.isActive || p.activo).length)
 
     // Formatear productos
     const formattedProducts = storeProducts.map(product => ({
@@ -69,11 +97,14 @@ export async function GET(
       name: product.titulo || product.name,
       price: product.precio || product.price,
       originalPrice: product.precio_original || product.originalPrice,
-      image: product.imagen || product.image ? `/uploads/products/${product.imagen || product.image}` : null,
+      image: product.productImages?.url || (product.imagen || product.image ? `/uploads/products/${product.imagen || product.image}` : null),
       onSale: (product.precio_original || product.originalPrice) && (product.precio_original || product.originalPrice) > (product.precio || product.price),
       visits: product.visitas || 0,
       likes: product.likes || 0,
     }))
+
+    console.log('✅ Productos formateados:', formattedProducts.length)
+    console.log('🚀 Enviando respuesta exitosa')
 
     return NextResponse.json({ products: formattedProducts })
 
