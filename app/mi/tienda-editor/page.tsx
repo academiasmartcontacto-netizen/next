@@ -9,6 +9,7 @@ import {
 import Link from 'next/link'
 import ColorPickerNew from '@/components/editor/ColorPickerNew'
 import LogoUploader from '@/components/editor/LogoUploader'
+import ProductosDrawer from '@/components/editor/ProductosDrawer'
 
 // Importar CSS específico para forzar estilos
 import './tienda-editor.css'
@@ -633,6 +634,7 @@ export default function TiendaEditorPage() {
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [isNavbarDrawerOpen, setIsNavbarDrawerOpen] = useState(false)
   const [isSeccionesDrawerOpen, setIsSeccionesDrawerOpen] = useState(false)
+  const [isProductosDrawerOpen, setIsProductosDrawerOpen] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Cargar datos reales de la tienda del usuario
@@ -914,6 +916,8 @@ export default function TiendaEditorPage() {
                 <NavbarDrawer onClose={() => setIsNavbarDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : isSeccionesDrawerOpen ? (
                 <SeccionesDrawer onClose={() => setIsSeccionesDrawerOpen(false)} store={store} updateStore={updateStore} />
+              ) : isProductosDrawerOpen ? (
+                <ProductosDrawer onClose={() => setIsProductosDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-3 mb-3">
@@ -1105,7 +1109,7 @@ export default function TiendaEditorPage() {
                   <div className="grid grid-cols-3 gap-3">
                     {/* TILE 5: PRODUCTOS - GLASSMORPHISM */}
                     <div
-                      onClick={() => setShowProductDrawer(true)}
+                      onClick={() => setIsProductosDrawerOpen(true)}
                       className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
                       style={{
                         background: 'rgba(255, 218, 185, 0.25)',
