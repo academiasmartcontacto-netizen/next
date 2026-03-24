@@ -40,6 +40,9 @@ export async function GET(
     }
 
     // Obtener tienda por link
+    console.log('=== API STORES GET ===')
+    console.log('Link solicitado:', link)
+    
     const [store] = await db
       .select({
         id: stores.id,
@@ -72,10 +75,18 @@ export async function GET(
         createdAt: stores.createdAt,
         seoTitle: stores.seoTitle,
         seoDescription: stores.seoDescription,
+        // Campos de visibilidad de secciones
+        mostrarInicio: stores.mostrarInicio,
+        mostrarProductos: stores.mostrarProductos,
+        mostrarContacto: stores.mostrarContacto,
+        mostrarAcercaDe: stores.mostrarAcercaDe,
       })
       .from(stores)
       .where(eq(stores.link, link))
       .limit(1)
+
+    console.log('Store encontrado en BD:', store)
+    console.log('mostrarAcercaDe en BD:', store?.mostrarAcercaDe)
 
     if (!store) {
       return NextResponse.json({ error: 'Store not found' }, { status: 404 })
@@ -97,8 +108,10 @@ export async function GET(
       email: store.emailContacto || null,
       logo: logoUrl,
       bannerImage: store.bannerImagen ? `/uploads/${store.bannerImagen}` : null,
-      address: store.direccion || null,
     }
+
+    console.log('Store formateado para respuesta:', formattedStore)
+    console.log('mostrarAcercaDe en respuesta:', formattedStore.mostrarAcercaDe)
 
     return NextResponse.json({ store: formattedStore })
 
@@ -117,11 +130,16 @@ export async function POST(
     const { link } = resolvedParams
     const session = await getUserSession(request)
     
+    console.log('=== API STORES POST ===')
+    console.log('Link:', link)
+    
     if (!session?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
+    console.log('Body recibido:', body)
+    console.log('mostrarAcercaDe en body:', body.mostrarAcercaDe)
 
     // Verificar que la tienda pertenezca al usuario
     const [store] = await db
@@ -144,7 +162,9 @@ export async function POST(
       descripcion, slogan, colorPrimario, navbarColor, logo, logoPrincipal,
       mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
       bannerImagen4, mostrarBanner, redesSociales, settings, theme,
-      seoTitle, seoDescription, favicon, estado
+      seoTitle, seoDescription, favicon, estado,
+      // Agregar campos de visibilidad
+      mostrarInicio, mostrarProductos, mostrarContacto, mostrarAcercaDe
     } = body;
 
     const updateData: { [key: string]: any } = {
@@ -152,8 +172,12 @@ export async function POST(
       descripcion, slogan, colorPrimario, navbarColor, logo, logoPrincipal,
       mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
       bannerImagen4, mostrarBanner, redesSociales, settings, theme,
-      seoTitle, seoDescription, favicon, estado
+      seoTitle, seoDescription, favicon, estado,
+      // Agregar campos de visibilidad
+      mostrarInicio, mostrarProductos, mostrarContacto, mostrarAcercaDe
     };
+
+    console.log('UpdateData antes de limpiar:', updateData)
 
     // Remove properties that are undefined in the body, so we don't null them out in the DB
     Object.keys(updateData).forEach(key => {
@@ -161,6 +185,8 @@ export async function POST(
         delete updateData[key];
       }
     });
+    
+    console.log('UpdateData después de limpiar:', updateData)
     
     // Always set the updatedAt timestamp
     updateData.updatedAt = new Date();
@@ -177,6 +203,9 @@ export async function POST(
       .set(updateData)
       .where(eq(stores.id, store.id))
       .returning()
+
+    console.log('Store actualizado en BD:', updatedStore[0])
+    console.log('mostrarAcercaDe después de actualizar:', updatedStore[0].mostrarAcercaDe)
 
     return NextResponse.json({ store: updatedStore[0] })
 

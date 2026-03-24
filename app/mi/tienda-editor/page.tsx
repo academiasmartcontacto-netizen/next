@@ -30,8 +30,6 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   
   // Cargar secciones personalizadas desde el API
   const loadCustomSections = async () => {
-    console.log('loadCustomSections - store.id:', store?.id)
-    
     if (!store?.id) return
     
     try {
@@ -40,7 +38,6 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
       if (response.ok) {
         const data = await response.json()
         const sections = data.sections || []
-        console.log('Secciones cargadas desde API:', sections)
         
         setCustomSections(sections.map((section: any) => ({
           id: section.slug, // Para navegación y UI
@@ -187,6 +184,7 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
   // Acciones de sección
   const toggleSectionVisibility = (sectionId: string) => {
     const systemSection = systemSections.find(s => s.id === sectionId)
+    
     if (systemSection) {
       const fieldMap: Record<string, string> = {
         'inicio': 'mostrarInicio',
@@ -195,7 +193,14 @@ function SeccionesDrawer({ onClose, store, updateStore }: { onClose: () => void,
         'acerca-de': 'mostrarAcercaDe'
       }
       const field = fieldMap[sectionId]
-      if (field) updateStore(field, !store[field])
+      
+      // Si el campo es undefined, tratarlo como true (visible por defecto)
+      const currentValue = store[field] !== undefined ? store[field] : true
+      const newValue = !currentValue
+      
+      if (field) {
+        updateStore(field, newValue)
+      }
     } else {
       // Es una sección personalizada - actualizar en la base de datos
       const section = customSections.find(s => s.id === sectionId)
@@ -612,32 +617,23 @@ export default function TiendaEditorPage() {
 
   // Cargar datos reales de la tienda del usuario
   useEffect(() => {
-    const loadStoreData = async () => {
+    const fetchStoreData = async () => {
       try {
-        const response = await fetch('/api/stores?user-store=true')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.store) {
-            // Establecer valores por defecto si no existen
-            setStore({
-              ...data.store,
-              mostrar_nombre: data.store.mostrarNombre ?? true,
-              mostrar_logo: data.store.mostrarLogo ?? true,
-              color_primario: data.store.colorPrimario ?? '#1a73e8',
-              navbar_style: 'blanco',
-              estilo_fondo: 'blanco',
-              estilo_bordes: 'suave',
-              estilo_tarjetas: 'borde',
-              estilo_fotos: 'cuadrado',
-              grid_density: 'auto',
-              tipografia: 'system',
-              tamano_texto: 'normal',
-              navbarColor: data.store.navbarColor,
-            })
-          }
+        console.log('=== CARGANDO TIENDA DESDE API ===')
+        // Obtener datos de la tienda por su link
+        const storeResponse = await fetch(`/api/stores/benedeto`)
+        if (!storeResponse.ok) {
+          throw new Error('Tienda no encontrada')
         }
-      } catch (error) {
-        console.error('Error cargando tienda:', error)
+        
+        const storeData = await storeResponse.json()
+        console.log('Store recibido del API:', storeData.store)
+        console.log('mostrarAcercaDe en store recibido:', storeData.store?.mostrarAcercaDe)
+        
+        setStore(storeData.store)
+        
+      } catch (err: any) {
+        console.error('Error cargando tienda:', err)
         // Si hay error, mostrar estado vacío con mensaje
         setStore({
           error: 'No se pudo cargar la tienda. Por favor crea una tienda primero.'
@@ -645,7 +641,7 @@ export default function TiendaEditorPage() {
       }
     }
 
-    loadStoreData()
+    fetchStoreData()
   }, [])
 
   // Auto-save simulation
@@ -669,10 +665,12 @@ export default function TiendaEditorPage() {
   const handleSave = async () => {
     setAutoSaveStatus('saving')
     try {
+      const payload = { id: store.id, ...store }
+      
       const response = await fetch(`/api/stores/${store.link}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: store.id, ...store }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -681,7 +679,30 @@ export default function TiendaEditorPage() {
 
       const result = await response.json();
       setAutoSaveStatus('saved');
-      console.log('Tienda guardada:', result);
+
+    } catch (error) {
+      console.error('Fallo al guardar:', error);
+      setAutoSaveStatus('error');
+    }
+  }
+
+  const handleSaveWithField = async (field: string, value: any) => {
+    setAutoSaveStatus('saving')
+    try {
+      const payload = { id: store.id, ...store, [field]: value }
+      
+      const response = await fetch(`/api/stores/${store.link}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar la tienda');
+      }
+
+      const result = await response.json();
+      setAutoSaveStatus('saved');
 
     } catch (error) {
       console.error('Fallo al guardar:', error);
@@ -696,6 +717,13 @@ export default function TiendaEditorPage() {
   const updateStore = (field: string, value: any) => {
     setStore((prev: any) => ({ ...prev, [field]: value }))
     setAutoSaveStatus('saving')
+
+    // Forzar guardado inmediato para campos de visibilidad
+    if (field.startsWith('mostrar')) {
+      setTimeout(() => {
+        handleSaveWithField(field, value)
+      }, 100)
+    }
 
     // Real-time communication with iframe
     if (iframeRef.current) {

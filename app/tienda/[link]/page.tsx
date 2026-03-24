@@ -20,6 +20,7 @@ export default function TiendaPublicPage() {
   useEffect(() => {
     const fetchStoreData = async () => {
       try {
+        console.log('=== TIENDA PÚBLICA - CARGANDO STORE ===')
         // Obtener datos de la tienda por su link
         const storeResponse = await fetch(`/api/stores/${storeLink}`)
         if (!storeResponse.ok) {
@@ -27,6 +28,10 @@ export default function TiendaPublicPage() {
         }
         
         const storeData = await storeResponse.json()
+        console.log('Store recibido en tienda pública:', storeData.store)
+        console.log('mostrarAcercaDe en tienda pública:', storeData.store?.mostrarAcercaDe)
+        console.log('store.mostrarAcercaDe !== false:', storeData.store?.mostrarAcercaDe !== false)
+        
         setStore(storeData.store)
         
         // Cargar secciones personalizadas
@@ -67,11 +72,26 @@ export default function TiendaPublicPage() {
       section.style.display = 'none';
     });
 
-    // Mostrar la sección solicitada
+    // Mostrar la sección solicitada solo si está permitida
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
-      targetSection.style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Verificar si la sección debe mostrarse según la visibilidad
+      let shouldShow = true;
+      
+      if (sectionId === 'acerca' && store.mostrarAcercaDe === false) {
+        shouldShow = false;
+      } else if (sectionId === 'contacto' && store.mostrarContacto === false) {
+        shouldShow = false;
+      } else if (sectionId === 'productos' && store.mostrarProductos === false) {
+        shouldShow = false;
+      } else if (sectionId === 'inicio' && store.mostrarInicio === false) {
+        shouldShow = false;
+      }
+      
+      if (shouldShow) {
+        targetSection.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
@@ -163,34 +183,42 @@ export default function TiendaPublicPage() {
             </div>
             
             <nav className={`${deviceMode === 'mobile' ? 'flex' : 'hidden md:flex'} items-center space-x-6`}>
-              <a 
-                href="#productos" 
-                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
-                onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
-              >
-                Inicio
-              </a>
-              <a 
-                href="#productos" 
-                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
-                onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
-              >
-                Productos
-              </a>
-              <a 
-                href="#contacto" 
-                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'contacto' ? 'active' : ''}`}
-                onClick={(e) => { e.preventDefault(); showSection('contacto', e.currentTarget); }}
-              >
-                Contacto
-              </a>
-              <a 
-                href="#acerca" 
-                className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'acerca' ? 'active' : ''}`}
-                onClick={(e) => { e.preventDefault(); showSection('acerca', e.currentTarget); }}
-              >
-                Acerca de Nosotros
-              </a>
+              {store.mostrarInicio !== false && (
+                <a 
+                  href="#productos" 
+                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
+                >
+                  Inicio
+                </a>
+              )}
+              {store.mostrarProductos !== false && (
+                <a 
+                  href="#productos" 
+                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
+                >
+                  Productos
+                </a>
+              )}
+              {store.mostrarContacto !== false && (
+                <a 
+                  href="#contacto" 
+                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'contacto' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); showSection('contacto', e.currentTarget); }}
+                >
+                  Contacto
+                </a>
+              )}
+              {store.mostrarAcercaDe !== false && (
+                <a 
+                  href="#acerca" 
+                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'acerca' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); showSection('acerca', e.currentTarget); }}
+                >
+                  Acerca de Nosotros
+                </a>
+              )}
               
               {/* Secciones personalizadas */}
               {customSections.map((section: any) => (
@@ -229,7 +257,7 @@ export default function TiendaPublicPage() {
 
         {/* SECCIÓN ACERCA DE NOSOTROS (Rediseño PRO) */}
         {store.mostrarAcercaDe !== false && (
-          <section id="acerca" className="products-section" style={{display: 'block'}}>
+          <section id="acerca" className="products-section">
           <div className="about-pro-container max-w-6xl mx-auto px-4 py-16">
             <div className="about-header text-center mb-12">
               <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Acerca de Nosotros</h2>

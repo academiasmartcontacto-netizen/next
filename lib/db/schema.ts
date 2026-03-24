@@ -106,6 +106,12 @@ export const stores = pgTable('stores', {
   seoDescription: text('seo_description'),
   favicon: text('favicon'), // URL to favicon
   
+  // Campos de visibilidad de secciones
+  mostrarInicio: boolean('mostrar_inicio').default(true),
+  mostrarProductos: boolean('mostrar_productos').default(true),
+  mostrarContacto: boolean('mostrar_contacto').default(true),
+  mostrarAcercaDe: boolean('mostrar_acerca_de').default(true),
+  
   // Campos de PHP
   estado: text('estado').default('activo'), // activo, suspendido, eliminado
   suspensionFin: timestamp('suspension_fin'), // Fecha fin de suspensión
