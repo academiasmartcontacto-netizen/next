@@ -5,21 +5,27 @@ import {
   Store, 
   Search, 
   Filter, 
-  Download, 
-  Plus,
-  Edit,
-  Trash2,
+  Plus, 
+  Edit, 
+  Trash2, 
+  Mail, 
+  Phone, 
+  Calendar,
   Eye,
-  Ban,
-  CheckCircle,
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle,
+  Download,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Globe,
+  ShoppingCart,
+  Star,
   TrendingUp,
   Package,
-  Users,
-  Star
+  Ban,
+  AlertTriangle
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,7 +34,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { formatNumber } from '@/lib/format'
 
-interface Store {
+interface StoreData {
   id: string
   name: string
   slug: string
@@ -37,85 +43,67 @@ interface Store {
   status: 'active' | 'inactive' | 'suspended'
   productsCount: number
   views: number
-  rating: number
+  rating: string
   createdAt: string
   lastActivity: string
   reports: number
   hasLogo: boolean
-  domain?: string
+  domain: string
+  isPublished: boolean
+  phone?: string
+  whatsapp?: string
+  emailContacto?: string
+  direccion?: string
+  descripcion?: string
+  slogan?: string
+  colorPrimario?: string
+  navbarColor?: string
+  mostrarLogo?: boolean
+  mostrarNombre?: boolean
+  bannerImagen?: string
+  mostrarBanner?: boolean
 }
 
 export default function AdminStores() {
-  const [stores, setStores] = useState<Store[]>([
-    {
-      id: '1',
-      name: 'Tech Store',
-      slug: 'tech-store',
-      owner: 'Juan Pérez',
-      ownerEmail: 'juan.perez@email.com',
-      status: 'active',
-      productsCount: 45,
-      views: 1234,
-      rating: 4.5,
-      createdAt: '2024-01-15',
-      lastActivity: '2024-03-24 14:30',
-      reports: 0,
-      hasLogo: true,
-      domain: 'donebolivia.com/tienda/tech-store'
-    },
-    {
-      id: '2',
-      name: 'Computer World',
-      slug: 'computer-world',
-      owner: 'María García',
-      ownerEmail: 'maria.garcia@email.com',
-      status: 'active',
-      productsCount: 32,
-      views: 890,
-      rating: 4.2,
-      createdAt: '2024-02-20',
-      lastActivity: '2024-03-24 10:15',
-      reports: 2,
-      hasLogo: true,
-      domain: 'donebolivia.com/tienda/computer-world'
-    },
-    {
-      id: '3',
-      name: 'Gadgets Shop',
-      slug: 'gadgets-shop',
-      owner: 'Carlos Rodríguez',
-      ownerEmail: 'carlos.rodriguez@email.com',
-      status: 'inactive',
-      productsCount: 18,
-      views: 456,
-      rating: 3.8,
-      createdAt: '2024-01-10',
-      lastActivity: '2024-03-20 09:45',
-      reports: 0,
-      hasLogo: false
-    },
-    {
-      id: '4',
-      name: 'GameZone',
-      slug: 'gamezone',
-      owner: 'Ana Martínez',
-      ownerEmail: 'ana.martinez@email.com',
-      status: 'suspended',
-      productsCount: 67,
-      views: 2345,
-      rating: 4.7,
-      createdAt: '2024-02-05',
-      lastActivity: '2024-03-15 16:20',
-      reports: 5,
-      hasLogo: true,
-      domain: 'donebolivia.com/tienda/gamezone'
-    }
-  ])
-
+  const [stores, setStores] = useState<StoreData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedStores, setSelectedStores] = useState<string[]>([])
+
+  useEffect(() => {
+    fetchStores()
+  }, [])
+
+  const fetchStores = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch('/api/admin/stores')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setStores(data.stores)
+        console.log('Stores loaded successfully:', data.stores.length)
+      } else {
+        throw new Error(data.error || 'Error desconocido')
+      }
+    } catch (error) {
+      console.error('Error fetching stores:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      setError(errorMessage)
+      setStores([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredStores = stores.filter(store => {
     const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -191,7 +179,39 @@ export default function AdminStores() {
     suspended: stores.filter(s => s.status === 'suspended').length,
     totalProducts: stores.reduce((sum, s) => sum + s.productsCount, 0),
     totalViews: stores.reduce((sum, s) => sum + s.views, 0),
-    avgRating: (stores.reduce((sum, s) => sum + s.rating, 0) / stores.length).toFixed(1)
+    avgRating: stores.length > 0 
+      ? (stores.reduce((sum, s) => sum + parseFloat(s.rating), 0) / stores.length).toFixed(1)
+      : '0.0'
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando tiendas...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-gray-600 mb-4">Error al cargar las tiendas</p>
+          <p className="text-sm text-gray-500 mb-4">{error}</p>
+          <Button onClick={fetchStores} className="bg-orange-500 hover:bg-orange-600">
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
