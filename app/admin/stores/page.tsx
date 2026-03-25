@@ -1,0 +1,495 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { 
+  Store, 
+  Search, 
+  Filter, 
+  Download, 
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Ban,
+  CheckCircle,
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  TrendingUp,
+  Package,
+  Users,
+  Star
+} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { formatNumber } from '@/lib/format'
+
+interface Store {
+  id: string
+  name: string
+  slug: string
+  owner: string
+  ownerEmail: string
+  status: 'active' | 'inactive' | 'suspended'
+  productsCount: number
+  views: number
+  rating: number
+  createdAt: string
+  lastActivity: string
+  reports: number
+  hasLogo: boolean
+  domain?: string
+}
+
+export default function AdminStores() {
+  const [stores, setStores] = useState<Store[]>([
+    {
+      id: '1',
+      name: 'Tech Store',
+      slug: 'tech-store',
+      owner: 'Juan Pérez',
+      ownerEmail: 'juan.perez@email.com',
+      status: 'active',
+      productsCount: 45,
+      views: 1234,
+      rating: 4.5,
+      createdAt: '2024-01-15',
+      lastActivity: '2024-03-24 14:30',
+      reports: 0,
+      hasLogo: true,
+      domain: 'donebolivia.com/tienda/tech-store'
+    },
+    {
+      id: '2',
+      name: 'Computer World',
+      slug: 'computer-world',
+      owner: 'María García',
+      ownerEmail: 'maria.garcia@email.com',
+      status: 'active',
+      productsCount: 32,
+      views: 890,
+      rating: 4.2,
+      createdAt: '2024-02-20',
+      lastActivity: '2024-03-24 10:15',
+      reports: 2,
+      hasLogo: true,
+      domain: 'donebolivia.com/tienda/computer-world'
+    },
+    {
+      id: '3',
+      name: 'Gadgets Shop',
+      slug: 'gadgets-shop',
+      owner: 'Carlos Rodríguez',
+      ownerEmail: 'carlos.rodriguez@email.com',
+      status: 'inactive',
+      productsCount: 18,
+      views: 456,
+      rating: 3.8,
+      createdAt: '2024-01-10',
+      lastActivity: '2024-03-20 09:45',
+      reports: 0,
+      hasLogo: false
+    },
+    {
+      id: '4',
+      name: 'GameZone',
+      slug: 'gamezone',
+      owner: 'Ana Martínez',
+      ownerEmail: 'ana.martinez@email.com',
+      status: 'suspended',
+      productsCount: 67,
+      views: 2345,
+      rating: 4.7,
+      createdAt: '2024-02-05',
+      lastActivity: '2024-03-15 16:20',
+      reports: 5,
+      hasLogo: true,
+      domain: 'donebolivia.com/tienda/gamezone'
+    }
+  ])
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedStores, setSelectedStores] = useState<string[]>([])
+
+  const filteredStores = stores.filter(store => {
+    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         store.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         store.slug.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || store.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
+
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(filteredStores.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedStores = filteredStores.slice(startIndex, startIndex + itemsPerPage)
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800">Activa</Badge>
+      case 'inactive':
+        return <Badge className="bg-gray-100 text-gray-800">Inactiva</Badge>
+      case 'suspended':
+        return <Badge className="bg-red-100 text-red-800">Suspendida</Badge>
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">Desconocida</Badge>
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'inactive':
+        return <Ban className="h-4 w-4 text-gray-500" />
+      case 'suspended':
+        return <AlertTriangle className="h-4 w-4 text-red-500" />
+      default:
+        return <Store className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getRatingStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={cn(
+          "h-4 w-4",
+          i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+        )}
+      />
+    ))
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedStores(paginatedStores.map(store => store.id))
+    } else {
+      setSelectedStores([])
+    }
+  }
+
+  const handleSelectStore = (storeId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedStores([...selectedStores, storeId])
+    } else {
+      setSelectedStores(selectedStores.filter(id => id !== storeId))
+    }
+  }
+
+  const stats = {
+    total: stores.length,
+    active: stores.filter(s => s.status === 'active').length,
+    inactive: stores.filter(s => s.status === 'inactive').length,
+    suspended: stores.filter(s => s.status === 'suspended').length,
+    totalProducts: stores.reduce((sum, s) => sum + s.productsCount, 0),
+    totalViews: stores.reduce((sum, s) => sum + s.views, 0),
+    avgRating: (stores.reduce((sum, s) => sum + s.rating, 0) / stores.length).toFixed(1)
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Tiendas</h1>
+          <p className="text-gray-600">Administra todas las tiendas virtuales del sistema</p>
+        </div>
+        <Button className="bg-orange-500 hover:bg-orange-600">
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva Tienda
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Tiendas</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              </div>
+              <Store className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Activas</p>
+                <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Suspendidas</p>
+                <p className="text-2xl font-bold text-red-600">{stats.suspended}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Rating Promedio</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.avgRating} ⭐</p>
+              </div>
+              <Star className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Additional Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Productos</p>
+                <p className="text-xl font-bold text-gray-900">{formatNumber(stats.totalProducts)}</p>
+              </div>
+              <Package className="h-6 w-6 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Vistas</p>
+                <p className="text-xl font-bold text-gray-900">{formatNumber(stats.totalViews)}</p>
+              </div>
+              <Eye className="h-6 w-6 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Sin Logo</p>
+                <p className="text-xl font-bold text-orange-600">
+                  {stores.filter(s => !s.hasLogo).length}
+                </p>
+              </div>
+              <Store className="h-6 w-6 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Filter className="h-5 w-5 mr-2" />
+            Filtros y Búsqueda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por nombre, propietario o slug..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="active">Activas</option>
+              <option value="inactive">Inactivas</option>
+              <option value="suspended">Suspendidas</option>
+            </select>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stores Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Lista de Tiendas</CardTitle>
+            <div className="flex items-center space-x-2">
+              {selectedStores.length > 0 && (
+                <Button variant="outline" size="sm">
+                  Acciones Masivas ({selectedStores.length})
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-4">
+                    <input
+                      type="checkbox"
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="rounded"
+                    />
+                  </th>
+                  <th className="text-left p-4 font-medium text-gray-900">Tienda</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Propietario</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Estado</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Estadísticas</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Rating</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Última Actividad</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedStores.map((store) => (
+                  <tr key={store.id} className="border-b hover:bg-gray-50">
+                    <td className="p-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedStores.includes(store.id)}
+                        onChange={(e) => handleSelectStore(store.id, e.target.checked)}
+                        className="rounded"
+                      />
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                          {store.hasLogo ? (
+                            <Store className="h-6 w-6 text-gray-400" />
+                          ) : (
+                            <Store className="h-6 w-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900">{store.name}</p>
+                          <p className="text-sm text-gray-500">/{store.slug}</p>
+                          {store.domain && (
+                            <p className="text-xs text-blue-600">{store.domain}</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{store.owner}</p>
+                        <p className="text-sm text-gray-500">{store.ownerEmail}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(store.status)}
+                        {getStatusBadge(store.status)}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <Package className="h-3 w-3 text-gray-400" />
+                            <span className="text-gray-600">{store.productsCount}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Eye className="h-3 w-3 text-gray-400" />
+                            <span className="text-gray-600">{store.views}</span>
+                          </div>
+                        </div>
+                        {store.reports > 0 && (
+                          <div className="flex items-center space-x-1">
+                            <AlertTriangle className="h-3 w-3 text-red-400" />
+                            <span className="text-red-600 text-xs">{store.reports} reportes</span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-1">
+                        {getRatingStars(store.rating)}
+                        <span className="text-sm text-gray-600 ml-1">({store.rating})</span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div>
+                        <p className="text-sm text-gray-900">{store.lastActivity}</p>
+                        <p className="text-xs text-gray-500">Creada: {store.createdAt}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-gray-600">
+              Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredStores.length)} de {filteredStores.length} tiendas
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-gray-600">
+                Página {currentPage} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
