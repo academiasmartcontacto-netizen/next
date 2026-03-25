@@ -10,6 +10,7 @@ import Link from 'next/link'
 import ColorPickerNew from '@/components/editor/ColorPickerNew'
 import LogoUploader from '@/components/editor/LogoUploader'
 import ProductosDrawer from '@/components/editor/ProductosDrawer'
+import InventarioDrawer from '@/components/editor/InventarioDrawer'
 
 // Importar CSS específico para forzar estilos
 import './tienda-editor.css'
@@ -635,6 +636,7 @@ export default function TiendaEditorPage() {
   const [isNavbarDrawerOpen, setIsNavbarDrawerOpen] = useState(false)
   const [isSeccionesDrawerOpen, setIsSeccionesDrawerOpen] = useState(false)
   const [isProductosDrawerOpen, setIsProductosDrawerOpen] = useState(false)
+  const [isInventarioDrawerOpen, setIsInventarioDrawerOpen] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Cargar datos reales de la tienda del usuario
@@ -918,6 +920,8 @@ export default function TiendaEditorPage() {
                 <SeccionesDrawer onClose={() => setIsSeccionesDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : isProductosDrawerOpen ? (
                 <ProductosDrawer onClose={() => setIsProductosDrawerOpen(false)} store={store} updateStore={updateStore} />
+              ) : isInventarioDrawerOpen ? (
+                <InventarioDrawer onClose={() => setIsInventarioDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-3 mb-3">
@@ -1153,35 +1157,49 @@ export default function TiendaEditorPage() {
                       </h3>
                     </div>
 
-                    {/* TILE 6: ESPACIO VACÍO PARA FUTURO */}
+                    {/* TILE 6: INVENTARIO - GLASSMORPHISM */}
                     <div
-                      className="cursor-not-allowed opacity-50"
+                      onClick={() => setIsInventarioDrawerOpen(true)}
+                      className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:rotate-1"
                       style={{
-                        background: 'rgba(240, 240, 240, 0.1)',
-                        backdropFilter: 'blur(10px)',
-                        WebkitBackdropFilter: 'blur(10px)',
+                        background: 'rgba(239, 68, 68, 0.25)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
                         borderRadius: '20px',
                         padding: '16px',
-                        border: '1px dashed rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
                         minHeight: '120px',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        position: 'relative'
+                        position: 'relative',
+                        overflow: 'hidden'
                       }}
                     >
-                      <Plus size={32} style={{ color: '#ccc', marginBottom: '8px' }} />
+                      <div style={{
+                        position: 'absolute',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                      }} />
+                      <Package size={32} style={{ color: '#dc2626', marginBottom: '8px', filter: 'drop-shadow(0 2px 4px rgba(220, 38, 38, 0.3))' }} />
                       <h3 
                         style={{
-                          color: '#999',
-                          fontSize: '12px',
-                          fontWeight: '600',
+                          color: '#7f1d1d',
+                          fontSize: '14px',
+                          fontWeight: '700',
                           textAlign: 'center',
-                          margin: '0'
+                          margin: '0',
+                          textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                          letterSpacing: '0.5px'
                         }}
                       >
-                        PRÓXIMO
+                        Inventario
                       </h3>
                     </div>
 
