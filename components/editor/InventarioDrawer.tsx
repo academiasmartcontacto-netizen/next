@@ -340,7 +340,7 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
             <tbody>
               {filteredItems.map((item, index) => (
                 <tr 
-                  key={item.id}
+                  key={`${item.id}-${index}`} // Clave única combinando ID y índice
                   style={{ 
                     borderBottom: '1px solid #f1f5f9',
                     background: index % 2 === 0 ? 'white' : '#f8fafc',

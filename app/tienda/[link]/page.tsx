@@ -6,6 +6,7 @@ import { ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import StoreFooter from '@/components/layout/store-footer'
 import LogoAdaptive from '@/components/editor/LogoAdaptive'
+import ProductModal from '@/components/modals/ProductModal'
 
 export default function TiendaPublicPage() {
   const params = useParams()
@@ -17,6 +18,8 @@ export default function TiendaPublicPage() {
   const [error, setError] = useState<string | null>(null)
   const [customSections, setCustomSections] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchStoreData = async () => {
@@ -67,6 +70,17 @@ export default function TiendaPublicPage() {
       fetchStoreData()
     }
   }, [storeLink])
+
+  // Funciones para manejar el modal
+  const openProductModal = (product: any) => {
+    setSelectedProduct(product)
+    setIsModalOpen(true)
+  }
+
+  const closeProductModal = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
 
   const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
@@ -255,18 +269,29 @@ export default function TiendaPublicPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product: any) => (
-                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <div 
+                    key={`${product.id}-${Math.random()}`} // Clave única para evitar duplicados
+                    onClick={() => openProductModal(product)}
+                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+                  >
                     {product.image && (
-                      <div className="h-48 bg-gray-200">
+                      <div className="h-48 bg-gray-200 relative overflow-hidden group">
                         <img 
                           src={product.image} 
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                        {/* Indicador de más imágenes */}
+                        {product.allImages && product.allImages.length > 1 && (
+                          <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs">
+                            +{product.allImages.length - 1} fotos
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
                       <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
                       <div className="flex items-center justify-between">
                         <div>
@@ -279,6 +304,12 @@ export default function TiendaPublicPage() {
                             ${parseFloat(product.price).toFixed(2)}
                           </span>
                         </div>
+                        {/* Badge de oferta */}
+                        {product.onSale && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Oferta
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -495,6 +526,14 @@ export default function TiendaPublicPage() {
 
       {/* Footer de D:/FUNCIONAL */}
       <StoreFooter />
+      
+      {/* Modal de Producto */}
+      <ProductModal 
+        isOpen={isModalOpen}
+        onClose={closeProductModal}
+        product={selectedProduct}
+        store={store}
+      />
     </div>
   )
 }

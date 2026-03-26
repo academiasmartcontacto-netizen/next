@@ -48,7 +48,7 @@ export async function GET(
     console.log('✅ Tienda activa:', storeStatus?.isActive)
     console.log('📋 Tienda publicada:', storeStatus?.isPublished)
 
-    // Obtener productos de la tienda con sus imágenes
+    // Obtener productos de la tienda con sus imágenes (agrupados)
     console.log('=== DEBUG STORE PRODUCTS ===')
     console.log('Store ID:', store.id)
     console.log('Store isActive:', storeStatus?.isActive)
@@ -73,31 +73,48 @@ export async function GET(
         visitas: products.visitas,
         likes: products.likes,
         createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-        // Agregar imágenes de product_images
-        productImages: {
-          id: productImages.id,
-          url: productImages.url,
-          alt: productImages.alt,
-          order: productImages.order,
-          isPrincipal: productImages.isPrincipal
-        }
+        updatedAt: products.updatedAt
       })
       .from(products)
-      .leftJoin(productImages, eq(products.id, productImages.productId))
       .where(eq(products.storeId, store.id))
       .orderBy(products.createdAt)
 
-    console.log('Productos encontrados (sin filtro):', storeProducts.length)
+    console.log('Productos encontrados (agrupados):', storeProducts.length)
     console.log('Productos activos:', storeProducts.filter(p => p.isActive || p.activo).length)
 
+    // Para cada producto, obtener sus imágenes por separado
+    const productsWithImages = await Promise.all(
+      storeProducts.map(async (product) => {
+        const images = await db
+          .select({
+            id: productImages.id,
+            url: productImages.url,
+            alt: productImages.alt,
+            order: productImages.order,
+            isPrincipal: productImages.isPrincipal
+          })
+          .from(productImages)
+          .where(eq(productImages.productId, product.id))
+          .orderBy(productImages.order)
+
+        const principalImage = images.find(img => img.isPrincipal) || images[0]
+
+        return {
+          ...product,
+          productImages: principalImage || null,
+          allImages: images
+        }
+      })
+    )
+
     // Formatear productos
-    const formattedProducts = storeProducts.map(product => ({
+    const formattedProducts = productsWithImages.map(product => ({
       ...product,
       name: product.titulo || product.name,
       price: product.precio || product.price,
       originalPrice: product.precio_original || product.originalPrice,
       image: product.productImages?.url || (product.imagen || product.image ? `/uploads/products/${product.imagen || product.image}` : null),
+      allImages: product.allImages || [], // Incluir todas las imágenes
       onSale: (product.precio_original || product.originalPrice) && (product.precio_original || product.originalPrice) > (product.precio || product.price),
       visits: product.visitas || 0,
       likes: product.likes || 0,
