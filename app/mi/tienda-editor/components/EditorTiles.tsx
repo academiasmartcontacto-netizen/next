@@ -6,6 +6,7 @@ import IdentityTile from './tiles/IdentityTile'
 import AppearanceTile from './tiles/AppearanceTile'
 import ProductsTile from './tiles/ProductsTile'
 import InventoryTile from './tiles/InventoryTile'
+import ContactanosTile from './tiles/ContactanosTile'
 import PlaceholderTile from './tiles/PlaceholderTile'
 
 interface EditorTilesProps {
@@ -15,6 +16,7 @@ interface EditorTilesProps {
   onOpenApariencia: () => void
   onOpenProductos: () => void
   onOpenInventario: () => void
+  onOpenContactanos: () => void
 }
 
 export default function EditorTiles({ 
@@ -23,7 +25,8 @@ export default function EditorTiles({
   onOpenIdentidad, 
   onOpenApariencia, 
   onOpenProductos, 
-  onOpenInventario 
+  onOpenInventario,
+  onOpenContactanos
 }: EditorTilesProps) {
   return (
     <>
@@ -37,7 +40,7 @@ export default function EditorTiles({
       <div className="grid grid-cols-3 gap-3">
         <ProductsTile onClick={onOpenProductos} />
         <InventoryTile onClick={onOpenInventario} />
-        <PlaceholderTile />
+        <ContactanosTile onClick={onOpenContactanos} />
       </div>
     </>
   )

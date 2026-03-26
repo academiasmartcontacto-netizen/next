@@ -7,69 +7,17 @@ import Link from 'next/link'
 import StoreFooter from '@/components/layout/store-footer'
 import LogoAdaptive from '@/components/editor/LogoAdaptive'
 import ProductModal from '@/components/modals/ProductModal'
+import { useStoreData } from '@/hooks/useStoreData'
 
 export default function TiendaPublicPage() {
   const params = useParams()
   const router = useRouter()
-  const storeLink = params.link as string
   
-  const [store, setStore] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [customSections, setCustomSections] = useState<any[]>([])
-  const [products, setProducts] = useState<any[]>([])
+  // ✅ UN SOLO HOOK - DRY
+  const { store, products, sections, loading, error } = useStoreData()
+  
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-
-  useEffect(() => {
-    const fetchStoreData = async () => {
-      try {
-        console.log('=== TIENDA PÚBLICA - CARGANDO STORE ===')
-        // Obtener datos de la tienda por su link
-        const storeResponse = await fetch(`/api/stores/${storeLink}`)
-        if (!storeResponse.ok) {
-          throw new Error('Tienda no encontrada')
-        }
-        
-        const storeData = await storeResponse.json()
-        console.log('Store recibido en tienda pública:', storeData.store)
-        console.log('mostrarAcercaDe en tienda pública:', storeData.store?.mostrarAcercaDe)
-        console.log('store.mostrarAcercaDe !== false:', storeData.store?.mostrarAcercaDe !== false)
-        
-        setStore(storeData.store)
-        
-        // Cargar secciones personalizadas
-        if (storeData.store?.id) {
-          const sectionsResponse = await fetch(`/api/store-navigation-sections?storeId=${storeData.store.id}`)
-          if (sectionsResponse.ok) {
-            const sectionsData = await sectionsResponse.json()
-            const sections = sectionsData.sections || []
-            setCustomSections(sections.filter((section: any) => section.isVisible))
-          }
-
-          // Cargar productos de la tienda
-          console.log('=== CARGANDO PRODUCTOS DE LA TIENDA ===')
-          const productsResponse = await fetch(`/api/stores/${storeLink}/products`)
-          if (productsResponse.ok) {
-            const productsData = await productsResponse.json()
-            console.log('Productos recibidos:', productsData.products)
-            setProducts(productsData.products || [])
-          } else {
-            console.error('Error cargando productos:', productsResponse.status)
-          }
-        }
-        
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar la tienda')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (storeLink) {
-      fetchStoreData()
-    }
-  }, [storeLink])
 
   // Funciones para manejar el modal
   const openProductModal = (product: any) => {
@@ -95,7 +43,7 @@ export default function TiendaPublicPage() {
     // Ocultar todas las secciones primero
     const allSections = document.querySelectorAll('.products-section');
     allSections.forEach(section => {
-      section.style.display = 'none';
+      (section as HTMLElement).style.display = 'none';
     });
 
     // Mostrar la sección solicitada solo si está permitida
@@ -113,7 +61,7 @@ export default function TiendaPublicPage() {
       }
       
       if (shouldShow) {
-        targetSection.style.display = 'block';
+        (targetSection as HTMLElement).style.display = 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
@@ -209,9 +157,9 @@ export default function TiendaPublicPage() {
             <nav className={`${deviceMode === 'mobile' ? 'flex' : 'hidden md:flex'} items-center space-x-6`}>
               {store.mostrarInicio !== false && (
                 <a 
-                  href="#productos" 
-                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'productos' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); showSection('productos', e.currentTarget); }}
+                  href="#inicio" 
+                  className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'inicio' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); showSection('inicio', e.currentTarget); }}
                 >
                   Inicio
                 </a>
@@ -222,7 +170,7 @@ export default function TiendaPublicPage() {
                   className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === 'contacto' ? 'active' : ''}`}
                   onClick={(e) => { e.preventDefault(); showSection('contacto', e.currentTarget); }}
                 >
-                  Contacto
+                  Contáctanos
                 </a>
               )}
               {store.mostrarAcercaDe !== false && (
@@ -236,8 +184,8 @@ export default function TiendaPublicPage() {
               )}
               
               {/* Secciones personalizadas */}
-              {customSections.map((section: any) => (
-                <a 
+              {sections.map((section: any) => (
+                <a
                   key={section.id}
                   href={`#${section.slug}`}
                   className={`${deviceMode === 'mobile' ? 'text-sm px-2' : ''} text-white hover:text-gray-200 transition-colors ${activeSection === section.slug ? 'active' : ''}`}
@@ -500,7 +448,7 @@ export default function TiendaPublicPage() {
         )}
 
         {/* Secciones personalizadas */}
-        {customSections.map((section: any) => (
+        {sections.map((section: any) => (
           <section key={section.id} id={section.slug} className="products-section" style={{display: 'none'}}>
             <div className="max-w-6xl mx-auto px-4 py-16">
               <div className="text-center">

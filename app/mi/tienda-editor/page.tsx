@@ -7,6 +7,7 @@ import ProductosDrawer from '@/components/editor/ProductosDrawer'
 import InventarioDrawer from '@/components/editor/InventarioDrawer'
 import SeccionesDrawer from '@/components/editor/drawers/SeccionesDrawer'
 import NavbarDrawer from '@/components/editor/drawers/NavbarDrawer'
+import ContactanosDrawer from '@/components/editor/drawers/ContactanosDrawer'
 import EditorTiles from './components/EditorTiles'
 import { useEditorData } from './hooks/useEditorData'
 
@@ -21,6 +22,7 @@ export default function TiendaEditorPage() {
   const [isSeccionesDrawerOpen, setIsSeccionesDrawerOpen] = useState(false)
   const [isProductosDrawerOpen, setIsProductosDrawerOpen] = useState(false)
   const [isInventarioDrawerOpen, setIsInventarioDrawerOpen] = useState(false)
+  const [isContactanosDrawerOpen, setIsContactanosDrawerOpen] = useState(false)
 
   const toggleAccordion = (section: string) => {
     setActiveAccordion(activeAccordion === section ? '' : section)
@@ -168,6 +170,8 @@ export default function TiendaEditorPage() {
                 <ProductosDrawer onClose={() => setIsProductosDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : isInventarioDrawerOpen ? (
                 <InventarioDrawer onClose={() => setIsInventarioDrawerOpen(false)} store={store} updateStore={updateStore} />
+              ) : isContactanosDrawerOpen ? (
+                <ContactanosDrawer onClose={() => setIsContactanosDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : (
                 <EditorTiles 
                   onOpenNavbar={() => setIsNavbarDrawerOpen(true)}
@@ -176,6 +180,7 @@ export default function TiendaEditorPage() {
                   onOpenApariencia={() => toggleAccordion('apariencia')}
                   onOpenProductos={() => setIsProductosDrawerOpen(true)}
                   onOpenInventario={() => setIsInventarioDrawerOpen(true)}
+                  onOpenContactanos={() => setIsContactanosDrawerOpen(true)}
                 />
               )}
             </div>
