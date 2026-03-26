@@ -26,6 +26,20 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
       const response = await fetch(`/api/products?storeId=${store.id}`)
       if (response.ok) {
         const data = await response.json()
+        console.log('=== PRODUCTOS RECIBIDOS ===')
+        console.log('Productos:', data.products)
+        
+        if (data.products && data.products.length > 0) {
+          data.products.forEach((product: any, index: number) => {
+            console.log(`Producto ${index + 1}:`, {
+              id: product.id,
+              name: product.name,
+              image: product.image,
+              images: product.images
+            })
+          })
+        }
+        
         setInventoryItems(data.products || [])
       }
     } catch (error) {
@@ -78,11 +92,40 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
   }
 
   // Eliminar item
-  const deleteItem = (itemId: string) => {
+  const deleteItem = async (itemId: string) => {
     const item = inventoryItems.find(i => i.id === itemId)
     if (item && confirm(`¿Eliminar "${item.name}" del inventario?`)) {
-      setInventoryItems(prev => prev.filter(i => i.id !== itemId))
-      setSelectedItems(prev => prev.filter(id => id !== itemId))
+      try {
+        console.log('=== ELIMINANDO PRODUCTO ===')
+        console.log('Item ID:', itemId)
+        console.log('Item completo:', item)
+        
+        // Eliminar de la base de datos usando query parameter
+        const response = await fetch(`/api/products?id=${itemId}`, {
+          method: 'DELETE'
+        })
+        
+        console.log('Response status:', response.status)
+        console.log('Response ok:', response.ok)
+        
+        if (response.ok) {
+          const result = await response.json()
+          console.log('Response data:', result)
+          
+          // Eliminar del estado local solo si la API tuvo éxito
+          setInventoryItems(prev => prev.filter(i => i.id !== itemId))
+          setSelectedItems(prev => prev.filter(id => id !== itemId))
+          console.log('Producto eliminado correctamente:', item.name)
+        } else {
+          const errorData = await response.json()
+          console.error('Error response:', errorData)
+          console.error('Status text:', response.statusText)
+          alert(`Error al eliminar producto: ${errorData.error || response.statusText}`)
+        }
+      } catch (error: any) {
+        console.error('Error de conexión al eliminar producto:', error)
+        alert(`Error de conexión: ${error.message}`)
+      }
     }
   }
 
@@ -312,6 +355,67 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
                         onChange={() => toggleItemSelection(item.id)}
                         style={{ width: '16px', height: '16px' }}
                       />
+                      {/* Imagen simple del producto */}
+                      <div style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '6px', 
+                        overflow: 'hidden',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        {item.image ? (
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'cover' 
+                            }}
+                            onError={(e) => {
+                              console.log('Error loading image:', item.image);
+                              const currentTarget = e.currentTarget;
+                              const nextElement = currentTarget.nextElementSibling as HTMLElement;
+                              if (nextElement) {
+                                currentTarget.style.display = 'none';
+                                nextElement.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div style={{ 
+                            fontSize: '18px', 
+                            color: '#94a3b8',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            height: '100%'
+                          }}>
+                            📦
+                          </div>
+                        )}
+                        {/* Placeholder oculto que se muestra si la imagen falla */}
+                        <div style={{ 
+                          fontSize: '18px', 
+                          color: '#94a3b8',
+                          display: 'none',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '100%',
+                          height: '100%',
+                          position: 'absolute',
+                          top: '0',
+                          left: '0'
+                        }}>
+                          📦
+                        </div>
+                      </div>
                       <div style={{ 
                         fontWeight: '600', 
                         color: '#1e293b', 
@@ -319,7 +423,7 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        maxWidth: '300px'
+                        maxWidth: '250px'
                       }}>
                         {item.name}
                       </div>
