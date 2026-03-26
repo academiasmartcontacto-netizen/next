@@ -266,7 +266,7 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
       </div>
       
       {/* Tabla de Inventario */}
-      <div style={{ flex: 1, overflow: 'auto', background: 'white' }}>
+      <div style={{ flex: 1, overflow: 'visible', background: 'white' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#64748b' }}>
             <div style={{ textAlign: 'center' }}>
