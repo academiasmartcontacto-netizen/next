@@ -23,10 +23,12 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
     
     try {
       setLoading(true)
-      const response = await fetch(`/api/products?storeId=${store.id}`)
+      // Usar la misma API que la tienda pública que sí funciona
+      const response = await fetch(`/api/stores/${store.link}/products`)
       if (response.ok) {
         const data = await response.json()
-        console.log('=== PRODUCTOS RECIBIDOS ===')
+        console.log('=== PRODUCTOS RECIBIDOS (API TIENDA) ===')
+        console.log('Data completa:', data)
         console.log('Productos:', data.products)
         
         if (data.products && data.products.length > 0) {
