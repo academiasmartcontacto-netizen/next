@@ -14,6 +14,8 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [customSections, setCustomSections] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [showNewSectionForm, setShowNewSectionForm] = useState(false)
+  const [newSectionName, setNewSectionName] = useState('')
   
   // Secciones del sistema (fijas)
   const systemSections = [
@@ -51,7 +53,7 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
 
   // Crear nueva sección personalizada
   const createCustomSection = async (name: string) => {
-    if (!store?.id) return
+    if (!store?.id || !name.trim()) return
     
     try {
       setLoading(true)
@@ -80,6 +82,10 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
           status: 'custom' as const,
           category: 'Personalizada'
         }])
+        
+        // Reset form
+        setNewSectionName('')
+        setShowNewSectionForm(false)
       } else {
         throw new Error('Error al crear sección')
       }
@@ -89,6 +95,19 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
     } finally {
       setLoading(false)
     }
+  }
+
+  // Manejar creación desde inline form
+  const handleNewSectionSubmit = () => {
+    if (newSectionName.trim()) {
+      createCustomSection(newSectionName.trim())
+    }
+  }
+
+  // Cancelar nueva sección
+  const handleNewSectionCancel = () => {
+    setNewSectionName('')
+    setShowNewSectionForm(false)
   }
 
   // Eliminar sección personalizada
@@ -236,20 +255,44 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', overflow: 'hidden' }}>
       {/* Header Enterprise */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
-        color: 'white', 
+        background: 'white', 
+        color: '#22226B', 
         padding: '20px', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div>
+            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Secciones</h2>
+          </div>
+          <button
+            onClick={() => setShowNewSectionForm(true)}
+            style={{
+              background: '#10b981',
+              border: 'none',
+              color: 'white',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="Nueva Sección"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={onClose} 
             style={{ 
-              background: 'rgba(255,255,255,0.1)', 
-              border: '1px solid rgba(255,255,255,0.2)', 
-              color: 'white', 
+              background: '#f8fafc', 
+              border: '1px solid #e2e8f0', 
+              color: '#22226B', 
               padding: '8px 12px', 
               cursor: 'pointer', 
               borderRadius: '6px', 
@@ -259,50 +302,18 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
           >
             ← Volver
           </button>
-          <div>
-            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Secciones</h2>
-            <div style={{ fontSize: '12px', opacity: 0.8 }}>Administra las secciones de tu tienda</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={() => {
-              const name = prompt('Nombre de la nueva sección:')
-              if (name && name.trim()) {
-                createCustomSection(name.trim())
-              }
-            }}
-            style={{
-              background: '#10b981',
-              border: 'none',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Plus size={16} /> Nueva Sección
-          </button>
         </div>
       </div>
       
       {/* Filtros Enterprise */}
       <div style={{ 
         background: 'white', 
-        padding: '16px 20px', 
+        padding: '8px 20px', 
         borderBottom: '1px solid #e2e8f0',
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         alignItems: 'center'
       }}>
-        <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b' }}>
-          Gestión de Secciones
-        </div>
         
         {selectedSections.length > 0 && (
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -343,20 +354,118 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '50%' }}>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '50%' }}>
                 <input
                   type="checkbox"
                   checked={selectedSections.length === allSections.length && allSections.length > 0}
                   onChange={toggleSelectAll}
-                  style={{ marginRight: '8px' }}
+                  style={{ marginRight: '8px', width: '16px', height: '16px' }}
                 />
                 Sección
               </th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '25%' }}>Estado</th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', width: '25%' }}>Acciones</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '25%' }}>Estado</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '25%' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
+            {/* Fila para nueva sección */}
+            {showNewSectionForm && (
+              <tr style={{ 
+                borderBottom: '1px solid #f1f5f9',
+                background: '#f0fdf4' // Verde claro para indicar modo edición
+              }}>
+                <td style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '50%',
+                      backgroundColor: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Plus size={10} color="white" />
+                    </div>
+                    <input
+                      type="text"
+                      value={newSectionName}
+                      onChange={(e) => setNewSectionName(e.target.value)}
+                      placeholder="Nombre de la nueva sección..."
+                      autoFocus
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        border: '2px solid #10b981',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        backgroundColor: 'white',
+                        outline: 'none'
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleNewSectionSubmit()
+                        } else if (e.key === 'Escape') {
+                          handleNewSectionCancel()
+                        }
+                      }}
+                    />
+                  </div>
+                </td>
+                <td style={{ padding: '16px', textAlign: 'center' }}>
+                  <span style={{ 
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    background: '#dcfce7',
+                    color: '#166534'
+                  }}>
+                    ✓ Visible
+                  </span>
+                </td>
+                <td style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <button
+                      onClick={handleNewSectionSubmit}
+                      disabled={!newSectionName.trim() || loading}
+                      style={{
+                        padding: '6px 12px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: newSectionName.trim() && !loading ? 'pointer' : 'not-allowed',
+                        background: newSectionName.trim() && !loading ? '#10b981' : '#e5e7eb',
+                        color: newSectionName.trim() && !loading ? 'white' : '#9ca3af',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {loading ? '...' : '✓'}
+                    </button>
+                    <button
+                      onClick={handleNewSectionCancel}
+                      disabled={loading}
+                      style={{
+                        padding: '6px 12px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        background: loading ? '#e5e7eb' : '#ef4444',
+                        color: loading ? '#9ca3af' : 'white',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      ✗
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
+            
             {allSections.map((section, index) => (
               <tr 
                 key={section.id}
