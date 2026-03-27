@@ -32,6 +32,11 @@ export const products = pgTable('products', {
   destacado: boolean('destacado').default(false), // Destacado (campo PHP)
   categoria: text('categoria'), // Categoría (campo PHP)
   categoria_tienda: text('categoria_tienda'), // Categoría dentro de la tienda
+  categoria_id: text('categoria_id'), // ID de categoría (para relación)
+  subcategoria_id: text('subcategoria_id'), // ID de subcategoría (para relación)
+  estado: text('estado'), // Estado del producto (nuevo, usado, etc.)
+  departamento: text('departamento'), // Departamento
+  municipio: text('municipio'), // Municipio
   visitas: integer('visitas').default(0), // Contador de visitas
   likes: integer('likes').default(0), // Contador de likes
   fecha_publicacion: timestamp('fecha_publicacion').defaultNow(), // Fecha de publicación

@@ -9,7 +9,7 @@ interface InventarioDrawerProps {
   updateStore: (field: string, value: any) => void
 }
 
-export default function InventarioDrawer({ onClose, store, updateStore, onOpenProductos }: InventarioDrawerProps & { onOpenProductos?: () => void }) {
+export default function InventarioDrawer({ onClose, store, updateStore, onOpenProductos, onEditProducto }: InventarioDrawerProps & { onOpenProductos?: () => void, onEditProducto?: (productId: string) => void }) {
   const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
@@ -716,8 +716,10 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
                             
                             <button
                               onClick={() => {
-                                editItem(item.id)
-                                setActiveDropdown(null)
+                                if (onEditProducto) {
+                                  onEditProducto(item.id)
+                                  setActiveDropdown(null)
+                                }
                               }}
                               style={{
                                 width: '100%',

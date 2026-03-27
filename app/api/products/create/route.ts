@@ -136,9 +136,12 @@ export async function POST(request: NextRequest) {
           titulo,
           descripcion,
           precio: parseFloat(precio),
+          categoria_id,        // ✅ AGREGADO
+          subcategoria_id,     // ✅ AGREGADO
           departamento,
           municipio,
           categoria_tienda: categoria_tienda || null,
+          estado,              // ✅ AGREGADO
           activo: true,
           fecha_publicacion: new Date()
         })

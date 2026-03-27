@@ -23,6 +23,7 @@ export default function TiendaEditorPage() {
   const [isProductosDrawerOpen, setIsProductosDrawerOpen] = useState(false)
   const [isInventarioDrawerOpen, setIsInventarioDrawerOpen] = useState(false)
   const [isContactanosDrawerOpen, setIsContactanosDrawerOpen] = useState(false)
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
 
   const toggleAccordion = (section: string) => {
     setActiveAccordion(activeAccordion === section ? '' : section)
@@ -167,13 +168,26 @@ export default function TiendaEditorPage() {
               ) : isSeccionesDrawerOpen ? (
                 <SeccionesDrawer onClose={() => setIsSeccionesDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : isProductosDrawerOpen ? (
-                <ProductosDrawer onClose={() => setIsProductosDrawerOpen(false)} store={store} updateStore={updateStore} />
+                <ProductosDrawer 
+                  onClose={() => {
+                    setIsProductosDrawerOpen(false)
+                    setEditingProductId(null)
+                  }} 
+                  store={store} 
+                  updateStore={updateStore}
+                  editingProductId={editingProductId || undefined}
+                />
               ) : isInventarioDrawerOpen ? (
                 <InventarioDrawer 
                   onClose={() => setIsInventarioDrawerOpen(false)} 
                   store={store} 
                   updateStore={updateStore}
                   onOpenProductos={() => setIsProductosDrawerOpen(true)}
+                  onEditProducto={(productId: string) => {
+                    setEditingProductId(productId)
+                    setIsProductosDrawerOpen(true)
+                    setIsInventarioDrawerOpen(false)
+                  }}
                 />
               ) : isContactanosDrawerOpen ? (
                 <ContactanosDrawer onClose={() => setIsContactanosDrawerOpen(false)} store={store} updateStore={updateStore} />

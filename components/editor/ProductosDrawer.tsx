@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { 
   X, Plus, Upload, Package, AlertCircle, Loader2, 
   Truck, Tag, Star
@@ -10,9 +10,10 @@ interface ProductosDrawerProps {
   onClose: () => void
   store: any
   updateStore: (field: string, value: any) => void
+  editingProductId?: string
 }
 
-export default function ProductosDrawer({ onClose, store, updateStore }: ProductosDrawerProps) {
+export default function ProductosDrawer({ onClose, store, updateStore, editingProductId }: ProductosDrawerProps) {
   const [formData, setFormData] = useState({
     categoria_id: '',
     subcategoria_id: '',
@@ -31,6 +32,108 @@ export default function ProductosDrawer({ onClose, store, updateStore }: Product
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [previewImages, setPreviewImages] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false)
+
+  // Cargar datos del producto si está en modo edición
+  useEffect(() => {
+    if (editingProductId && editingProductId !== 'undefined' && store?.id) {
+      loadProductData()
+    } else {
+      // Resetear formulario si no hay edición
+      resetForm()
+    }
+  }, [editingProductId, store?.id])
+
+  const loadProductData = async () => {
+    if (!editingProductId || !store?.id) return
+    
+    try {
+      setIsLoadingProduct(true)
+      
+      // Obtener datos del producto
+      const response = await fetch(`/api/products/${editingProductId}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        const product = data.product
+        
+        console.log('=== DATOS RECIBIDOS EN FRONTEND ===')
+        console.log('1. Data completa:', data)
+        console.log('2. Product:', product)
+        console.log('3. categoria_id:', product?.categoria_id)
+        console.log('4. subcategoria_id:', product?.subcategoria_id)
+        console.log('5. departamento:', product?.departamento)
+        console.log('6. municipio:', product?.municipio)
+        console.log('7. estado:', product?.estado)
+        console.log('8. categoria_tienda:', product?.categoria_tienda)
+        
+        if (product) {
+          // Cargar todos los campos del producto
+          const newFormData = {
+            categoria_id: product.categoria_id || '',
+            subcategoria_id: product.subcategoria_id || '',
+            titulo: product.titulo || '',
+            descripcion: product.descripcion || '',
+            precio: product.precio ? product.precio.toString() : '',
+            estado: product.estado || 'nuevo',
+            departamento: product.departamento || '',
+            municipio: product.municipio || '',
+            categoria_tienda: product.categoria_tienda || '',
+            badges: product.badges || [],
+            imagenes: []
+          }
+          
+          console.log('=== FORM DATA A SETEAR ===')
+          console.log('1. newFormData:', newFormData)
+          
+          setFormData(newFormData)
+          
+          // Cargar imágenes existentes
+          console.log('=== IMAGEN DEL PRODUCTO ===')
+          console.log('1. product.imagen:', product.imagen)
+          console.log('2. product.image:', product.image)
+          console.log('3. Tipo de product.imagen:', typeof product.imagen)
+          console.log('4. Tipo de product.image:', typeof product.image)
+          
+          if (product.imagen) {
+            console.log('✅ Usando product.imagen:', product.imagen)
+            setPreviewImages([product.imagen])
+          } else if (product.image) {
+            console.log('✅ Usando product.image:', product.image)
+            setPreviewImages([product.image])
+          } else {
+            console.log('❌ No se encontró imagen')
+          }
+        }
+      } else {
+        const errorData = await response.json()
+        alert(`Error al cargar los datos del producto: ${errorData.error || 'Error desconocido'}`)
+      }
+    } catch (error) {
+      console.error('Error al cargar producto:', error)
+      alert('Error de conexión al cargar el producto')
+    } finally {
+      setIsLoadingProduct(false)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      categoria_id: '',
+      subcategoria_id: '',
+      titulo: '',
+      descripcion: '',
+      precio: '',
+      estado: '',
+      departamento: '',
+      municipio: '',
+      categoria_tienda: '',
+      badges: [],
+      imagenes: []
+    })
+    setPreviewImages([])
+    setErrors({})
+  }
 
   // Categorías reales (basadas en D:/FUNCIONAL)
   const categorias = [
@@ -253,7 +356,20 @@ export default function ProductosDrawer({ onClose, store, updateStore }: Product
     if (!formData.estado) newErrors.estado = 'Debes seleccionar el estado del producto'
     if (!formData.departamento) newErrors.departamento = 'Debes seleccionar un departamento'
     if (!formData.municipio) newErrors.municipio = 'Debes seleccionar un municipio'
-    if (formData.imagenes.length === 0) newErrors.imagenes = 'Debes agregar al menos una imagen'
+    
+    // Validación de imagen diferente para creación vs edición
+    const isEditing = !!editingProductId
+    if (isEditing) {
+      // En edición, verificar que haya imagen en preview (existente o nueva)
+      if (previewImages.length === 0) {
+        newErrors.imagenes = 'Debes agregar al menos una imagen'
+      }
+    } else {
+      // En creación, verificar que se hayan subido archivos
+      if (formData.imagenes.length === 0) {
+        newErrors.imagenes = 'Debes agregar al menos una imagen'
+      }
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -267,51 +383,81 @@ export default function ProductosDrawer({ onClose, store, updateStore }: Product
     setIsSubmitting(true)
 
     try {
-      const formDataToSend = new FormData()
-      
-      // Agregar todos los campos del formulario
-      Object.keys(formData).forEach(key => {
-        if (key === 'imagenes') {
-          formData.imagenes.forEach((file, index) => {
-            formDataToSend.append(`imagenes[]`, file)
-          })
-        } else if (key === 'badges') {
-          formDataToSend.append('badges', JSON.stringify(formData.badges))
-        } else {
-          formDataToSend.append(key, formData[key as string])
+      // Determinar si es creación o edición
+      const isEditing = !!editingProductId
+      const apiUrl = isEditing ? `/api/products/${editingProductId}` : '/api/products/create'
+      const method = isEditing ? 'PUT' : 'POST'
+
+      // Para PUT (edición) enviar JSON, para POST (creación) enviar FormData
+      if (isEditing) {
+        // PUT con JSON para edición
+        const jsonData = {
+          categoria_id: formData.categoria_id,
+          subcategoria_id: formData.subcategoria_id,
+          titulo: formData.titulo,
+          descripcion: formData.descripcion,
+          precio: formData.precio,
+          estado: formData.estado,
+          departamento: formData.departamento,
+          municipio: formData.municipio,
+          categoria_tienda: formData.categoria_tienda,
+          badges: formData.badges,
+          store_id: store.id,
+          // Mantener imagen existente si no se subió nueva
+          imagen: previewImages.length > 0 ? previewImages[0] : undefined
         }
-      })
 
-      // Agregar store ID
-      formDataToSend.append('store_id', store.id)
-
-      const response = await fetch('/api/products/create', {
-        method: 'POST',
-        body: formDataToSend
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        alert('¡Producto creado exitosamente!')
-        onClose()
-        // Reset form
-        setFormData({
-          categoria_id: '',
-          subcategoria_id: '',
-          titulo: '',
-          descripcion: '',
-          precio: '',
-          estado: '',
-          departamento: '',
-          municipio: '',
-          categoria_tienda: '',
-          badges: [],
-          imagenes: []
+        const response = await fetch(apiUrl, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(jsonData)
         })
-        setPreviewImages([])
+
+        const result = await response.json()
+
+        if (result.success) {
+          alert('¡Producto actualizado exitosamente!')
+          onClose()
+          resetForm()
+        } else {
+          setErrors(prev => ({ ...prev, general: result.error || 'Error al actualizar el producto' }))
+        }
       } else {
-        setErrors(prev => ({ ...prev, general: result.message || 'Error al crear el producto' }))
+        // POST con FormData para creación (con imágenes)
+        const formDataToSend = new FormData()
+        
+        // Agregar todos los campos del formulario
+        Object.keys(formData).forEach(key => {
+          if (key === 'imagenes') {
+            formData.imagenes.forEach((file, index) => {
+              formDataToSend.append(`imagenes[]`, file)
+            })
+          } else if (key === 'badges') {
+            formDataToSend.append('badges', JSON.stringify(formData.badges))
+          } else {
+            formDataToSend.append(key, formData[key as string])
+          }
+        })
+
+        // Agregar store ID
+        formDataToSend.append('store_id', store.id)
+
+        const response = await fetch(apiUrl, {
+          method: method,
+          body: formDataToSend
+        })
+
+        const result = await response.json()
+
+        if (result.success) {
+          alert('¡Producto creado exitosamente!')
+          onClose()
+          resetForm()
+        } else {
+          setErrors(prev => ({ ...prev, general: result.message || 'Error al crear el producto' }))
+        }
       }
     } catch (error) {
       setErrors(prev => ({ ...prev, general: 'Error de conexión. Intenta nuevamente.' }))
@@ -340,7 +486,7 @@ export default function ProductosDrawer({ onClose, store, updateStore }: Product
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Package style={{ width: '24px', height: '24px', color: '#f97316' }} />
           <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
-            Añadir Producto
+            {editingProductId ? 'Editar Producto' : 'Añadir Producto'}
           </h2>
         </div>
         <button
@@ -1076,7 +1222,7 @@ export default function ProductosDrawer({ onClose, store, updateStore }: Product
                 }
               }}
             >
-              {isSubmitting ? 'Publicando...' : 'Publicar Anuncio'}
+              {isSubmitting ? (editingProductId ? 'Actualizando...' : 'Publicando...') : (editingProductId ? 'Actualizar Producto' : 'Publicar Anuncio')}
             </button>
           </div>
         </form>
