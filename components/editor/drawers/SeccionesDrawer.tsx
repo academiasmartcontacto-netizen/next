@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Eye, EyeOff, Edit2, Trash2, MoreVertical } from 'lucide-react'
 
 interface SeccionesDrawerProps {
@@ -16,6 +16,9 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
   const [loading, setLoading] = useState(false)
   const [showNewSectionForm, setShowNewSectionForm] = useState(false)
   const [newSectionName, setNewSectionName] = useState('')
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null)
+  const [editingSectionName, setEditingSectionName] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
   
   // Secciones del sistema (fijas)
   const systemSections = [
@@ -154,6 +157,7 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
+            sectionId: localSection.dbId,
             isVisible,
             storeId: store.id 
           })
@@ -168,7 +172,8 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
             )
           )
         } else {
-          throw new Error('Error al actualizar visibilidad')
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Error al actualizar visibilidad')
         }
       } else {
         throw new Error('Sección no encontrada o sin ID de base de datos')
@@ -185,8 +190,38 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
   useEffect(() => {
     loadCustomSections()
   }, [store?.id])
+
+  // Click outside y escape key para cerrar dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null)
+      }
+    }
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveDropdown(null)
+      }
+    }
+
+    if (activeDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscapeKey)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscapeKey)
+    }
+  }, [activeDropdown])
   
   const allSections = [...systemSections, ...customSections]
+  
+  // Toggle dropdown (solo uno activo a la vez)
+  const toggleDropdown = (sectionId: string) => {
+    setActiveDropdown(activeDropdown === sectionId ? null : sectionId)
+  }
   
   const toggleSectionVisibility = (sectionId: string) => {
     const systemSection = systemSections.find(s => s.id === sectionId)
@@ -208,16 +243,57 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
     }
   }
   
+  // Editar sección personalizada
   const editSection = (sectionId: string) => {
     const section = customSections.find(s => s.id === sectionId)
     if (section) {
-      const newName = prompt('Editar nombre de sección:', section.name)
-      if (newName && newName.trim() && newName !== section.name) {
-        setCustomSections(prev => prev.map(s => 
-          s.id === sectionId ? { ...s, name: newName.trim() } : s
-        ))
-      }
+      setEditingSectionId(sectionId)
+      setEditingSectionName(section.name)
+      setActiveDropdown(null)
     }
+  }
+
+  // Guardar edición de sección
+  const saveSectionEdit = async () => {
+    if (!editingSectionId || !editingSectionName.trim()) return
+    
+    const section = customSections.find(s => s.id === editingSectionId)
+    if (!section || !section.dbId) return
+    
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/store-navigation-sections/${section.dbId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          sectionId: section.dbId,
+          name: editingSectionName.trim(),
+          storeId: store.id 
+        })
+      })
+
+      if (response.ok) {
+        setCustomSections(prev => prev.map(s => 
+          s.id === editingSectionId ? { ...s, name: editingSectionName.trim() } : s
+        ))
+        setEditingSectionId(null)
+        setEditingSectionName('')
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Error al actualizar sección')
+      }
+    } catch (error) {
+      console.error('Error al editar sección:', error)
+      alert(`Error al editar sección: ${error}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Cancelar edición
+  const cancelSectionEdit = () => {
+    setEditingSectionId(null)
+    setEditingSectionName('')
   }
   
   const deleteSection = (sectionId: string) => {
@@ -228,10 +304,11 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
   }
   
   const toggleSelectAll = () => {
-    if (selectedSections.length === allSections.length) {
+    const sections = [...systemSections, ...customSections]
+    if (selectedSections.length === sections.length) {
       setSelectedSections([])
     } else {
-      setSelectedSections(allSections.map(s => s.id))
+      setSelectedSections(sections.map((s: any) => s.id))
     }
   }
   
@@ -357,7 +434,7 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
               <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '50%' }}>
                 <input
                   type="checkbox"
-                  checked={selectedSections.length === allSections.length && allSections.length > 0}
+                  checked={selectedSections.length === (systemSections.length + customSections.length) && (systemSections.length + customSections.length) > 0}
                   onChange={toggleSelectAll}
                   style={{ marginRight: '8px', width: '16px', height: '16px' }}
                 />
@@ -376,17 +453,6 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
               }}>
                 <td style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '50%',
-                      backgroundColor: '#10b981',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Plus size={10} color="white" />
-                    </div>
                     <input
                       type="text"
                       value={newSectionName}
@@ -466,160 +532,249 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
               </tr>
             )}
             
-            {allSections.map((section, index) => (
+            {[...systemSections, ...customSections].map((section: any, index: number) => (
               <tr 
                 key={section.id}
                 style={{ 
                   borderBottom: '1px solid #f1f5f9',
-                  background: index % 2 === 0 ? 'white' : '#f8fafc',
+                  background: editingSectionId === section.id ? '#fef3c7' : (index % 2 === 0 ? 'white' : '#f8fafc'),
                   transition: 'all 0.2s'
                 }}
               >
                 <td style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedSections.includes(section.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedSections(prev => [...prev, section.id])
-                        } else {
-                          setSelectedSections(prev => prev.filter(id => id !== section.id))
-                        }
-                      }}
-                      style={{ width: '16px', height: '16px' }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>
-                        {section.name}
-                      </div>
-                    </div>
+                    {editingSectionId === section.id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editingSectionName}
+                          onChange={(e) => setEditingSectionName(e.target.value)}
+                          placeholder="Nombre de la sección..."
+                          autoFocus
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            border: '2px solid #f59e0b',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            backgroundColor: 'white',
+                            outline: 'none'
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              saveSectionEdit()
+                            } else if (e.key === 'Escape') {
+                              cancelSectionEdit()
+                            }
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="checkbox"
+                          checked={selectedSections.includes(section.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedSections(prev => [...prev, section.id])
+                            } else {
+                              setSelectedSections(prev => prev.filter(id => id !== section.id))
+                            }
+                          }}
+                          style={{ width: '16px', height: '16px' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
+                            {section.name}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                            {section.category} • {section.products} productos
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </td>
                 <td style={{ padding: '16px', textAlign: 'center' }}>
-                  <button
-                    onClick={() => toggleSectionVisibility(section.id)}
-                    style={{
+                  {editingSectionId === section.id ? (
+                    <span style={{ 
                       padding: '6px 12px',
-                      border: 'none',
                       borderRadius: '6px',
                       fontSize: '11px',
                       fontWeight: '600',
-                      cursor: 'pointer',
-                      background: section.visible ? '#dcfce7' : '#f1f5f9',
-                      color: section.visible ? '#166534' : '#64748b',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {section.visible ? '✓ Visible' : '○ Oculto'}
-                  </button>
-                </td>
-                <td style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                      background: '#dcfce7',
+                      color: '#166534'
+                    }}>
+                      ✓ Visible
+                    </span>
+                  ) : (
                     <button
-                      onClick={() => setActiveDropdown(activeDropdown === section.id ? null : section.id)}
+                      onClick={() => toggleSectionVisibility(section.id)}
                       style={{
-                        padding: '8px',
-                        border: '1px solid #e2e8f0',
+                        padding: '6px 12px',
+                        border: 'none',
                         borderRadius: '6px',
-                        background: 'white',
+                        fontSize: '11px',
+                        fontWeight: '600',
                         cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        background: section.visible ? '#dcfce7' : '#f1f5f9',
+                        color: section.visible ? '#166534' : '#64748b',
                         transition: 'all 0.2s'
                       }}
                     >
-                      <MoreVertical size={16} color="#64748b" />
+                      {section.visible ? '✓ Visible' : '○ Oculto'}
                     </button>
-                    
-                    {activeDropdown === section.id && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        right: '0',
-                        background: 'white',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                        zIndex: 1000,
-                        minWidth: '180px',
-                        marginTop: '4px'
-                      }}>
-                        <button
-                          onClick={() => {
-                            toggleSectionVisibility(section.id)
-                            setActiveDropdown(null)
-                          }}
+                  )}
+                </td>
+                <td style={{ padding: '16px', textAlign: 'center' }}>
+                  {editingSectionId === section.id ? (
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      <button
+                        onClick={saveSectionEdit}
+                        disabled={!editingSectionName.trim() || loading}
+                        style={{
+                          padding: '6px 12px',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: editingSectionName.trim() && !loading ? 'pointer' : 'not-allowed',
+                          background: editingSectionName.trim() && !loading ? '#10b981' : '#e5e7eb',
+                          color: editingSectionName.trim() && !loading ? 'white' : '#9ca3af',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {loading ? '...' : '✓'}
+                      </button>
+                      <button
+                        onClick={cancelSectionEdit}
+                        disabled={loading}
+                        style={{
+                          padding: '6px 12px',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: loading ? 'not-allowed' : 'pointer',
+                          background: loading ? '#e5e7eb' : '#ef4444',
+                          color: loading ? '#9ca3af' : 'white',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ✗
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <button
+                        onClick={() => toggleDropdown(section.id)}
+                        style={{
+                          padding: '8px',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          background: 'white',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        aria-expanded={activeDropdown === section.id}
+                        aria-haspopup="true"
+                      >
+                        <MoreVertical size={16} color="#64748b" />
+                      </button>
+                      
+                      {activeDropdown === section.id && (
+                        <div ref={dropdownRef}
                           style={{
-                            width: '100%',
-                            padding: '10px 14px',
-                            border: 'none',
-                            background: 'none',
-                            textAlign: 'left',
-                            fontSize: '13px',
-                            color: '#374151',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px'
-                          }}
-                        >
-                          {section.visible ? <EyeOff size={16} color="#64748b" /> : <Eye size={16} color="#64748b" />}
-                          {section.visible ? 'Ocultar sección' : 'Mostrar sección'}
-                        </button>
-                        
-                        {section.status === 'custom' && (
-                          <>
-                            <button
-                              onClick={() => {
-                                editSection(section.id)
-                                setActiveDropdown(null)
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '10px 14px',
-                                border: 'none',
-                                background: 'none',
-                                textAlign: 'left',
-                                fontSize: '13px',
-                                color: '#374151',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px'
-                              }}
-                            >
-                              <Edit2 size={16} color="#64748b" />
-                              Editar sección
-                            </button>
-                            <button
-                              onClick={() => {
-                                deleteSection(section.id)
-                                setActiveDropdown(null)
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '10px 14px',
-                                border: 'none',
-                                background: 'none',
-                                textAlign: 'left',
-                                fontSize: '13px',
-                                color: '#dc2626',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px'
-                              }}
-                            >
-                              <Trash2 size={16} color="#dc2626" />
-                              Eliminar sección
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                          position: 'absolute',
+                          top: '100%',
+                          right: '0',
+                          background: 'white',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          zIndex: 1000,
+                          minWidth: '180px',
+                          marginTop: '4px'
+                        }}>
+                          <button
+                            onClick={() => {
+                              toggleSectionVisibility(section.id)
+                              setActiveDropdown(null)
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '10px 14px',
+                              border: 'none',
+                              background: 'none',
+                              textAlign: 'left',
+                              fontSize: '13px',
+                              color: '#374151',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px'
+                            }}
+                          >
+                            {section.visible ? <EyeOff size={16} color="#64748b" /> : <Eye size={16} color="#64748b" />}
+                            {section.visible ? 'Ocultar sección' : 'Mostrar sección'}
+                          </button>
+                          
+                          {section.status === 'custom' && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  editSection(section.id)
+                                  setActiveDropdown(null)
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 14px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  fontSize: '13px',
+                                  color: '#374151',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '10px'
+                                }}
+                              >
+                                <Edit2 size={16} color="#64748b" />
+                                Editar sección
+                              </button>
+                              <button
+                                onClick={() => {
+                                  deleteSection(section.id)
+                                  setActiveDropdown(null)
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 14px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  fontSize: '13px',
+                                  color: '#dc2626',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '10px'
+                                }}
+                              >
+                                <Trash2 size={16} color="#dc2626" />
+                                Eliminar sección
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
