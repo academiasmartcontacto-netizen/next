@@ -169,7 +169,12 @@ export default function TiendaEditorPage() {
               ) : isProductosDrawerOpen ? (
                 <ProductosDrawer onClose={() => setIsProductosDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : isInventarioDrawerOpen ? (
-                <InventarioDrawer onClose={() => setIsInventarioDrawerOpen(false)} store={store} updateStore={updateStore} />
+                <InventarioDrawer 
+                  onClose={() => setIsInventarioDrawerOpen(false)} 
+                  store={store} 
+                  updateStore={updateStore}
+                  onOpenProductos={() => setIsProductosDrawerOpen(true)}
+                />
               ) : isContactanosDrawerOpen ? (
                 <ContactanosDrawer onClose={() => setIsContactanosDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : (

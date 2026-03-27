@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Edit2, Trash2, Eye, EyeOff, Package, Search, Filter, MoreVertical, AlertCircle } from 'lucide-react'
 
 interface InventarioDrawerProps {
@@ -9,13 +9,50 @@ interface InventarioDrawerProps {
   updateStore: (field: string, value: any) => void
 }
 
-export default function InventarioDrawer({ onClose, store, updateStore }: InventarioDrawerProps) {
+export default function InventarioDrawer({ onClose, store, updateStore, onOpenProductos }: InventarioDrawerProps & { onOpenProductos?: () => void }) {
   const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('todos')
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
+  const [editingProductName, setEditingProductName] = useState('')
+  const [editingProductDescription, setEditingProductDescription] = useState('')
+  const [editingProductPrice, setEditingProductPrice] = useState('')
+  const [editingProductCategory, setEditingProductCategory] = useState('')
+  const [editingProductImage, setEditingProductImage] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Click outside y escape key para cerrar dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null)
+      }
+    }
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveDropdown(null)
+      }
+    }
+
+    if (activeDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscapeKey)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscapeKey)
+    }
+  }, [activeDropdown])
+
+  // Toggle dropdown (solo uno activo a la vez)
+  const toggleDropdown = (productId: string) => {
+    setActiveDropdown(activeDropdown === productId ? null : productId)
+  }
 
   // Cargar items del inventario
   const loadInventory = async () => {
@@ -56,11 +93,11 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
   }, [store?.id])
 
   // Toggle selección de items
-  const toggleItemSelection = (itemId: string) => {
+  const toggleItemSelection = (productId: string) => {
     setSelectedItems(prev => 
-      prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
     )
   }
 
@@ -74,36 +111,136 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
   }
 
   // Toggle visibilidad de item
-  const toggleItemVisibility = (itemId: string) => {
+  const toggleItemVisibility = (productId: string) => {
     setInventoryItems(prev => prev.map(item => 
-      item.id === itemId ? { ...item, visible: !item.visible } : item
+      item.id === productId ? { ...item, visible: !item.visible } : item
     ))
   }
 
   // Editar item
-  const editItem = (itemId: string) => {
-    const item = inventoryItems.find(i => i.id === itemId)
+  const editItem = (productId: string) => {
+    console.log('=== INICIO EDICIÓN COMPLETA ===')
+    console.log('1. ProductId recibido:', productId)
+    console.log('2. Estado actual inventoryItems:', inventoryItems)
+    
+    const item = inventoryItems.find(i => i.id === productId)
+    console.log('3. Item encontrado:', item)
+    
     if (item) {
-      const newName = prompt('Editar nombre del producto:', item.name)
-      if (newName && newName.trim() && newName !== item.name) {
-        setInventoryItems(prev => prev.map(i => 
-          i.id === itemId ? { ...i, name: newName.trim() } : i
+      console.log('4. Configurando estados de edición COMPLETA...')
+      console.log('   - setEditingProductId:', productId)
+      
+      // Configurar TODOS los campos del producto para edición
+      setEditingProductId(productId)
+      setEditingProductName(item.name || '')
+      setEditingProductDescription(item.description || '')
+      setEditingProductPrice(item.price ? item.price.toString() : '0')
+      setEditingProductCategory(item.category || 'general')
+      setEditingProductImage(item.image || '')
+      setActiveDropdown(null)
+      
+      console.log('5. ✅ Estados de edición COMPLETA configurados')
+    } else {
+      console.log('❌ Item NO encontrado para el ID:', productId)
+    }
+    console.log('=== FIN EDICIÓN COMPLETA ===')
+  }
+
+  // Guardar edición de producto
+  const saveProductEdit = async () => {
+    console.log('=== INICIO GUARDADO EDICIÓN ===')
+    console.log('1. Estado inicial:')
+    console.log('   - editingProductId:', editingProductId)
+    console.log('   - editingProductName:', editingProductName)
+    console.log('   - store.id:', store?.id)
+    
+    if (!editingProductId || !editingProductName.trim()) {
+      console.log('❌ VALIDACIÓN FALLIDA - Retornando temprano')
+      return
+    }
+    
+    try {
+      console.log('2. Iniciando setLoading(true)')
+      setLoading(true)
+      
+      // 1. Llamar al API REAL para actualizar en la base de datos
+      console.log('3. Llamando API REAL para actualizar producto...')
+      const response = await fetch(`/api/products/${editingProductId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: editingProductName.trim(),
+          storeId: store.id 
+        })
+      })
+      
+      console.log('   - Response status:', response.status)
+      console.log('   - Response ok:', response.ok)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('   - ✅ Producto actualizado en BD:', data.product)
+        
+        // 2. Actualizar estado local con el resultado real
+        setInventoryItems(prev => prev.map(item => 
+          item.id === editingProductId ? data.product : item
         ))
+        
+        // 3. Comunicar cambio a tienda pública
+        console.log('4. Enviando mensaje a tienda pública...')
+        if (typeof window !== 'undefined' && window.parent) {
+          const message = {
+            type: 'UPDATE_PRODUCT_NAME',
+            productId: editingProductId,
+            productName: editingProductName.trim()
+          }
+          console.log('   - Mensaje:', message)
+          window.parent.postMessage(message, '*')
+          console.log('   - ✅ Mensaje enviado')
+        } else {
+          console.log('   - ❌ No se puede enviar mensaje (window.parent no disponible)')
+        }
+        
+        console.log('5. ✅ Producto guardado en base de datos')
+        
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('   - ❌ Error del API:', errorData)
+        throw new Error(errorData.error || 'Error al actualizar producto')
       }
+      
+      console.log('6. Limpiando estado de edición...')
+      setEditingProductId(null)
+      setEditingProductName('')
+      console.log('   - ✅ Edición limpiada')
+      
+    } catch (error: any) {
+      console.error('❌ ERROR GENERAL en saveProductEdit:', error)
+      alert(`Error al editar producto: ${error.message || error}`)
+    } finally {
+      console.log('7. Finalizando setLoading(false)')
+      setLoading(false)
+      console.log('=== FIN GUARDADO EDICIÓN ===')
     }
   }
 
+  // Cancelar edición
+  const cancelProductEdit = () => {
+    setEditingProductId(null)
+    setEditingProductName('')
+  }
+
   // Eliminar item
-  const deleteItem = async (itemId: string) => {
-    const item = inventoryItems.find(i => i.id === itemId)
+  const deleteItem = async (productId: string) => {
+    const item = inventoryItems.find(i => i.id === productId)
     if (item && confirm(`¿Eliminar "${item.name}" del inventario?`)) {
       try {
         console.log('=== ELIMINANDO PRODUCTO ===')
-        console.log('Item ID:', itemId)
+        console.log('Item ID:', productId)
         console.log('Item completo:', item)
         
         // Eliminar de la base de datos usando query parameter
-        const response = await fetch(`/api/products?id=${itemId}`, {
+        const response = await fetch(`/api/products?id=${productId}`, {
           method: 'DELETE'
         })
         
@@ -115,8 +252,8 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
           console.log('Response data:', result)
           
           // Eliminar del estado local solo si la API tuvo éxito
-          setInventoryItems(prev => prev.filter(i => i.id !== itemId))
-          setSelectedItems(prev => prev.filter(id => id !== itemId))
+          setInventoryItems(prev => prev.filter(i => i.id !== productId))
+          setSelectedItems(prev => prev.filter(id => id !== productId))
           console.log('Producto eliminado correctamente:', item.name)
         } else {
           const errorData = await response.json()
@@ -163,20 +300,51 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
-        color: 'white', 
+        background: 'white', 
+        color: '#22226B', 
         padding: '20px', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div>
+            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Inventario</h2>
+          </div>
+          <button
+            onClick={() => {
+              console.log('=== BOTÓN + CLICKEADO - ABRIENDO PRODUCTOSDRAWER ===')
+              if (onOpenProductos) {
+                onOpenProductos()
+              } else {
+                console.log('❌ onOpenProductos no disponible')
+              }
+            }}
+            style={{
+              background: '#10b981',
+              border: 'none',
+              color: 'white',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="Nuevo Producto"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={onClose} 
             style={{ 
-              background: 'rgba(255,255,255,0.1)', 
-              border: '1px solid rgba(255,255,255,0.2)', 
-              color: 'white', 
+              background: '#f8fafc', 
+              border: '1px solid #e2e8f0', 
+              color: '#22226B', 
               padding: '8px 12px', 
               cursor: 'pointer', 
               borderRadius: '6px', 
@@ -186,50 +354,17 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
           >
             ← Volver
           </button>
-          <div>
-            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Inventario</h2>
-            <div style={{ fontSize: '12px', opacity: 0.8 }}>
-              {inventoryItems.length} productos en inventario
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={() => {
-              const name = prompt('Nombre del nuevo producto:')
-              if (name && name.trim()) {
-                // Aquí iría la lógica para crear producto
-                console.log('Crear producto:', name)
-              }
-            }}
-            style={{
-              background: '#10b981',
-              border: 'none',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Plus size={16} /> Nuevo Producto
-          </button>
         </div>
       </div>
       
       {/* Filtros */}
       <div style={{ 
         background: 'white', 
-        padding: '16px 20px', 
+        padding: '8px 20px', 
         borderBottom: '1px solid #e2e8f0',
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '16px'
+        justifyContent: 'flex-end',
+        alignItems: 'center'
       }}>
         <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
           {/* Buscador */}
@@ -323,16 +458,16 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase' }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
                     onChange={toggleSelectAll}
-                    style={{ marginRight: '8px' }}
+                    style={{ marginRight: '8px', width: '16px', height: '16px' }}
                   />
                   Producto
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase' }}>
                   Acciones
                 </th>
               </tr>
@@ -343,209 +478,299 @@ export default function InventarioDrawer({ onClose, store, updateStore }: Invent
                   key={`${item.id}-${index}`} // Clave única combinando ID y índice
                   style={{ 
                     borderBottom: '1px solid #f1f5f9',
-                    background: index % 2 === 0 ? 'white' : '#f8fafc',
+                    background: editingProductId === item.id ? '#fef3c7' : (index % 2 === 0 ? 'white' : '#f8fafc'),
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = index % 2 === 0 ? 'white' : '#f8fafc'}
                 >
                   <td style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.includes(item.id)}
-                        onChange={() => toggleItemSelection(item.id)}
-                        style={{ width: '16px', height: '16px' }}
-                      />
-                      {/* Imagen simple del producto */}
-                      <div style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        borderRadius: '6px', 
-                        overflow: 'hidden',
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}>
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            style={{ 
-                              width: '100%', 
-                              height: '100%', 
-                              objectFit: 'cover' 
+                      {editingProductId === item.id ? (
+                        <>
+                          {console.log('=== RENDERIZANDO INPUT EDICIÓN ===')}
+                          {console.log('   - Item ID:', item.id)}
+                          {console.log('   - EditingProductId:', editingProductId)}
+                          {console.log('   - Son iguales:', item.id === editingProductId)}
+                          {console.log('   - EditingProductName:', editingProductName)}
+                          <input
+                            type="text"
+                            value={editingProductName}
+                            onChange={(e) => {
+                              console.log('=== CAMBIO EN INPUT ===')
+                              console.log('   - Nuevo valor:', e.target.value)
+                              setEditingProductName(e.target.value)
                             }}
-                            onError={(e) => {
-                              console.log('Error loading image:', item.image);
-                              const currentTarget = e.currentTarget;
-                              const nextElement = currentTarget.nextElementSibling as HTMLElement;
-                              if (nextElement) {
-                                currentTarget.style.display = 'none';
-                                nextElement.style.display = 'flex';
+                            placeholder="Nombre del producto..."
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: '8px 12px',
+                              border: '2px solid #f59e0b',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              backgroundColor: 'white',
+                              outline: 'none'
+                            }}
+                            onKeyDown={(e) => {
+                              console.log('=== TECLA PRESIONADA ===')
+                              console.log('   - Key:', e.key)
+                              if (e.key === 'Enter') {
+                                console.log('   - Presionado ENTER - Guardando...')
+                                saveProductEdit()
+                              } else if (e.key === 'Escape') {
+                                console.log('   - Presionado ESCAPE - Cancelando...')
+                                cancelProductEdit()
                               }
                             }}
                           />
-                        ) : (
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={() => toggleItemSelection(item.id)}
+                            style={{ width: '16px', height: '16px' }}
+                          />
+                          {/* Imagen simple del producto */}
                           <div style={{ 
-                            fontSize: '18px', 
-                            color: '#94a3b8',
+                            width: '40px', 
+                            height: '40px', 
+                            borderRadius: '6px', 
+                            overflow: 'hidden',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            width: '100%',
-                            height: '100%'
+                            flexShrink: 0
                           }}>
-                            📦
+                            {item.image ? (
+                              <img 
+                                src={item.image} 
+                                alt={item.name}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%', 
+                                  objectFit: 'cover' 
+                                }}
+                                onError={(e) => {
+                                  console.log('Error loading image:', item.image);
+                                  const currentTarget = e.currentTarget;
+                                  const nextElement = currentTarget.nextElementSibling as HTMLElement;
+                                  if (nextElement) {
+                                    currentTarget.style.display = 'none';
+                                    nextElement.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div style={{ 
+                                fontSize: '18px', 
+                                color: '#94a3b8',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                height: '100%'
+                              }}>
+                                📦
+                              </div>
+                            )}
+                            {/* Placeholder oculto que se muestra si la imagen falla */}
+                            <div style={{ 
+                              fontSize: '18px', 
+                              color: '#94a3b8',
+                              display: 'none',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '100%',
+                              height: '100%',
+                              position: 'absolute',
+                              top: '0',
+                              left: '0'
+                            }}>
+                              📦
+                            </div>
                           </div>
-                        )}
-                        {/* Placeholder oculto que se muestra si la imagen falla */}
-                        <div style={{ 
-                          fontSize: '18px', 
-                          color: '#94a3b8',
-                          display: 'none',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '100%',
-                          height: '100%',
-                          position: 'absolute',
-                          top: '0',
-                          left: '0'
-                        }}>
-                          📦
-                        </div>
-                      </div>
-                      <div style={{ 
-                        fontWeight: '600', 
-                        color: '#1e293b', 
-                        fontSize: '14px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '250px'
-                      }}>
-                        {item.name}
-                      </div>
+                          <div style={{ 
+                            fontWeight: '600', 
+                            color: '#1e293b', 
+                            fontSize: '14px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: '250px'
+                          }}>
+                            {item.name}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td style={{ padding: '16px', textAlign: 'center' }}>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <button
-                        onClick={() => setActiveDropdown(activeDropdown === item.id ? null : item.id)}
-                        style={{
-                          padding: '8px',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '6px',
-                          background: 'white',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <MoreVertical size={16} color="#64748b" />
-                      </button>
-                      
-                      {/* Dropdown Menu */}
-                      {activeDropdown === item.id && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '100%',
-                          right: '0',
-                          background: 'white',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '8px',
-                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                          zIndex: 1000,
-                          minWidth: '180px',
-                          marginTop: '4px'
-                        }}>
-                          <button
-                            onClick={() => {
-                              toggleItemVisibility(item.id)
-                              setActiveDropdown(null)
-                            }}
+                    {editingProductId === item.id ? (
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button
+                          onClick={() => {
+                            console.log('=== BOTÓN GUARDAR CLICKEADO ===')
+                            saveProductEdit()
+                          }}
+                          disabled={!editingProductName.trim() || loading}
+                          style={{
+                            padding: '6px 12px',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: editingProductName.trim() && !loading ? 'pointer' : 'not-allowed',
+                            background: editingProductName.trim() && !loading ? '#10b981' : '#e5e7eb',
+                            color: editingProductName.trim() && !loading ? 'white' : '#9ca3af',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          {loading ? '...' : '✓'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            console.log('=== BOTÓN CANCELAR CLICKEADO ===')
+                            cancelProductEdit()
+                          }}
+                          disabled={loading}
+                          style={{
+                            padding: '6px 12px',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            background: loading ? '#e5e7eb' : '#ef4444',
+                            color: loading ? '#9ca3af' : 'white',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          ✗
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <button
+                          onClick={() => toggleDropdown(item.id)}
+                          style={{
+                            padding: '8px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '6px',
+                            background: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s'
+                          }}
+                          aria-expanded={activeDropdown === item.id}
+                          aria-haspopup="true"
+                        >
+                          <MoreVertical size={16} color="#64748b" />
+                        </button>
+                        
+                        {/* Dropdown Menu */}
+                        {activeDropdown === item.id && (
+                          <div ref={dropdownRef}
                             style={{
-                              width: '100%',
-                              padding: '10px 14px',
-                              border: 'none',
-                              background: 'none',
-                              textAlign: 'left',
-                              fontSize: '13px',
-                              color: '#374151',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '10px',
-                              transition: 'background 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                          >
-                            {item.visible ? <EyeOff size={16} color="#64748b" /> : <Eye size={16} color="#64748b" />}
-                            {item.visible ? 'Ocultar' : 'Mostrar'}
-                          </button>
-                          
-                          <button
-                            onClick={() => {
-                              editItem(item.id)
-                              setActiveDropdown(null)
-                            }}
-                            style={{
-                              width: '100%',
-                              padding: '10px 14px',
-                              border: 'none',
-                              background: 'none',
-                              textAlign: 'left',
-                              fontSize: '13px',
-                              color: '#374151',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '10px',
-                              transition: 'background 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                          >
-                            <Edit2 size={16} color="#64748b" />
-                            Editar
-                          </button>
-                          
-                          <div style={{ height: '1px', background: '#e5e7eb', margin: '4px 0' }}></div>
-                          
-                          <button
-                            onClick={() => {
-                              deleteItem(item.id)
-                              setActiveDropdown(null)
-                            }}
-                            style={{
-                              width: '100%',
-                              padding: '10px 14px',
-                              border: 'none',
-                              background: 'none',
-                              textAlign: 'left',
-                              fontSize: '13px',
-                              color: '#dc2626',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '10px',
-                              transition: 'background 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                          >
-                            <Trash2 size={16} color="#dc2626" />
-                            Eliminar
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                            position: 'absolute',
+                            top: '100%',
+                            right: '0',
+                            background: 'white',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                            zIndex: 1000,
+                            minWidth: '180px',
+                            marginTop: '4px'
+                          }}>
+                            <button
+                              onClick={() => {
+                                toggleItemVisibility(item.id)
+                                setActiveDropdown(null)
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                background: 'none',
+                                textAlign: 'left',
+                                fontSize: '13px',
+                                color: '#374151',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                            >
+                              {item.visible ? <EyeOff size={16} color="#64748b" /> : <Eye size={16} color="#64748b" />}
+                              {item.visible ? 'Ocultar' : 'Mostrar'}
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                editItem(item.id)
+                                setActiveDropdown(null)
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                background: 'none',
+                                textAlign: 'left',
+                                fontSize: '13px',
+                                color: '#374151',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                            >
+                              <Edit2 size={16} color="#64748b" />
+                              Editar
+                            </button>
+                            
+                            <div style={{ height: '1px', background: '#e5e7eb', margin: '4px 0' }}></div>
+                            
+                            <button
+                              onClick={() => {
+                                deleteItem(item.id)
+                                setActiveDropdown(null)
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                background: 'none',
+                                textAlign: 'left',
+                                fontSize: '13px',
+                                color: '#dc2626',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                            >
+                              <Trash2 size={16} color="#dc2626" />
+                              Eliminar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

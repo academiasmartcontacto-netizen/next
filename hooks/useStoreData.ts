@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 
 interface StoreData {
@@ -9,6 +9,8 @@ interface StoreData {
   sections: any[]
   loading: boolean
   error: string | null
+  updateProduct: (productId: string, updates: any) => void
+  addProduct: (product: any) => void
 }
 
 export function useStoreData(): StoreData {
@@ -20,7 +22,37 @@ export function useStoreData(): StoreData {
     products: [],
     sections: [],
     loading: true,
-    error: null
+    error: null,
+    updateProduct: () => {},
+    addProduct: () => {}
+  })
+
+  // Refs para mantener las funciones actualizadas
+  const updateProductRef = useRef<(productId: string, updates: any) => void>(() => {})
+  const addProductRef = useRef<(product: any) => void>(() => {})
+
+  // Función para actualizar un producto
+  const updateProduct = (productId: string, updates: any) => {
+    setData(prev => ({
+      ...prev,
+      products: prev.products.map(product => 
+        product.id === productId ? { ...product, ...updates } : product
+      )
+    }))
+  }
+
+  // Función para agregar un nuevo producto
+  const addProduct = (product: any) => {
+    setData(prev => ({
+      ...prev,
+      products: [...prev.products, product]
+    }))
+  }
+
+  // Actualizar refs cuando las funciones cambian
+  useEffect(() => {
+    updateProductRef.current = updateProduct
+    addProductRef.current = addProduct
   })
 
   useEffect(() => {
@@ -75,7 +107,9 @@ export function useStoreData(): StoreData {
           products: result.products,
           sections: result.sections,
           loading: false,
-          error: null
+          error: null,
+          updateProduct,
+          addProduct
         })
         
         console.log('✅ Hook DRY - Carga completada exitosamente')
@@ -87,13 +121,29 @@ export function useStoreData(): StoreData {
           products: [],
           sections: [],
           loading: false,
-          error: error.message || 'Error loading store data'
+          error: error.message || 'Error loading store data',
+          updateProduct,
+          addProduct
         })
       }
     }
 
     fetchAllData()
   }, [storeLink])
+
+  // Escuchar mensajes del editor
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'UPDATE_PRODUCT_NAME') {
+        updateProductRef.current(event.data.productId, { name: event.data.productName })
+      } else if (event.data.type === 'ADD_NEW_PRODUCT') {
+        addProductRef.current(event.data.product)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
 
   return data
 }

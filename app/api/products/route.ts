@@ -110,6 +110,43 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function POST(request: NextRequest) {
+  try {
+    const { name } = await request.json()
+
+    console.log('=== CREANDO NUEVO PRODUCTO ===')
+    console.log('Nombre:', name)
+
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Nombre es requerido' },
+        { status: 400 }
+      )
+    }
+
+    // Crear nuevo producto
+    const insertResult = await db
+      .insert(products)
+      .values({
+        name: name.trim(),
+        isActive: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      })
+      .returning()
+
+    console.log('✅ Producto creado:', insertResult[0])
+    return NextResponse.json({ product: insertResult[0] })
+
+  } catch (error: any) {
+    console.error('Error en POST /api/products:', error)
+    return NextResponse.json(
+      { error: error.message || 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

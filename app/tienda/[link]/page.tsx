@@ -14,7 +14,7 @@ export default function TiendaPublicPage() {
   const router = useRouter()
   
   // ✅ UN SOLO HOOK - DRY
-  const { store, products, sections, loading, error } = useStoreData()
+  const { store, products, sections, loading, error, updateProduct, addProduct } = useStoreData()
   
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -82,6 +82,14 @@ export default function TiendaPublicPage() {
         setDeviceMode(event.data.mode);
       } else if (event.data.type === 'UPDATE_LOGO') {
         setCurrentLogo(event.data.logo);
+      } else if (event.data.type === 'UPDATE_PRODUCT_NAME') {
+        // Actualizar nombre de producto en tiempo real
+        updateProduct(event.data.productId, { name: event.data.productName });
+        console.log('✅ Producto actualizado en tienda pública:', event.data.productName);
+      } else if (event.data.type === 'ADD_NEW_PRODUCT') {
+        // Agregar nuevo producto en tiempo real
+        addProduct(event.data.product);
+        console.log('✅ Nuevo producto agregado a tienda pública:', event.data.product.name);
       }
     };
 
@@ -90,7 +98,7 @@ export default function TiendaPublicPage() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [updateProduct, addProduct]);
 
   if (loading && !store) {
     return (
