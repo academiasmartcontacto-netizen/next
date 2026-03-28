@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 interface ColorPickerNewProps {
@@ -21,11 +21,24 @@ const colorPalette = [
 export default function ColorPickerNew({ currentColor, onColorChange }: ColorPickerNewProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState(currentColor)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Sincronizar con el color actual cuando cambia externamente
   useEffect(() => {
     setSelectedColor(currentColor)
   }, [currentColor])
+
+  // Detectar clics fuera del dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen])
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color)
@@ -40,7 +53,7 @@ export default function ColorPickerNew({ currentColor, onColorChange }: ColorPic
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       {/* Botón principal - SIEMPRE MUESTRA EL COLOR ACTUAL */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -54,16 +67,16 @@ export default function ColorPickerNew({ currentColor, onColorChange }: ColorPic
         <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown - SIN BORDES NI SOMBRAS */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3 w-80">
+        <div className="absolute top-full left-0 mt-2 bg-white z-50 p-3 w-80">
           {/* Grid de colores */}
           <div className="grid grid-cols-8 gap-1 mb-3">
             {colorPalette.map((color) => (
               <button
                 key={color}
                 onClick={() => handleColorSelect(color)}
-                className={`w-8 h-8 rounded border hover:scale-110 transition-transform duration-150 ${
+                className={`w-8 h-8 rounded hover:scale-110 transition-transform duration-150 ${
                   selectedColor === color ? 'ring-2 ring-blue-600' : ''
                 }`}
                 style={{ 
@@ -82,7 +95,7 @@ export default function ColorPickerNew({ currentColor, onColorChange }: ColorPic
           </div>
 
           {/* Selector de color personalizado */}
-          <div className="flex gap-2 pt-2 border-t border-gray-200">
+          <div className="flex gap-2 pt-2">
             <input
               type="color"
               value={selectedColor}

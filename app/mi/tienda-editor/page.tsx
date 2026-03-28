@@ -12,7 +12,7 @@ import ContactanosDrawer from '@/components/editor/drawers/ContactanosDrawer'
 import EditorTiles from './components/EditorTiles'
 import { useEditorData } from './hooks/useEditorData'
 
-// Importar CSS específico para forzar estilos
+// Importar CSS especifico para forzar estilos
 import './tienda-editor.css'
 import '../../../styles/design-tokens.css'
 
@@ -189,9 +189,9 @@ export default function TiendaEditorPage() {
           ) : (
             <div>
               {isNavbarDrawerOpen ? (
-                <div className="px-6 py-6 space-y-8 overflow-y-auto">
+                <div className="px-6 py-6 space-y-4">
                   {/* Logo Section */}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">
                     Logo
                   </h3>
                   
@@ -202,38 +202,14 @@ export default function TiendaEditorPage() {
                   />
 
                   {/* Color Section */}
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                          <circle cx="12" cy="12" r="8" stroke="white" strokeWidth="2"/>
-                          <path d="M12 2V6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M12 18V22" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M4.93 4.93L7.76 7.76" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M16.24 16.24L19.07 19.07" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M2 12H6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M18 12H22" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M4.93 19.07L7.76 16.24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M16.24 7.76L19.07 4.93" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Color de Fondo
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          Define la paleta de colores de tu barra
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-gray-200">
-                      <ColorPickerNew
-                        currentColor={store.navbarColor || '#1e3a8a'}
-                        onColorChange={(color: string) => updateStore('navbarColor', color)}
-                      />
-                    </div>
-                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">
+                    Color de Fondo
+                  </h3>
+                  
+                  <ColorPickerNew
+                    currentColor={store.navbarColor || '#1e3a8a'}
+                    onColorChange={(color: string) => updateStore('navbarColor', color)}
+                  />
                 </div>
               ) : isSeccionesDrawerOpen ? (
                 <SeccionesDrawer onClose={() => setIsSeccionesDrawerOpen(false)} store={store} updateStore={updateStore} />
