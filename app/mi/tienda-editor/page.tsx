@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, Monitor, Smartphone, X } from 'lucide-react'
+import { Eye, Monitor, Smartphone, X, Plus } from 'lucide-react'
 import Link from 'next/link'
 import ProductosDrawer from '@/components/editor/ProductosDrawer'
 import InventarioDrawer from '@/components/editor/InventarioDrawer'
@@ -26,6 +26,7 @@ export default function TiendaEditorPage() {
   const [isInventarioDrawerOpen, setIsInventarioDrawerOpen] = useState(false)
   const [isContactanosDrawerOpen, setIsContactanosDrawerOpen] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
+  const [showNewSectionForm, setShowNewSectionForm] = useState(false)
 
   const toggleAccordion = (section: string) => {
     setActiveAccordion(activeAccordion === section ? '' : section)
@@ -62,14 +63,34 @@ export default function TiendaEditorPage() {
                   margin: '0'
                 }}
               >
-                {isNavbarDrawerOpen ? 'Barra de Navegación' : 'Administrador'}
+                {isNavbarDrawerOpen ? 'Barra de Navegación' : isSeccionesDrawerOpen ? 'Gestión de Secciones' : 'Administrador'}
               </h2>
             </div>
+            {isSeccionesDrawerOpen && (
+              <button
+                onClick={() => setShowNewSectionForm(true)}
+                className="p-2 transition-all duration-300 flex items-center justify-center"
+                style={{
+                  color: '#ffffff',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  minHeight: '32px',
+                  minWidth: '32px'
+                }}
+                title="Nueva Sección"
+              >
+                <Plus size={16} strokeWidth={2} />
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-3">
-            {isNavbarDrawerOpen ? (
+            {isNavbarDrawerOpen || isSeccionesDrawerOpen ? (
               <button
-                onClick={() => setIsNavbarDrawerOpen(false)}
+                onClick={() => isNavbarDrawerOpen ? setIsNavbarDrawerOpen(false) : setIsSeccionesDrawerOpen(false)}
                 className="p-2 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: '#22226B',
@@ -212,7 +233,14 @@ export default function TiendaEditorPage() {
                   />
                 </div>
               ) : isSeccionesDrawerOpen ? (
-                <SeccionesDrawer onClose={() => setIsSeccionesDrawerOpen(false)} store={store} updateStore={updateStore} />
+                <SeccionesDrawer 
+                  onClose={() => setIsSeccionesDrawerOpen(false)} 
+                  store={store} 
+                  updateStore={updateStore}
+                  onNewSection={() => setShowNewSectionForm(true)}
+                  showNewSectionForm={showNewSectionForm}
+                  setShowNewSectionForm={setShowNewSectionForm}
+                />
               ) : isProductosDrawerOpen ? (
                 <ProductosDrawer 
                   onClose={() => {

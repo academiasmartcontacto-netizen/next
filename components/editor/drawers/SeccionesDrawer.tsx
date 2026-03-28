@@ -1,20 +1,22 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Eye, EyeOff, Edit2, Trash2, MoreVertical } from 'lucide-react'
+import { Plus, Eye, EyeOff, Edit2, Trash2, MoreVertical, X } from 'lucide-react'
 
 interface SeccionesDrawerProps {
   onClose: () => void
   store: any
   updateStore: (field: string, value: any) => void
+  onNewSection: () => void
+  showNewSectionForm: boolean
+  setShowNewSectionForm: (show: boolean) => void
 }
 
-export default function SeccionesDrawer({ onClose, store, updateStore }: SeccionesDrawerProps) {
+export default function SeccionesDrawer({ onClose, store, updateStore, onNewSection, showNewSectionForm, setShowNewSectionForm }: SeccionesDrawerProps) {
   const [selectedSections, setSelectedSections] = useState<string[]>([])
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [customSections, setCustomSections] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
-  const [showNewSectionForm, setShowNewSectionForm] = useState(false)
   const [newSectionName, setNewSectionName] = useState('')
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null)
   const [editingSectionName, setEditingSectionName] = useState('')
@@ -329,105 +331,43 @@ export default function SeccionesDrawer({ onClose, store, updateStore }: Seccion
   }
   
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', overflow: 'hidden' }}>
-      {/* Header Enterprise */}
-      <div style={{ 
-        background: 'white', 
-        color: '#22226B', 
-        padding: '20px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div>
-            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Secciones</h2>
-          </div>
+    <div className="px-6 py-6 space-y-4">
+      {/* Filtros */}
+      {selectedSections.length > 0 && (
+        <div className="flex gap-2 justify-end">
           <button
-            onClick={() => setShowNewSectionForm(true)}
+            onClick={bulkToggleVisibility}
             style={{
-              background: '#10b981',
+              padding: '6px 12px',
+              background: '#3b82f6',
               border: 'none',
               color: 'white',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            title="Nueva Sección"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={onClose} 
-            style={{ 
-              background: '#f8fafc', 
-              border: '1px solid #e2e8f0', 
-              color: '#22226B', 
-              padding: '8px 12px', 
-              cursor: 'pointer', 
-              borderRadius: '6px', 
-              fontSize: '13px',
-              transition: 'all 0.2s'
+              borderRadius: '4px',
+              fontSize: '12px',
+              cursor: 'pointer'
             }}
           >
-            ← Volver
+            Toggle Visibilidad
+          </button>
+          <button
+            onClick={bulkDelete}
+            style={{
+              padding: '6px 12px',
+              background: '#ef4444',
+              border: 'none',
+              color: 'white',
+              borderRadius: '4px',
+              fontSize: '12px',
+              cursor: 'pointer'
+            }}
+          >
+            Eliminar Seleccionadas
           </button>
         </div>
-      </div>
-      
-      {/* Filtros Enterprise */}
-      <div style={{ 
-        background: 'white', 
-        padding: '8px 20px', 
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center'
-      }}>
-        
-        {selectedSections.length > 0 && (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={bulkToggleVisibility}
-              style={{
-                padding: '8px 12px',
-                background: '#3b82f6',
-                border: 'none',
-                color: 'white',
-                borderRadius: '6px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
-            >
-              Toggle Visibilidad
-            </button>
-            <button
-              onClick={bulkDelete}
-              style={{
-                padding: '8px 12px',
-                background: '#ef4444',
-                border: 'none',
-                color: 'white',
-                borderRadius: '6px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
-            >
-              Eliminar Seleccionadas
-            </button>
-          </div>
-        )}
-      </div>
-      
-      {/* Tabla Enterprise */}
-      <div style={{ flex: 1, overflow: 'auto', background: 'white' }}>
+      )}
+
+      {/* Tabla */}
+      <div style={{ background: 'white', borderRadius: '8px', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
