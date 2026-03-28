@@ -33,7 +33,7 @@ export default function TiendaPublicPage() {
   const [navbarColor, setNavbarColor] = useState(store?.navbarColor || store?.colorPrimario || '#1a73e8');
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
   const [currentLogo, setCurrentLogo] = useState(store?.logo || null);
-  const [activeSection, setActiveSection] = useState('productos');
+  const [activeSection, setActiveSection] = useState('inicio');
 
   // Toggle Sections (SPA Feel) - Replicando lógica de D:/FUNCIONAL
   const showSection = (sectionId: string, menuElement: HTMLElement | null) => {
@@ -190,8 +190,6 @@ export default function TiendaPublicPage() {
                   Acerca de Nosotros
                 </a>
               )}
-              
-              {/* Secciones personalizadas */}
               {sections.map((section: any) => (
                 <a
                   key={section.id}
@@ -209,75 +207,77 @@ export default function TiendaPublicPage() {
 
       {/* Contenido de la tienda */}
       <main className="flex-1">
-        {/* Sección Productos */}
-        <section id="productos" className="products-section" style={{display: 'block'}}>
-          <div className="max-w-6xl mx-auto px-4 py-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Nuestros Productos</h2>
-            
-            {products.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <ShoppingBag className="w-12 h-12 text-orange-500" />
+        {/* Sección Inicio - Contenido de productos */}
+        {store.mostrarInicio !== false && (
+          <section id="inicio" className="products-section" style={{display: 'block'}}>
+            <div className="max-w-6xl mx-auto px-4 py-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Nuestros Productos</h2>
+              
+              {products.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ShoppingBag className="w-12 h-12 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Próximamente</h3>
+                  <p className="text-gray-600">Estamos preparando nuestros productos para ti.</p>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Próximamente</h3>
-                <p className="text-gray-600">Estamos preparando nuestros productos para ti.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product: any) => (
-                  <div 
-                    key={`${product.id}-${Math.random()}`} // Clave única para evitar duplicados
-                    onClick={() => openProductModal(product)}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
-                  >
-                    {product.image && (
-                      <div className="h-48 bg-gray-200 relative overflow-hidden group">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
-                        {/* Indicador de más imágenes */}
-                        {product.allImages && product.allImages.length > 1 && (
-                          <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs">
-                            +{product.allImages.length - 1} fotos
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product: any) => (
+                    <div 
+                      key={`${product.id}-inicio`}
+                      onClick={() => openProductModal(product)}
+                      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+                    >
+                      {product.image && (
+                        <div className="h-48 bg-gray-200 relative overflow-hidden group">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                          {/* Indicador de más imágenes */}
+                          {product.allImages && product.allImages.length > 1 && (
+                            <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs">
+                              +{product.allImages.length - 1} fotos
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            {product.onSale && product.originalPrice && (
+                              <span className="text-sm text-gray-500 line-through mr-2">
+                                ${parseFloat(product.originalPrice).toFixed(2)}
+                              </span>
+                            )}
+                            <span className="text-xl font-bold text-orange-500">
+                              ${parseFloat(product.price).toFixed(2)}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          {product.onSale && product.originalPrice && (
-                            <span className="text-sm text-gray-500 line-through mr-2">
-                              ${parseFloat(product.originalPrice).toFixed(2)}
+                          {/* Badge de oferta */}
+                          {product.onSale && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Oferta
                             </span>
                           )}
-                          <span className="text-xl font-bold text-orange-500">
-                            ${parseFloat(product.price).toFixed(2)}
-                          </span>
                         </div>
-                        {/* Badge de oferta */}
-                        {product.onSale && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            Oferta
-                          </span>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* SECCIÓN ACERCA DE NOSOTROS (Rediseño PRO) */}
         {store.mostrarAcercaDe !== false && (
-          <section id="acerca" className="products-section">
+          <section id="acerca" className="products-section" style={{display: 'none'}}>
           <div className="about-pro-container max-w-6xl mx-auto px-4 py-16">
             <div className="about-header text-center mb-12">
               <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Acerca de Nosotros</h2>
@@ -322,7 +322,7 @@ export default function TiendaPublicPage() {
 
         {/* SECCIÓN CONTACTO CORPORATE (Estilo The7 Company) */}
         {store.mostrarContacto !== false && (
-          <section id="contacto" className="products-section" style={{display: 'block'}}>
+          <section id="contacto" className="products-section" style={{display: 'none'}}>
           <div className="contact-corporate-container max-w-6xl mx-auto px-4 py-16">
             <div className="contact-corporate-header text-center mb-12">
               <h2 className="contact-title text-3xl font-bold text-gray-900 mb-4">Contáctanos</h2>
