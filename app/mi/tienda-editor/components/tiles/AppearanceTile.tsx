@@ -16,7 +16,7 @@ export default function AppearanceTile({ onClick }: AppearanceTileProps) {
       iconColor="#20c997"
       titleColor="#0f5132"
       title="Apariencia"
-      icon={<Palette size={32} />}
+      icon={<Palette size={24} />}
     />
   )
 }

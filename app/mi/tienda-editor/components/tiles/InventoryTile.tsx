@@ -16,7 +16,7 @@ export default function InventoryTile({ onClick }: InventoryTileProps) {
       iconColor="#dc2626"
       titleColor="#7f1d1d"
       title="Inventario"
-      icon={<Package size={32} />}
+      icon={<Package size={24} />}
     />
   )
 }

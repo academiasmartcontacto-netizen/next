@@ -30,14 +30,14 @@ export default function EditorTiles({
 }: EditorTilesProps) {
   return (
     <>
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-4 gap-2 mb-2">
         <NavbarTile onClick={onOpenNavbar} />
         <SectionsTile onClick={onOpenSecciones} />
         <IdentityTile onClick={onOpenIdentidad} />
         <AppearanceTile onClick={onOpenApariencia} />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-2">
         <ProductsTile onClick={onOpenProductos} />
         <InventoryTile onClick={onOpenInventario} />
         <ContactanosTile onClick={onOpenContactanos} />

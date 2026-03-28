@@ -16,7 +16,7 @@ export default function IdentityTile({ onClick }: IdentityTileProps) {
       iconColor="#d63384"
       titleColor="#831943"
       title="Identidad Visual"
-      icon={<Store size={32} />}
+      icon={<Store size={24} />}
     />
   )
 }

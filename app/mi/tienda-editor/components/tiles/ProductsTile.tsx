@@ -16,7 +16,7 @@ export default function ProductsTile({ onClick }: ProductsTileProps) {
       iconColor="#fd7e14"
       titleColor="#664d03"
       title="Productos"
-      icon={<Plus size={32} />}
+      icon={<Plus size={24} />}
     />
   )
 }

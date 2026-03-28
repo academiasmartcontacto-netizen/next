@@ -16,7 +16,7 @@ export default function ContactanosTile({ onClick }: ContactanosTileProps) {
       iconColor="#22226B"
       titleColor="#22226B"
       title="Contáctanos"
-      icon={<MessageCircle size={32} />}
+      icon={<MessageCircle size={24} />}
     />
   )
 }

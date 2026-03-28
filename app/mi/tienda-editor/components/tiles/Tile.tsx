@@ -34,9 +34,9 @@ export default function Tile({
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           borderRadius: '20px',
-          padding: '16px',
+          padding: '12px',
           border: '1px dashed rgba(255, 255, 255, 0.2)',
-          minHeight: '120px',
+          minHeight: '90px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -90,13 +90,13 @@ export default function Tile({
         background: `radial-gradient(circle, ${bgColor} 0%, transparent 70%)`,
         pointerEvents: 'none'
       }} />
-      <div style={{ color: iconColor, marginBottom: '8px', filter: `drop-shadow(0 2px 4px ${iconColor}4D)` }}>
+      <div style={{ color: iconColor, marginBottom: '6px', filter: `drop-shadow(0 2px 4px ${iconColor}4D)` }}>
         {icon}
       </div>
       <h3 
         style={{
           color: titleColor,
-          fontSize: '14px',
+          fontSize: '12px',
           fontWeight: '700',
           textAlign: 'center',
           margin: '0',

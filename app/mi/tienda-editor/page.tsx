@@ -44,7 +44,7 @@ export default function TiendaEditorPage() {
       >
         {/* Header Colorido Symbaloo */}
         <div 
-          className="flex items-center justify-between px-6 py-4"
+          className="flex items-center justify-between px-6 py-2"
           style={{
             background: '#22226B'
           }}
@@ -52,7 +52,7 @@ export default function TiendaEditorPage() {
           <div className="flex items-center gap-3">
             <div>
               <h2 
-                className="text-xl font-bold"
+                className="text-base font-bold"
                 style={{
                   color: '#ffffff',
                   fontWeight: '800',
@@ -60,7 +60,7 @@ export default function TiendaEditorPage() {
                   margin: '0'
                 }}
               >
-                EDITOR
+                Administrador
               </h2>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function TiendaEditorPage() {
                     e.preventDefault()
                   }
                 }}
-                className="p-3 transition-all duration-300 flex items-center justify-center"
+                className="p-2 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: store?.link ? '#ffffff' : 'rgba(255,255,255,0.4)',
                   background: store?.link ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
@@ -83,19 +83,19 @@ export default function TiendaEditorPage() {
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   boxShadow: store?.link ? '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 4px 15px rgba(0,0,0,0.05)',
-                  minHeight: '40px',
-                  minWidth: '40px'
+                  minHeight: '32px',
+                  minWidth: '32px'
                 }}
                 title={store?.error || (store?.link ? 'Preview' : 'Cargando...')}
               >
-                <Eye size={20} strokeWidth={2.5} />
+                <Eye size={16} strokeWidth={2} />
               </Link>
               <button
                 onClick={() => {
                   setDeviceMode('desktop')
                   updateStore('deviceMode', 'desktop')
                 }}
-                className="p-3 transition-all duration-300 flex items-center justify-center"
+                className="p-2 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: deviceMode === 'desktop' ? '#22226B' : '#ffffff',
                   background: deviceMode === 'desktop' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.15)',
@@ -104,19 +104,19 @@ export default function TiendaEditorPage() {
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   boxShadow: deviceMode === 'desktop' ? '0 4px 15px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)' : '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
-                  minHeight: '40px',
-                  minWidth: '40px'
+                  minHeight: '32px',
+                  minWidth: '32px'
                 }}
                 title="Desktop"
               >
-                <Monitor size={20} strokeWidth={2.5} />
+                <Monitor size={16} strokeWidth={2} />
               </button>
               <button
                 onClick={() => {
                   setDeviceMode('mobile')
                   updateStore('deviceMode', 'mobile')
                 }}
-                className="p-3 transition-all duration-300 flex items-center justify-center"
+                className="p-2 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: deviceMode === 'mobile' ? '#22226B' : '#ffffff',
                   background: deviceMode === 'mobile' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.15)',
@@ -125,12 +125,12 @@ export default function TiendaEditorPage() {
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   boxShadow: deviceMode === 'mobile' ? '0 4px 15px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)' : '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
-                  minHeight: '40px',
-                  minWidth: '40px'
+                  minHeight: '32px',
+                  minWidth: '32px'
                 }}
                 title="Mobile"
               >
-                <Smartphone size={20} strokeWidth={2.5} />
+                <Smartphone size={16} strokeWidth={2} />
               </button>
             </div>
         </div>

@@ -16,7 +16,7 @@ export default function NavbarTile({ onClick }: NavbarTileProps) {
       iconColor="#0d6efd"
       titleColor="#084298"
       title={<>Barra de<br />Navegación</>}
-      icon={<Menu size={32} />}
+      icon={<Menu size={24} />}
     />
   )
 }

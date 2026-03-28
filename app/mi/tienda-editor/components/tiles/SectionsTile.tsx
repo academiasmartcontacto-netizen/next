@@ -16,7 +16,7 @@ export default function SectionsTile({ onClick }: SectionsTileProps) {
       iconColor="#198754"
       titleColor="#0f5132"
       title="Secciones"
-      icon={<Layout size={32} />}
+      icon={<Layout size={24} />}
     />
   )
 }
