@@ -367,7 +367,7 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
       )}
 
       {/* Tabla */}
-      <div style={{ background: 'white', borderRadius: '8px', overflow: 'hidden' }}>
+      <div style={{ background: 'white', borderRadius: '8px', overflow: 'visible' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
@@ -481,7 +481,7 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
                   transition: 'all 0.2s'
                 }}
               >
-                <td style={{ padding: '16px' }}>
+                <td style={{ padding: '16px 16px 20px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     {editingSectionId === section.id ? (
                       <>
@@ -524,8 +524,17 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
                           }}
                           style={{ width: '16px', height: '16px' }}
                         />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
+                        <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            color: '#1e293b',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            position: 'relative',
+                            zIndex: 2
+                          }}>
                             {section.name}
                           </div>
                           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>

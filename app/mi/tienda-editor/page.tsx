@@ -27,6 +27,7 @@ export default function TiendaEditorPage() {
   const [isContactanosDrawerOpen, setIsContactanosDrawerOpen] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [showNewSectionForm, setShowNewSectionForm] = useState(false)
+  const [showNewProductForm, setShowNewProductForm] = useState(false)
 
   const toggleAccordion = (section: string) => {
     setActiveAccordion(activeAccordion === section ? '' : section)
@@ -63,7 +64,7 @@ export default function TiendaEditorPage() {
                   margin: '0'
                 }}
               >
-                {isNavbarDrawerOpen ? 'Barra de Navegación' : isSeccionesDrawerOpen ? 'Gestión de Secciones' : 'Administrador'}
+                {isNavbarDrawerOpen ? 'Barra de Navegación' : isSeccionesDrawerOpen ? 'Gestión de Secciones' : isInventarioDrawerOpen ? 'Gestión de Inventario' : 'Administrador'}
               </h2>
             </div>
             {isSeccionesDrawerOpen && (
@@ -86,11 +87,39 @@ export default function TiendaEditorPage() {
                 <Plus size={16} strokeWidth={2} />
               </button>
             )}
+            {isInventarioDrawerOpen && (
+              <button
+                onClick={() => {
+                  // Abrir ProductosDrawer para agregar nuevo producto
+                  setIsProductosDrawerOpen(true)
+                  setEditingProductId(null)
+                }}
+                className="p-2 transition-all duration-300 flex items-center justify-center"
+                style={{
+                  color: '#ffffff',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  minHeight: '32px',
+                  minWidth: '32px'
+                }}
+                title="Nuevo Producto"
+              >
+                <Plus size={16} strokeWidth={2} />
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-3">
-            {isNavbarDrawerOpen || isSeccionesDrawerOpen ? (
+            {isNavbarDrawerOpen || isSeccionesDrawerOpen || isInventarioDrawerOpen ? (
               <button
-                onClick={() => isNavbarDrawerOpen ? setIsNavbarDrawerOpen(false) : setIsSeccionesDrawerOpen(false)}
+                onClick={() => {
+                  if (isNavbarDrawerOpen) setIsNavbarDrawerOpen(false)
+                  else if (isSeccionesDrawerOpen) setIsSeccionesDrawerOpen(false)
+                  else if (isInventarioDrawerOpen) setIsInventarioDrawerOpen(false)
+                }}
                 className="p-2 transition-all duration-300 flex items-center justify-center"
                 style={{
                   color: '#22226B',
@@ -262,6 +291,9 @@ export default function TiendaEditorPage() {
                     setIsProductosDrawerOpen(true)
                     setIsInventarioDrawerOpen(false)
                   }}
+                  onNewProduct={() => setShowNewProductForm(true)}
+                  showNewProductForm={showNewProductForm}
+                  setShowNewProductForm={setShowNewProductForm}
                 />
               ) : isContactanosDrawerOpen ? (
                 <ContactanosDrawer onClose={() => setIsContactanosDrawerOpen(false)} store={store} updateStore={updateStore} />

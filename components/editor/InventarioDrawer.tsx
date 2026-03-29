@@ -7,9 +7,21 @@ interface InventarioDrawerProps {
   onClose: () => void
   store: any
   updateStore: (field: string, value: any) => void
+  onNewProduct: () => void
+  showNewProductForm: boolean
+  setShowNewProductForm: (show: boolean) => void
 }
 
-export default function InventarioDrawer({ onClose, store, updateStore, onOpenProductos, onEditProducto }: InventarioDrawerProps & { onOpenProductos?: () => void, onEditProducto?: (productId: string) => void }) {
+export default function InventarioDrawer({ 
+  onClose, 
+  store, 
+  updateStore, 
+  onNewProduct, 
+  showNewProductForm, 
+  setShowNewProductForm,
+  onOpenProductos, 
+  onEditProducto 
+}: InventarioDrawerProps & { onOpenProductos?: () => void, onEditProducto?: (productId: string) => void }) {
   const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
@@ -297,95 +309,19 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
   const categories = ['todos', ...Array.from(new Set(inventoryItems.map(item => item.category).filter(Boolean)))]
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{ 
-        background: 'white', 
-        color: '#22226B', 
-        padding: '20px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div>
-            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: '700' }}>Gestión de Inventario</h2>
-          </div>
-          <button
-            onClick={() => {
-              console.log('=== BOTÓN + CLICKEADO - ABRIENDO PRODUCTOSDRAWER ===')
-              if (onOpenProductos) {
-                onOpenProductos()
-              } else {
-                console.log('❌ onOpenProductos no disponible')
-              }
-            }}
-            style={{
-              background: '#10b981',
-              border: 'none',
-              color: 'white',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            title="Nuevo Producto"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={onClose} 
-            style={{ 
-              background: '#f8fafc', 
-              border: '1px solid #e2e8f0', 
-              color: '#22226B', 
-              padding: '8px 12px', 
-              cursor: 'pointer', 
-              borderRadius: '6px', 
-              fontSize: '13px',
-              transition: 'all 0.2s'
-            }}
-          >
-            ← Volver
-          </button>
-        </div>
-      </div>
-      
+    <div className="px-6 py-6 space-y-4">
       {/* Filtros */}
-      <div style={{ 
-        background: 'white', 
-        padding: '8px 20px', 
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center'
-      }}>
-        <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+      <div className="flex justify-end">
+        <div className="flex gap-4">
           {/* Buscador */}
-          <div style={{ position: 'relative', flex: 1, maxWidth: '300px' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+          <div className="relative flex-1 max-w-md">
+            <Search size={16} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
               placeholder="Buscar productos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 12px 8px 36px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              className="w-full pl-12 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
           
@@ -393,15 +329,7 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #e2e8f0',
-              borderRadius: '6px',
-              fontSize: '14px',
-              outline: 'none',
-              cursor: 'pointer',
-              background: 'white'
-            }}
+            className="py-2 pl-4 pr-8 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
           >
             {categories.map(category => (
               <option key={category} value={category}>
@@ -412,32 +340,16 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
         </div>
         
         {selectedItems.length > 0 && (
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="flex gap-4">
             <button
               onClick={bulkToggleVisibility}
-              style={{
-                padding: '8px 12px',
-                background: '#3b82f6',
-                border: 'none',
-                color: 'white',
-                borderRadius: '6px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
+              className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-blue-500"
             >
               Toggle Visibilidad
             </button>
             <button
               onClick={bulkDelete}
-              style={{
-                padding: '8px 12px',
-                background: '#ef4444',
-                border: 'none',
-                color: 'white',
-                borderRadius: '6px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
+              className="py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-red-500"
             >
               Eliminar ({selectedItems.length})
             </button>
@@ -455,10 +367,10 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
             </div>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '60%' }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
@@ -467,7 +379,7 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
                   />
                   Producto
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '40%' }}>
                   Acciones
                 </th>
               </tr>
@@ -600,7 +512,8 @@ export default function InventarioDrawer({ onClose, store, updateStore, onOpenPr
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            maxWidth: '250px'
+                            maxWidth: '400px',
+                            minWidth: '200px'
                           }}>
                             {item.name}
                           </div>
