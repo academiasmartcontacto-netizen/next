@@ -305,6 +305,15 @@ export default function InventarioDrawer({
     return matchesSearch && matchesCategory
   })
 
+  // Función para convertir a title case proper
+  const toTitleCase = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   // Obtener categorías únicas
   const categories = ['todos', ...Array.from(new Set(inventoryItems.map(item => item.category).filter(Boolean)))]
 
@@ -358,7 +367,7 @@ export default function InventarioDrawer({
       </div>
       
       {/* Tabla de Inventario */}
-      <div style={{ flex: 1, overflow: 'visible', background: 'white' }}>
+      <div style={{ flex: 1, overflow: 'visible', background: 'white', borderRadius: '8px' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#64748b' }}>
             <div style={{ textAlign: 'center' }}>
@@ -369,8 +378,8 @@ export default function InventarioDrawer({
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '60%' }}>
+              <tr style={{ background: '#e2e8f0', borderBottom: '2px solid #cbd5e1' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '70%', verticalAlign: 'middle' }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
@@ -379,7 +388,7 @@ export default function InventarioDrawer({
                   />
                   Producto
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '40%' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '30%', verticalAlign: 'middle' }}>
                   Acciones
                 </th>
               </tr>
@@ -515,7 +524,7 @@ export default function InventarioDrawer({
                             maxWidth: '400px',
                             minWidth: '200px'
                           }}>
-                            {item.name}
+                            {toTitleCase(item.name)}
                           </div>
                         </>
                       )}
