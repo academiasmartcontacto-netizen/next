@@ -211,7 +211,6 @@ export default function TiendaPublicPage() {
         {store.mostrarInicio !== false && (
           <section id="inicio" className="products-section" style={{display: 'block'}}>
             <div className="max-w-6xl mx-auto px-4 py-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Nuestros Productos</h2>
               
               {products.length === 0 ? (
                 <div className="text-center py-16">
