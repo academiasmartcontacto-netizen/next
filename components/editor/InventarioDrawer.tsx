@@ -379,18 +379,45 @@ export default function InventarioDrawer({
           <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ background: '#e2e8f0', borderBottom: '2px solid #cbd5e1' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '70%', verticalAlign: 'middle' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '5%', verticalAlign: 'middle' }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
                     onChange={toggleSelectAll}
-                    style={{ marginRight: '8px', width: '16px', height: '16px' }}
+                    style={{ width: '16px', height: '16px' }}
                   />
-                  Producto
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '30%', verticalAlign: 'middle' }}>
-                  Acciones
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '65%', verticalAlign: 'middle' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Imagen de encabezado alineada con las imágenes de filas */}
+                    <div style={{ 
+                      width: '42px', 
+                      height: '42px', 
+                      borderRadius: '6px', 
+                      overflow: 'hidden',
+                      background: '#e2e8f0',
+                      border: '1px solid #e2e8f0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <div style={{ 
+                        fontSize: '20px', 
+                        color: '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%'
+                      }}>
+                        📦
+                      </div>
+                    </div>
+                    <span>Productos</span>
+                  </div>
                 </th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '30%', verticalAlign: 'middle' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -403,6 +430,14 @@ export default function InventarioDrawer({
                     transition: 'all 0.2s'
                   }}
                 >
+                  <td style={{ padding: '16px', textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() => toggleItemSelection(item.id)}
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                  </td>
                   <td style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {editingProductId === item.id ? (
@@ -447,12 +482,6 @@ export default function InventarioDrawer({
                         </>
                       ) : (
                         <>
-                          <input
-                            type="checkbox"
-                            checked={selectedItems.includes(item.id)}
-                            onChange={() => toggleItemSelection(item.id)}
-                            style={{ width: '16px', height: '16px' }}
-                          />
                           {/* Imagen simple del producto */}
                           <div style={{ 
                             width: '40px', 
