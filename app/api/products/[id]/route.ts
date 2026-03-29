@@ -74,6 +74,7 @@ export async function GET(
       imagen: imagenPrincipal, // ✅ Usar imagen de la tabla productImages
       images: productData.images || productData.imagenes || '[]',
       imagenes: productData.imagenes || productData.images || '[]',
+      visible: productData.isActive || productData.activo || true, // ✅ Campo para frontend
       
       // Campos adicionales que faltaban
       isActive: productData.isActive || productData.activo || true,
@@ -196,6 +197,12 @@ export async function PUT(
     if (updateData.badges !== undefined) {
       updateFields.tags = JSON.stringify(updateData.badges)
     }
+    
+    // Mapear campo de visibilidad (como en Secciones)
+    if (updateData.visible !== undefined) {
+      updateFields.isActive = updateData.visible
+      updateFields.activo = updateData.visible
+    }
 
     // Actualizar el producto
     const updatedProduct = await db
@@ -226,6 +233,7 @@ export async function PUT(
       categoria_tienda: productData.categoria_tienda || '',
       image: productData.image || productData.imagen || '',
       imagen: productData.imagen || productData.image || '',
+      visible: productData.isActive || productData.activo || true, // ✅ Campo para frontend
       estado: (productData as any).estado || 'nuevo',
       departamento: (productData as any).departamento || '',
       municipio: (productData as any).municipio || '',

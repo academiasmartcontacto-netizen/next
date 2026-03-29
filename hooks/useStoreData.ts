@@ -83,6 +83,20 @@ export function useStoreData(): StoreData {
         }
         const productsData = await productsResponse.json()
         
+        // Debug: Verificar que los productos tengan el campo visible
+        console.log('🔍 DEBUG - Productos recibidos:', productsData.products?.length || 0)
+        if (productsData.products && productsData.products.length > 0) {
+          productsData.products.forEach((product: any, index: number) => {
+            console.log(`   Producto ${index + 1}:`, {
+              id: product.id,
+              name: product.name,
+              visible: product.visible,
+              isActive: product.isActive,
+              activo: product.activo
+            })
+          })
+        }
+        
         // Obtener secciones
         const sectionsResponse = await fetch(`/api/store-navigation-sections?storeId=${storeData.store.id}`)
         const sectionsData = sectionsResponse.ok ? await sectionsResponse.json() : { sections: [] }
@@ -92,7 +106,7 @@ export function useStoreData(): StoreData {
         
         const result = {
           store: storeData.store,
-          products: productsData.products || [],
+          products: (productsData.products || []).filter((product: any) => product.visible !== false), // ✅ Filtrar productos visibles
           sections: sectionsData.sections?.filter((s: any) => s.isVisible) || []
         }
         
@@ -136,6 +150,10 @@ export function useStoreData(): StoreData {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'UPDATE_PRODUCT_NAME') {
         updateProductRef.current(event.data.productId, { name: event.data.productName })
+      } else if (event.data.type === 'UPDATE_PRODUCT_VISIBILITY') {
+        // Actualizar visibilidad de producto en tiempo real
+        updateProductRef.current(event.data.productId, { visible: event.data.visible })
+        console.log('✅ Visibilidad de producto actualizada en tienda pública:', event.data.productId, event.data.visible)
       } else if (event.data.type === 'ADD_NEW_PRODUCT') {
         addProductRef.current(event.data.product)
       }

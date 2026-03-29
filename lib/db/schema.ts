@@ -3,7 +3,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { relations } from 'drizzle-orm'
 
 // Importar products desde el archivo separado
-import { products, type Product } from './schema-products'
+import { products, productImages, type Product } from './schema-products'
 
 // Users table - Enhanced for complete auth system
 export const users = pgTable('users', {
@@ -323,4 +323,4 @@ export type StorePageWithSections = StorePage & {
 }
 
 // Re-exportar products para que esté disponible globalmente
-export { products, type Product }
+export { products, productImages, type Product }

@@ -111,11 +111,12 @@ export async function GET(
     const formattedProducts = productsWithImages.map(product => ({
       ...product,
       name: product.titulo || product.name,
-      price: product.precio || product.price,
-      originalPrice: product.precio_original || product.originalPrice,
+      price: Number(product.precio || product.price) || 0,
+      originalPrice: Number(product.precio_original || product.originalPrice) || 0,
       image: product.productImages?.url || (product.imagen || product.image ? `/uploads/products/${product.imagen || product.image}` : null),
+      visible: (product.isActive ?? true) || (product.activo ?? true), // ✅ Campo para frontend con nullish coalescing
       allImages: product.allImages || [], // Incluir todas las imágenes
-      onSale: (product.precio_original || product.originalPrice) && (product.precio_original || product.originalPrice) > (product.precio || product.price),
+      onSale: (Number(product.precio_original || product.originalPrice) || 0) > (Number(product.precio || product.price) || 0),
       visits: product.visitas || 0,
       likes: product.likes || 0,
     }))
