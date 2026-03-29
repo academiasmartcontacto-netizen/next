@@ -370,8 +370,8 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
       <div style={{ background: 'white', borderRadius: '8px', overflow: 'visible' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '50%' }}>
+            <tr style={{ background: '#e2e8f0', borderBottom: '2px solid #cbd5e1' }}>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '50%', verticalAlign: 'middle' }}>
                 <input
                   type="checkbox"
                   checked={selectedSections.length === (systemSections.length + customSections.length) && (systemSections.length + customSections.length) > 0}
@@ -380,8 +380,8 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
                 />
                 Sección
               </th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '25%' }}>Estado</th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#1e293b', textTransform: 'uppercase', width: '25%' }}>Acciones</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '25%', verticalAlign: 'middle' }}>Estado</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '25%', verticalAlign: 'middle' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -536,9 +536,6 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
                             zIndex: 2
                           }}>
                             {section.name}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                            {section.category} • {section.products} productos
                           </div>
                         </div>
                       </>
