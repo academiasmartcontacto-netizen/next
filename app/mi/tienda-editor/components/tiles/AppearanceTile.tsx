@@ -11,10 +11,10 @@ export default function AppearanceTile({ onClick }: AppearanceTileProps) {
   return (
     <Tile
       onClick={onClick}
-      bgColor="rgba(176, 224, 230, 0.25)"
-      shadowColor="rgba(176, 224, 230, 0.15)"
-      iconColor="#20c997"
-      titleColor="#0f5132"
+      bgColor="rgba(173, 216, 230, 0.25)"
+      shadowColor="rgba(173, 216, 230, 0.15)"
+      iconColor="#0d6efd"
+      titleColor="#084298"
       title="Apariencia"
       icon={<Palette size={24} />}
     />

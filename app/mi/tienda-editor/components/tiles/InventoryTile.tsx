@@ -11,10 +11,10 @@ export default function InventoryTile({ onClick }: InventoryTileProps) {
   return (
     <Tile
       onClick={onClick}
-      bgColor="rgba(239, 68, 68, 0.25)"
-      shadowColor="rgba(239, 68, 68, 0.15)"
-      iconColor="#dc2626"
-      titleColor="#7f1d1d"
+      bgColor="rgba(173, 216, 230, 0.25)"
+      shadowColor="rgba(173, 216, 230, 0.15)"
+      iconColor="#0d6efd"
+      titleColor="#084298"
       title="Inventario"
       icon={<Package size={24} />}
     />

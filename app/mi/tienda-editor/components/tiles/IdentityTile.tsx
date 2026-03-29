@@ -11,10 +11,10 @@ export default function IdentityTile({ onClick }: IdentityTileProps) {
   return (
     <Tile
       onClick={onClick}
-      bgColor="rgba(255, 182, 193, 0.25)"
-      shadowColor="rgba(255, 182, 193, 0.15)"
-      iconColor="#d63384"
-      titleColor="#831943"
+      bgColor="rgba(173, 216, 230, 0.25)"
+      shadowColor="rgba(173, 216, 230, 0.15)"
+      iconColor="#0d6efd"
+      titleColor="#084298"
       title="Identidad Visual"
       icon={<Store size={24} />}
     />

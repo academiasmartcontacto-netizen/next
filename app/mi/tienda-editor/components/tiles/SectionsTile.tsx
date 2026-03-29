@@ -11,10 +11,10 @@ export default function SectionsTile({ onClick }: SectionsTileProps) {
   return (
     <Tile
       onClick={onClick}
-      bgColor="rgba(144, 238, 144, 0.25)"
-      shadowColor="rgba(144, 238, 144, 0.15)"
-      iconColor="#198754"
-      titleColor="#0f5132"
+      bgColor="rgba(173, 216, 230, 0.25)"
+      shadowColor="rgba(173, 216, 230, 0.15)"
+      iconColor="#0d6efd"
+      titleColor="#084298"
       title="Secciones"
       icon={<Layout size={24} />}
     />
