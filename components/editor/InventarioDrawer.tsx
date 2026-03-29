@@ -122,11 +122,49 @@ export default function InventarioDrawer({
     }
   }
 
-  // Toggle visibilidad de item
-  const toggleItemVisibility = (productId: string) => {
-    setInventoryItems(prev => prev.map(item => 
-      item.id === productId ? { ...item, visible: !item.visible } : item
-    ))
+  // Toggle visibilidad/agotado de item
+  const toggleItemVisibility = async (productId: string) => {
+    const item = inventoryItems.find(i => i.id === productId)
+    if (!item) return
+
+    const newVisible = !item.visible
+    const newAgotado = item.visible ? true : false
+
+    try {
+      // Actualizar en la base de datos
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          visible: newVisible,
+          storeId: store.id 
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Actualizar estado local con el resultado real
+        setInventoryItems(prev => prev.map(i => 
+          i.id === productId ? { ...i, visible: newVisible, agotado: newAgotado } : i
+        ))
+        
+        // Comunicar cambio a tienda pública
+        if (typeof window !== 'undefined' && window.parent) {
+          const message = {
+            type: 'UPDATE_PRODUCT_VISIBILITY',
+            productId: productId,
+            visible: newVisible
+          }
+          window.parent.postMessage(message, '*')
+        }
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al actualizar visibilidad')
+      }
+    } catch (error: any) {
+      console.error('Error al actualizar visibilidad:', error)
+      alert(`Error: ${error.message}`)
+    }
   }
 
   // Editar item
@@ -318,7 +356,7 @@ export default function InventarioDrawer({
   const categories = ['todos', ...Array.from(new Set(inventoryItems.map(item => item.category).filter(Boolean)))]
 
   return (
-    <div className="px-6 py-6 space-y-4">
+    <div className="px-2 py-6 space-y-4">
       {/* Filtros */}
       <div className="flex justify-end">
         <div className="flex gap-4">
@@ -376,10 +414,10 @@ export default function InventarioDrawer({
             </div>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', margin: '0' }}>
             <thead>
               <tr style={{ background: '#e2e8f0', borderBottom: '2px solid #cbd5e1' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '5%', verticalAlign: 'middle' }}>
+                <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '5%', verticalAlign: 'middle' }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
@@ -387,37 +425,9 @@ export default function InventarioDrawer({
                     style={{ width: '16px', height: '16px' }}
                   />
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '65%', verticalAlign: 'middle' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {/* Imagen de encabezado alineada con las imágenes de filas */}
-                    <div style={{ 
-                      width: '40px', 
-                      height: '40px', 
-                      borderRadius: '6px', 
-                      overflow: 'hidden',
-                      background: '#e2e8f0',
-                      border: '1px solid #cbd5e1',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <div style={{ 
-                        fontSize: '20px', 
-                        color: '#64748b',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '100%',
-                        height: '100%'
-                      }}>
-                        📦
-                      </div>
-                    </div>
-                    <span>Productos</span>
-                  </div>
-                </th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '30%', verticalAlign: 'middle' }}>Acciones</th>
+                <th style={{ padding: '12px 8px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '65%', verticalAlign: 'middle' }}>Producto</th>
+                <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '20%', verticalAlign: 'middle' }}>Estado</th>
+                <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '10%', verticalAlign: 'middle' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -426,11 +436,11 @@ export default function InventarioDrawer({
                   key={`${item.id}-${index}`} // Clave única combinando ID y índice
                   style={{ 
                     borderBottom: '1px solid #f1f5f9',
-                    background: editingProductId === item.id ? '#fef3c7' : (index % 2 === 0 ? 'white' : '#f8fafc'),
+                    background: item.visible === false ? '#fef2f2' : (editingProductId === item.id ? '#fef3c7' : (index % 2 === 0 ? 'white' : '#f8fafc')),
                     transition: 'all 0.2s'
                   }}
                 >
-                  <td style={{ padding: '16px', textAlign: 'center' }}>
+                  <td style={{ padding: '16px 8px', textAlign: 'center' }}>
                     <input
                       type="checkbox"
                       checked={selectedItems.includes(item.id)}
@@ -438,7 +448,7 @@ export default function InventarioDrawer({
                       style={{ width: '16px', height: '16px' }}
                     />
                   </td>
-                  <td style={{ padding: '16px' }}>
+                  <td style={{ padding: '16px 8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {editingProductId === item.id ? (
                         <>
@@ -559,7 +569,36 @@ export default function InventarioDrawer({
                       )}
                     </div>
                   </td>
-                  <td style={{ padding: '16px', textAlign: 'center' }}>
+                  <td style={{ padding: '16px 8px', textAlign: 'center' }}>
+                    {item.visible === false ? (
+                      <span style={{
+                        padding: '4px 8px',
+                        background: '#dc2626',
+                        color: 'white',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        borderRadius: '4px',
+                        textTransform: 'uppercase',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        Agotado
+                      </span>
+                    ) : (
+                      <span style={{
+                        padding: '4px 8px',
+                        background: '#10b981',
+                        color: 'white',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        borderRadius: '4px',
+                        textTransform: 'uppercase',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        Visible
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: '16px 8px', textAlign: 'center' }}>
                     {editingProductId === item.id ? (
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                         <button
@@ -661,8 +700,8 @@ export default function InventarioDrawer({
                               onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
                               onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                             >
-                              {item.visible ? <EyeOff size={16} color="#64748b" /> : <Eye size={16} color="#64748b" />}
-                              {item.visible ? 'Ocultar' : 'Mostrar'}
+                              {item.visible ? <AlertCircle size={16} color="#dc2626" /> : <Package size={16} color="#059669" />}
+                              {item.visible ? 'Marcar como agotado' : 'Habilitar producto'}
                             </button>
                             
                             <button

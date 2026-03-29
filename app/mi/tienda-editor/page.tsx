@@ -275,6 +275,7 @@ export default function TiendaEditorPage() {
                   onClose={() => {
                     setIsProductosDrawerOpen(false)
                     setEditingProductId(null)
+                    setIsInventarioDrawerOpen(true) // Volver al inventario después de editar
                   }} 
                   store={store} 
                   updateStore={updateStore}
