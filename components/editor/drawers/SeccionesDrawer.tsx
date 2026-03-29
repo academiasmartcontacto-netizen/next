@@ -372,13 +372,15 @@ export default function SeccionesDrawer({ onClose, store, updateStore, onNewSect
           <thead>
             <tr style={{ background: '#e2e8f0', borderBottom: '2px solid #cbd5e1' }}>
               <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '50%', verticalAlign: 'middle' }}>
-                <input
-                  type="checkbox"
-                  checked={selectedSections.length === (systemSections.length + customSections.length) && (systemSections.length + customSections.length) > 0}
-                  onChange={toggleSelectAll}
-                  style={{ marginRight: '8px', width: '16px', height: '16px' }}
-                />
-                Sección
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedSections.length === (systemSections.length + customSections.length) && (systemSections.length + customSections.length) > 0}
+                    onChange={toggleSelectAll}
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  Sección
+                </div>
               </th>
               <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '25%', verticalAlign: 'middle' }}>Estado</th>
               <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#1e293b', textTransform: 'capitalize', width: '25%', verticalAlign: 'middle' }}>Acciones</th>
