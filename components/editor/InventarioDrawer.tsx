@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Edit2, Trash2, Eye, EyeOff, Package, Search, Filter, MoreVertical, AlertCircle } from 'lucide-react'
+import { Plus, Edit2, Trash2, Eye, EyeOff, Package, Search, Filter, MoreVertical } from 'lucide-react'
 
 interface InventarioDrawerProps {
   onClose: () => void
@@ -675,7 +675,7 @@ export default function InventarioDrawer({
                             borderRadius: '8px',
                             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
                             zIndex: 1000,
-                            minWidth: '180px',
+                            minWidth: '144px',
                             marginTop: '4px'
                           }}>
                             <button
@@ -692,16 +692,12 @@ export default function InventarioDrawer({
                                 fontSize: '13px',
                                 color: '#374151',
                                 cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
                                 transition: 'background 0.2s'
                               }}
                               onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
                               onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                             >
-                              {item.visible ? <AlertCircle size={16} color="#dc2626" /> : <Package size={16} color="#059669" />}
-                              {item.visible ? 'Marcar como agotado' : 'Habilitar producto'}
+                              {item.visible ? 'Agotado' : 'Visible'}
                             </button>
                             
                             <button
@@ -720,15 +716,11 @@ export default function InventarioDrawer({
                                 fontSize: '13px',
                                 color: '#374151',
                                 cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
                                 transition: 'background 0.2s'
                               }}
                               onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
                               onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                             >
-                              <Edit2 size={16} color="#64748b" />
                               Editar
                             </button>
                             
@@ -748,15 +740,11 @@ export default function InventarioDrawer({
                                 fontSize: '13px',
                                 color: '#dc2626',
                                 cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
                                 transition: 'background 0.2s'
                               }}
                               onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
                               onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                             >
-                              <Trash2 size={16} color="#dc2626" />
                               Eliminar
                             </button>
                           </div>
