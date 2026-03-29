@@ -391,12 +391,12 @@ export default function InventarioDrawer({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     {/* Imagen de encabezado alineada con las imágenes de filas */}
                     <div style={{ 
-                      width: '42px', 
-                      height: '42px', 
+                      width: '40px', 
+                      height: '40px', 
                       borderRadius: '6px', 
                       overflow: 'hidden',
                       background: '#e2e8f0',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid #cbd5e1',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
