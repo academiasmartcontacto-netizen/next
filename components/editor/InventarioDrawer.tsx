@@ -27,7 +27,6 @@ export default function InventarioDrawer({
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterCategory, setFilterCategory] = useState('todos')
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [editingProductName, setEditingProductName] = useState('')
   const [editingProductDescription, setEditingProductDescription] = useState('')
@@ -339,8 +338,7 @@ export default function InventarioDrawer({
   // Filtrar items
   const filteredItems = inventoryItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = filterCategory === 'todos' || item.category === filterCategory
-    return matchesSearch && matchesCategory
+    return matchesSearch
   })
 
   // Función para convertir a title case proper
@@ -352,16 +350,13 @@ export default function InventarioDrawer({
       .join(' ');
   };
 
-  // Obtener categorías únicas
-  const categories = ['todos', ...Array.from(new Set(inventoryItems.map(item => item.category).filter(Boolean)))]
-
   return (
     <div className="px-2 py-6 space-y-4">
       {/* Filtros */}
-      <div className="flex justify-end">
-        <div className="flex gap-4">
+      <div className="flex flex-col gap-4">
+        <div className="flex w-full">
           {/* Buscador */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1">
             <Search size={16} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
@@ -371,19 +366,6 @@ export default function InventarioDrawer({
               className="w-full pl-12 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
-          
-          {/* Filtro por categoría */}
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="py-2 pl-4 pr-8 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-          >
-            {categories.map(category => (
-              <option key={category} value={category}>
-                {category === 'todos' ? 'Todas las categorías' : category}
-              </option>
-            ))}
-          </select>
         </div>
         
         {selectedItems.length > 0 && (
@@ -766,11 +748,11 @@ export default function InventarioDrawer({
           }}>
             <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}>📦</div>
             <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
-              {searchTerm || filterCategory !== 'todos' ? 'No se encontraron productos' : 'No hay productos en el inventario'}
+              {searchTerm ? 'No se encontraron productos' : 'No hay productos en el inventario'}
             </div>
             <div style={{ fontSize: '14px' }}>
-              {searchTerm || filterCategory !== 'todos' 
-                ? 'Intenta con otra búsqueda o filtro' 
+              {searchTerm 
+                ? 'Intenta con otra búsqueda' 
                 : 'Agrega tu primer producto al inventario'
               }
             </div>
