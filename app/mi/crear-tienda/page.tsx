@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Store, ArrowLeft, Check, AlertCircle } from 'lucide-react'
+import { Store, ArrowLeft, Check, AlertCircle, Globe } from 'lucide-react'
 import Navbar from '@/components/layout/navbar'
 import { MinimalButton } from '@/components/ui/minimal-button'
 import { MinimalInput } from '@/components/ui/minimal-input'
@@ -120,51 +120,37 @@ function CrearTiendaContent() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-
-    // Auto-generar slug desde nombre (como el PHP)
+    
     if (name === 'nombre') {
-      // Solo autocompletar si el usuario no ha editado el slug manualmente
-      const slugInput = document.getElementById('slug') as HTMLInputElement
-      if (slugInput && (!slugInput.value || slugInput.dataset.manual !== 'true')) {
-        const normalized = value
-          .toLowerCase()
-          .replace(/[áàäâ]/g, 'a')
-          .replace(/[éèëê]/g, 'e')
-          .replace(/[íìïî]/g, 'i')
-          .replace(/[óòöô]/g, 'o')
-          .replace(/[úùüû]/g, 'u')
-          .replace(/ñ/g, 'n')
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '')
-        
-        setFormData(prev => ({
-          ...prev,
-          slug: normalized
-        }))
-      }
+      // Generar slug automáticamente desde el nombre
+      const normalized = value
+        .toLowerCase()
+        .replace(/[áàäâ]/g, 'a')
+        .replace(/[éèëê]/g, 'e')
+        .replace(/[íìïî]/g, 'i')
+        .replace(/[óòöô]/g, 'o')
+        .replace(/[úùüû]/g, 'u')
+        .replace(/ñ/g, 'n')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        slug: normalized
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
     }
   }
 
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Marcar como editado manualmente (como el PHP)
-    const slugInput = e.target
-    slugInput.dataset.manual = 'true'
-    
-    setFormData(prev => ({
-      ...prev,
-      slug: e.target.value
-    }))
-  }
-
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Solo permitir números
-    const value = e.target.value.replace(/[^0-9]/g, '')
+    const value = e.target.value.replace(/\D/g, '').slice(0, 8)
     setFormData(prev => ({
       ...prev,
       whatsapp: value
@@ -301,8 +287,8 @@ function CrearTiendaContent() {
 
         {/* Form */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="p-10">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Hidden fields for feria context */}
               <input type="hidden" name="feria_sector" value={feriaContext.sector} />
               <input type="hidden" name="feria_city" value={feriaContext.city} />
@@ -328,60 +314,53 @@ function CrearTiendaContent() {
               )}
 
               {/* Store Information */}
-              <div className="space-y-6">
-                <div className="border-b border-gray-200 pb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Tienda</h2>
+              <div className="space-y-8">
+                <div className="border-b border-gray-200 pb-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Información de la Tienda</h2>
                   
-                  <MinimalInput
-                    id="nombre"
-                    name="nombre"
-                    label="Nombre de la Tienda"
-                    placeholder="Ej: Tecnología Bolivia"
-                    required
-                    value={formData.nombre}
-                    onChange={(e) => handleInputChange(e)}
-                    autoComplete="organization"
-                  />
-
-                  <div className="mt-6">
-                    <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-                      URL Personalizada
-                    </label>
-                    <div className="flex border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500">
-                      <span className="bg-gray-50 text-gray-600 text-sm font-medium px-4 py-3 border-r border-gray-300 whitespace-nowrap">
-                        tienda/
-                      </span>
-                      <input
-                        type="text"
-                        id="slug"
-                        name="slug"
-                        value={formData.slug}
-                        onChange={handleSlugChange}
+                  <div className="space-y-6">
+                    <div>
+                      <MinimalInput
+                        id="nombre"
+                        name="nombre"
+                        label="Nombre de la Tienda"
+                        placeholder="Ej: Tecnología Bolivia"
                         required
-                        className="flex-1 px-4 py-3 border-0 focus:outline-none"
-                        placeholder="mi-tienda"
-                        autoComplete="url"
+                        value={formData.nombre}
+                        onChange={(e) => handleInputChange(e)}
+                        autoComplete="organization"
                       />
+                      
+                      {formData.slug && (
+                        <div className="flex items-center space-x-2 text-sm text-gray-600 mt-3">
+                          <span>Tu tienda estará disponible en:</span>
+                          <div className="flex items-center space-x-1 bg-blue-50 px-3 py-1 rounded-md border border-blue-200">
+                            <Globe className="w-4 h-4 text-blue-600" />
+                            <span className="text-blue-700 font-medium">
+                              donebolivia.com/tienda/{formData.slug}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
 
-                  <MinimalInput
-                    id="whatsapp"
-                    name="whatsapp"
-                    label="WhatsApp para Ventas"
-                    type="tel"
-                    placeholder="70123456"
-                    required
-                    maxLength={8}
-                    value={formData.whatsapp}
-                    onChange={(e) => handleWhatsappChange(e)}
-                    autoComplete="tel"
-                    helperText="Número de teléfono boliviano (8 dígitos)"
-                  />
+                    <MinimalInput
+                      id="whatsapp"
+                      name="whatsapp"
+                      label="WhatsApp para Ventas"
+                      type="tel"
+                      placeholder="70123456"
+                      required
+                      maxLength={8}
+                      value={formData.whatsapp}
+                      onChange={(e) => handleWhatsappChange(e)}
+                      autoComplete="tel"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-4 pt-8">
                 <MinimalButton 
                   type="submit" 
                   className="flex-1"
