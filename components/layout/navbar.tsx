@@ -111,6 +111,11 @@ export default function Navbar() {
 
           {/* User Section */}
           <div className="flex items-center space-x-4">
+            {/* Feria Virtual Button */}
+            <MinimalButton variant="outline" asChild className="hidden sm:flex">
+              <Link href="/feria" target="_blank">Feria Virtual</Link>
+            </MinimalButton>
+            
             {user ? (
               <div className="relative user-dropdown">
                 <button
@@ -125,7 +130,6 @@ export default function Navbar() {
                   {/* User Info */}
                   <div className="hidden lg:block text-left">
                     <p className="text-sm font-medium text-white">{displayName}</p>
-                    <p className="text-xs text-[#ffcc99]">{user.email}</p>
                   </div>
                   
                   {/* Dropdown Arrow */}
@@ -142,7 +146,6 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{displayName}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
                     
                     <div className="py-1">
