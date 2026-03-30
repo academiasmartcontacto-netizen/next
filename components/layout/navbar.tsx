@@ -207,9 +207,12 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center space-x-3">
                 <MinimalButton variant="outline" asChild>
+                  <Link href="/feria" target="_blank">Feria Virtual</Link>
+                </MinimalButton>
+                <MinimalButton variant="outline" asChild>
                   <Link href="/login">Iniciar Sesión</Link>
                 </MinimalButton>
-                <MinimalButton asChild>
+                <MinimalButton variant="outline" asChild>
                   <Link href="/register">Registrarse</Link>
                 </MinimalButton>
               </div>
