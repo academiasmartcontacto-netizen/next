@@ -82,7 +82,7 @@ export default function CreateStorePage() {
           const storeData = await storeResponse.json()
           if (storeData.store) {
             // User already has a store, redirect to edit
-            router.push(`/edit-store/${storeData.store.link}`)
+            router.push('/mi/tienda-editor')
             return
           }
         }
@@ -130,7 +130,7 @@ export default function CreateStorePage() {
       
       // Redirect to edit-store after 2 seconds
       setTimeout(() => {
-        router.push(`/edit-store/${result.store.link}`)
+        router.push('/mi/tienda-editor')
       }, 2000)
       
     } catch (error) {

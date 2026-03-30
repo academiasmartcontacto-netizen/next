@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-export function useEditorData(storeLink: string = 'benedeto') {
+export function useEditorData(storeLink: string = '') {
   const [store, setStore] = useState<any>(null)
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -10,18 +10,34 @@ export function useEditorData(storeLink: string = 'benedeto') {
   // Cargar datos reales de la tienda del usuario
   useEffect(() => {
     const fetchStoreData = async () => {
+      // Si no hay storeLink, no intentar cargar
+      if (!storeLink || storeLink.trim() === '') {
+        console.log('No store link provided, skipping fetch')
+        return
+      }
+
       try {
+        console.log('Fetching store data for link:', storeLink)
         const storeResponse = await fetch(`/api/stores/${storeLink}`)
         if (!storeResponse.ok) {
-          throw new Error('Tienda no encontrada')
+          if (storeResponse.status === 404) {
+            console.log('Store not found, will redirect to create store')
+            setStore({
+              error: 'No se encontró la tienda. Por favor crea una tienda primero.'
+            })
+          } else {
+            throw new Error(`Error ${storeResponse.status}: Tienda no disponible`)
+          }
+          return
         }
         
         const storeData = await storeResponse.json()
+        console.log('Store data loaded:', storeData.store)
         setStore(storeData.store)
       } catch (err: any) {
         console.error('Error cargando tienda:', err)
         setStore({
-          error: 'No se pudo cargar la tienda. Por favor crea una tienda primero.'
+          error: `No se pudo cargar la tienda: ${err.message || 'Error desconocido'}`
         })
       }
     }
