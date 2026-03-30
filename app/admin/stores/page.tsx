@@ -172,6 +172,47 @@ export default function AdminStores() {
     }
   }
 
+  const handleDeleteStore = async (storeId: string, storeName: string) => {
+    if (!confirm(`¿Estás seguro de que quieres eliminar la tienda "${storeName}"? Esta acción no se puede deshacer.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/stores?id=${storeId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Eliminar del estado local
+        setStores(stores.filter(store => store.id !== storeId))
+        // Eliminar de la selección si estaba seleccionada
+        setSelectedStores(selectedStores.filter(id => id !== storeId))
+        alert('Tienda eliminada exitosamente')
+      } else {
+        throw new Error(data.error || 'Error al eliminar la tienda')
+      }
+    } catch (error) {
+      console.error('Error deleting store:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      alert(`Error al eliminar la tienda: ${errorMessage}`)
+    }
+  }
+
+  const handleViewStore = (storeLink: string) => {
+    window.open(`/tienda/${storeLink}`, '_blank')
+  }
+
+  const handleEditStore = (storeId: string) => {
+    // TODO: Implementar edición de tienda
+    alert('Función de edición próximamente')
+  }
+
   const stats = {
     total: stores.length,
     active: stores.filter(s => s.status === 'active').length,
@@ -452,7 +493,7 @@ export default function AdminStores() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-1">
-                        {getRatingStars(store.rating)}
+                        {getRatingStars(parseFloat(store.rating))}
                         <span className="text-sm text-gray-600 ml-1">({store.rating})</span>
                       </div>
                     </td>
@@ -464,13 +505,29 @@ export default function AdminStores() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleViewStore(store.slug)}
+                          title="Ver tienda"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditStore(store.id)}
+                          title="Editar tienda"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteStore(store.id, store.name)}
+                          title="Eliminar tienda"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { stores, users, userProfiles } from '@/lib/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { stores, users, userProfiles, storePages, storeSections } from '@/lib/db/schema'
+import { products } from '@/lib/db/schema-products'
+import { eq, desc, inArray } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
@@ -89,6 +90,76 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: error.message || 'Error al obtener las tiendas' 
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const storeId = searchParams.get('id')
+
+    if (!storeId) {
+      return NextResponse.json(
+        { success: false, error: 'ID de tienda es requerido' },
+        { status: 400 }
+      )
+    }
+
+    console.log('Deleting store:', storeId)
+
+    // Verificar que la tienda existe
+    const existingStore = await db
+      .select()
+      .from(stores)
+      .where(eq(stores.id, storeId))
+      .limit(1)
+
+    if (existingStore.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Tienda no encontrada' },
+        { status: 404 }
+      )
+    }
+
+    // Eliminar en cascada correcta:
+    // 1. Primero eliminar storeSections (que dependen de storePages)
+    const storePagesToDelete = await db
+      .select({ id: storePages.id })
+      .from(storePages)
+      .where(eq(storePages.storeId, storeId))
+
+    if (storePagesToDelete.length > 0) {
+      const pageIds = storePagesToDelete.map(page => page.id)
+      for (const pageId of pageIds) {
+        await db.delete(storeSections).where(eq(storeSections.pageId, pageId))
+      }
+    }
+
+    // 2. Eliminar storePages
+    await db.delete(storePages).where(eq(storePages.storeId, storeId))
+
+    // 3. Eliminar productos de la tienda
+    await db.delete(products).where(eq(products.storeId, storeId))
+
+    // 4. Eliminar la tienda
+    await db.delete(stores).where(eq(stores.id, storeId))
+
+    console.log('Store deleted successfully:', storeId)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Tienda eliminada exitosamente'
+    })
+
+  } catch (error) {
+    console.error('Error deleting store:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error.message || 'Error al eliminar la tienda' 
       },
       { status: 500 }
     )
