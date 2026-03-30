@@ -9,6 +9,7 @@ import { products, productImages, type Product } from './schema-products'
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),
+  phone: text('phone').unique(), // Nuevo campo para login por teléfono
   passwordHash: text('password_hash').notNull(),
   emailVerified: boolean('email_verified').default(false),
   emailVerificationToken: text('email_verification_token'),

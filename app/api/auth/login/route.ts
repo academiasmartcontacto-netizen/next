@@ -3,7 +3,7 @@ import { AuthService, type LoginCredentials } from '@/lib/auth'
 import { z } from 'zod'
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  phone: z.string().regex(/^[67]\d{7}$/),
   password: z.string().min(1),
 })
 

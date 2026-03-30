@@ -43,11 +43,11 @@ function LoginPageContent() {
     setError(null)
     
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
+    const phone = formData.get('phone') as string
     const password = formData.get('password') as string
     
     try {
-      await login(email, password)
+      await login(phone, password)
       
       // Redirección directa sin mensaje intermedio
       router.push(returnTo)
@@ -70,16 +70,16 @@ function LoginPageContent() {
             <div className="p-8">
               <form onSubmit={onSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Correo Electrónico
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Número de Celular
                   </label>
                   <MinimalInput
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
                     required
-                    placeholder="tu@correo.com"
+                    placeholder="77712345"
                     disabled={isLoading}
                   />
                 </div>

@@ -97,7 +97,7 @@ export default function RegisterPage() {
       }
 
       // LOGIN AUTOMÁTICO DESPUÉS DEL REGISTRO
-      await login(data.email, data.password)
+      await login(data.telefono, data.password)
       
       // REDIRECCIÓN DIRECTA A HOMEPAGE LOGUEADO
       router.push('/')

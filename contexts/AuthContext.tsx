@@ -23,7 +23,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (phone: string, password: string) => Promise<void>
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
 }
@@ -51,13 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const login = async (email: string, password: string) => {
+  const login = async (phone: string, password: string) => {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ phone, password }),
     })
 
     if (!response.ok) {

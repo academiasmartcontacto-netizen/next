@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { eq, or } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { users, userProfiles, userSessions, userActivityLog, type User, type UserProfile, type UserSession } from '@/lib/db/schema'
 import { v4 as uuidv4 } from 'uuid'
@@ -12,7 +12,7 @@ export interface AuthUser {
 }
 
 export interface LoginCredentials {
-  email: string
+  phone: string
   password: string
 }
 
@@ -74,7 +74,9 @@ export class AuthService {
 
   // Register new user
   static async register(data: RegisterData, ipAddress?: string, userAgent?: string): Promise<AuthUser> {
-    const existingUser = await db.select().from(users).where(eq(users.email, data.email)).limit(1)
+    const existingUser = await db.select().from(users).where(
+      or(eq(users.email, data.email), eq(users.phone, data.phone))
+    ).limit(1)
     
     if (existingUser.length > 0) {
       throw new Error('User already exists')
@@ -86,6 +88,7 @@ export class AuthService {
     const [user] = await db.insert(users)
       .values({
         email: data.email,
+        phone: data.phone, // Guardar teléfono también en users
         passwordHash,
         emailVerified: false,
         isActive: true,
@@ -123,12 +126,13 @@ export class AuthService {
     const [user] = await db.select({
       id: users.id,
       email: users.email,
+      phone: users.phone,
       passwordHash: users.passwordHash,
       emailVerified: users.emailVerified,
       isActive: users.isActive,
       role: users.role,
       lastLoginAt: users.lastLoginAt,
-    }).from(users).where(eq(users.email, credentials.email)).limit(1)
+    }).from(users).where(eq(users.phone, credentials.phone)).limit(1)
 
     if (!user) {
       throw new Error('Invalid credentials')
@@ -188,6 +192,7 @@ export class AuthService {
     const [user] = await db.select({
       id: users.id,
       email: users.email,
+      phone: users.phone,
       role: users.role,
     }).from(users).where(eq(users.id, id)).limit(1)
 
