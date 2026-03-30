@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Eye, Monitor, Smartphone, X, Plus } from 'lucide-react'
 import Link from 'next/link'
 import ProductosDrawer from '@/components/editor/ProductosDrawer'
@@ -17,7 +17,37 @@ import './tienda-editor.css'
 import '../../../styles/design-tokens.css'
 
 export default function TiendaEditorPage() {
-  const { store, updateStore, autoSaveStatus, iframeRef } = useEditorData('benedeto')
+  const [userStore, setUserStore] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  
+  // Obtener la tienda del usuario logueado
+  useEffect(() => {
+    const fetchUserStore = async () => {
+      try {
+        const response = await fetch('/api/stores?user-store=true')
+        const data = await response.json()
+        
+        if (data.store) {
+          setUserStore(data.store)
+        } else {
+          // Redirigir a crear tienda si no tiene
+          window.location.href = '/mi/crear-tienda'
+          return
+        }
+      } catch (error) {
+        console.error('Error fetching user store:', error)
+        window.location.href = '/mi/crear-tienda'
+        return
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserStore()
+  }, [])
+
+  // Usar el link de la tienda del usuario
+  const { store, updateStore, autoSaveStatus, iframeRef } = useEditorData(userStore?.link || '')
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop')
   const [activeAccordion, setActiveAccordion] = useState('identidad')
   const [isNavbarDrawerOpen, setIsNavbarDrawerOpen] = useState(false)
@@ -38,14 +68,29 @@ export default function TiendaEditorPage() {
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       overflow: 'hidden'
     }}>
-      {/* SYMBALOO-STYLE SIDEBAR */}
-      <aside 
-        className="w-[520px] flex flex-col" 
-        style={{
-          background: '#ffffff',
-          boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-        }}
-      >
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center w-full h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p style={{ color: '#ffffff', fontSize: '18px', fontWeight: '600' }}>
+              Cargando tu tienda...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Editor Content */}
+      {!isLoading && (
+        <>
+          {/* SYMBALOO-STYLE SIDEBAR */}
+          <aside 
+            className="w-[520px] flex flex-col" 
+            style={{
+              background: '#ffffff',
+              boxShadow: '0 0 20px rgba(0,0,0,0.1)'
+            }}
+          >
         {/* Header Principal */}
         <div 
           className="flex items-center justify-between px-6 py-2"
@@ -346,6 +391,8 @@ export default function TiendaEditorPage() {
             title="Store Preview"
           />
         </div>
+      )}
+        </>
       )}
     </div>
   )
