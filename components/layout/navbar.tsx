@@ -111,11 +111,6 @@ export default function Navbar() {
 
           {/* User Section */}
           <div className="flex items-center space-x-4">
-            {/* Feria Virtual Button */}
-            <MinimalButton variant="outline" asChild className="hidden sm:flex">
-              <Link href="/feria" target="_blank">Feria Virtual</Link>
-            </MinimalButton>
-            
             {user ? (
               <div className="relative user-dropdown">
                 <button
