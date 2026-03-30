@@ -3,7 +3,10 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Store, ArrowLeft, Check } from 'lucide-react'
+import { Store, ArrowLeft, Check, AlertCircle } from 'lucide-react'
+import Navbar from '@/components/layout/navbar'
+import { MinimalButton } from '@/components/ui/minimal-button'
+import { MinimalInput } from '@/components/ui/minimal-input'
 
 function CrearTiendaContent() {
   const router = useRouter()
@@ -275,169 +278,129 @@ function CrearTiendaContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center">
-              <Store className="w-8 h-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Done!</span>
-            </Link>
-            <Link 
-              href="/"
-              className="inline-flex items-center text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver al inicio
-            </Link>
-          </div>
+      <Navbar />
+      
+      {/* Main Content */}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {getPageTitle()}
+          </h1>
         </div>
-      </div>
 
-      {/* Alerta de contexto de feria */}
-      {feriaContext.sector && feriaContext.city && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center">
+        {/* Alerta de contexto de feria */}
+        {feriaContext.sector && feriaContext.city && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center">
             <Store className="w-8 h-8 text-blue-600 mr-3" />
             <div>
               <small className="text-blue-800 font-semibold uppercase">Ubicación Seleccionada</small>
               <div className="font-bold text-gray-900">Sector {feriaContext.sector} - {feriaContext.city}</div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
-            <h1 className="text-3xl font-bold text-white">{getPageTitle()}</h1>
-            <p className="text-blue-100 mt-2">
-              {feriaContext.sector && feriaContext.city 
-                ? 'Completa los datos para crear tu tienda y ocupar tu puesto seleccionado.'
-                : 'Configura tu tienda virtual y empieza a vender online'
-              }
-            </p>
-          </div>
+        {/* Form */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Hidden fields for feria context */}
+              <input type="hidden" name="feria_sector" value={feriaContext.sector} />
+              <input type="hidden" name="feria_city" value={feriaContext.city} />
+              <input type="hidden" name="feria_pos" value={feriaContext.position} />
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            {/* Hidden fields for feria context */}
-            <input type="hidden" name="feria_sector" value={feriaContext.sector} />
-            <input type="hidden" name="feria_city" value={feriaContext.city} />
-            <input type="hidden" name="feria_pos" value={feriaContext.position} />
+              {/* Error/Success Messages */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 text-red-700">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-sm font-medium">{error}</p>
+                  </div>
+                </div>
+              )}
+              
+              {success && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 text-green-700">
+                    <Check className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-sm font-medium">{success}</p>
+                  </div>
+                </div>
+              )}
 
-            {/* Error/Success Messages */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                <span className="text-red-800 text-sm">❌ {error}</span>
-              </div>
-            )}
-            
-            {success && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
-                <span className="text-green-800 text-sm">✅ {success}</span>
-              </div>
-            )}
-
-            {/* TARJETA 1: DATOS DE LA TIENDA */}
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">Datos de la Tienda</h2>
-              <div className="space-y-4">
-                <div>
-                  <input
-                    type="text"
+              {/* Store Information */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-200 pb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Tienda</h2>
+                  
+                  <MinimalInput
                     id="nombre"
                     name="nombre"
+                    label="Nombre de la Tienda"
+                    placeholder="Ej: Tecnología Bolivia"
+                    required
                     value={formData.nombre}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    placeholder="Nombre de tu Tienda (Ej: Tecnología Bolivia)"
+                    onChange={(e) => handleInputChange(e)}
+                    autoComplete="organization"
                   />
-                  {error && error.includes('nombre') && (
-                    <div className="text-red-600 text-sm mt-2">❌ Debes ingresar el nombre de tu tienda</div>
-                  )}
-                </div>
-              </div>
-            </div>
 
-            {/* TARJETA 2: URL */}
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">Dirección Web (Link)</h2>
-              <div className="space-y-4">
-                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                  <span className="bg-gray-50 text-gray-600 text-sm font-medium px-4 py-3 border-r border-gray-300 whitespace-nowrap">
-                    localhost:3000/tienda/
-                  </span>
-                  <input
-                    type="text"
-                    id="slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleSlugChange}
-                    required
-                    className="flex-1 px-4 py-3 border-0 focus:outline-none text-lg"
-                    placeholder="mi-tienda"
-                  />
-                </div>
-                <div className="text-gray-500 text-sm">
-                  Esta será tu dirección única para compartir con tus clientes.
-                </div>
-                {error && error.includes('slug') && (
-                  <div className="text-red-600 text-sm mt-2">❌ Debes ingresar una dirección web para tu tienda</div>
-                )}
-              </div>
-            </div>
+                  <div className="mt-6">
+                    <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
+                      URL Personalizada
+                    </label>
+                    <div className="flex border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500">
+                      <span className="bg-gray-50 text-gray-600 text-sm font-medium px-4 py-3 border-r border-gray-300 whitespace-nowrap">
+                        tienda/
+                      </span>
+                      <input
+                        type="text"
+                        id="slug"
+                        name="slug"
+                        value={formData.slug}
+                        onChange={handleSlugChange}
+                        required
+                        className="flex-1 px-4 py-3 border-0 focus:outline-none"
+                        placeholder="mi-tienda"
+                        autoComplete="url"
+                      />
+                    </div>
+                  </div>
 
-            {/* TARJETA 3: CONTACTO */}
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">Contacto Directo</h2>
-              <div className="space-y-4">
-                <div>
-                  <input
-                    type="tel"
+                  <MinimalInput
                     id="whatsapp"
                     name="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={handleWhatsappChange}
+                    label="WhatsApp para Ventas"
+                    type="tel"
+                    placeholder="70123456"
                     required
                     maxLength={8}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    placeholder="Número de WhatsApp para ventas (Ej: 70123456)"
+                    value={formData.whatsapp}
+                    onChange={(e) => handleWhatsappChange(e)}
+                    autoComplete="tel"
+                    helperText="Número de teléfono boliviano (8 dígitos)"
                   />
-                  {error && error.includes('whatsapp') && (
-                    <div className="text-red-600 text-sm mt-2">❌ Debes ingresar tu número de WhatsApp</div>
-                  )}
                 </div>
               </div>
-            </div>
 
-            {/* BOTONES */}
-            <div className="grid grid-cols-2 gap-4">
-              <Link 
-                href="/" 
-                className="bg-white text-gray-600 border-2 border-gray-300 rounded-lg font-semibold text-center py-3 hover:border-gray-400 transition-colors"
-              >
-                Cancelar
-              </Link>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="bg-orange-600 text-white rounded-lg font-semibold text-center py-3 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    Creando tienda...
-                  </div>
-                ) : (
-                  getSubmitButtonText()
-                )}
-              </button>
-            </div>
-          </form>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <MinimalButton 
+                  type="submit" 
+                  className="flex-1"
+                  disabled={isLoading}
+                  loading={isLoading}
+                >
+                  {isLoading ? 'Procesando...' : getSubmitButtonText()}
+                </MinimalButton>
+                
+                <MinimalButton 
+                  type="button" 
+                  variant="outline"
+                  asChild
+                >
+                  <Link href="/">Cancelar</Link>
+                </MinimalButton>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
