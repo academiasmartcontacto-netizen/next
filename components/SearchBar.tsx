@@ -69,15 +69,15 @@ const SearchBar = () => {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Logo encima del buscador */}
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-0">
         <img 
           src="/assets/img/done.png"
           alt="Done Logo"
-          className="w-24 h-24 object-contain"
+          className="w-64 h-64 object-contain"
         />
       </div>
       
-      <div className="relative bg-white rounded-full border-[1.6px] border-[#ff6b1a] shadow-lg overflow-hidden transition-all duration-300">
+      <div className="relative bg-white rounded-full border-[1.6px] border-[#ff6b1a] shadow-lg overflow-hidden transition-all duration-300 -mt-16">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#ff6b1a]" />
         
         <input
