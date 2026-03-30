@@ -120,7 +120,7 @@ export default function Navbar() {
               <div className="relative user-dropdown">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-[#e55a15] transition-colors"
+                  className="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 focus:ring-orange-500 h-11 px-6 py-2 space-x-2"
                 >
                   {/* User Avatar */}
                   <div className="w-8 h-8 bg-[#ff6b1a] rounded-full flex items-center justify-center text-white text-sm font-medium">
@@ -129,13 +129,13 @@ export default function Navbar() {
                   
                   {/* User Info */}
                   <div className="hidden lg:block text-left">
-                    <p className="text-sm font-medium text-white">{displayName}</p>
+                    <p className="text-sm font-medium text-black">{displayName}</p>
                   </div>
                   
                   {/* Dropdown Arrow */}
                   <ChevronDown 
                     className={cn(
-                      "w-4 h-4 text-[#ffcc99] transition-transform",
+                      "w-4 h-4 text-black transition-transform",
                       isDropdownOpen && "rotate-180"
                     )}
                   />
@@ -208,7 +208,7 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <MinimalButton variant="outline" asChild>
                   <Link href="/feria" target="_blank">Feria Virtual</Link>
                 </MinimalButton>
