@@ -64,14 +64,8 @@ function LoginPageContent() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen -mt-20">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="mx-auto w-12 h-12 bg-orange-600 rounded-lg mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Iniciar Sesión</h1>
-            <p className="text-gray-600">Ingresa tus credenciales para acceder</p>
-          </div>
-
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="p-8">
               <form onSubmit={onSubmit} className="space-y-6">
