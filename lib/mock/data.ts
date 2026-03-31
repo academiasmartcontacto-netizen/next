@@ -434,18 +434,18 @@ export const mockProducts = [
   }
 ];
 
-// 🏛️ Ciudades Mock
+// 🏛️ Ciudades Mock - Datos INE 2024
 export const mockCities = [
-  { id: 1, nombre: 'La Paz', departamento: 'La Paz' },
-  { id: 2, nombre: 'Santa Cruz', departamento: 'Santa Cruz' },
+  { id: 1, nombre: 'Sucre', departamento: 'Chuquisaca' },
+  { id: 2, nombre: 'La Paz', departamento: 'La Paz' },
   { id: 3, nombre: 'Cochabamba', departamento: 'Cochabamba' },
   { id: 4, nombre: 'El Alto', departamento: 'La Paz' },
-  { id: 5, nombre: 'Oruro', departamento: 'Oruro' },
-  { id: 6, nombre: 'Potosí', departamento: 'Potosí' },
-  { id: 7, nombre: 'Tarija', departamento: 'Tarija' },
-  { id: 8, nombre: 'Sucre', departamento: 'Chuquisaca' },
-  { id: 9, nombre: 'Beni', departamento: 'Beni' },
-  { id: 10, nombre: 'Pando', departamento: 'Pando' }
+  { id: 5, nombre: 'Santa Cruz de la Sierra', departamento: 'Santa Cruz' },
+  { id: 6, nombre: 'Oruro', departamento: 'Oruro' },
+  { id: 7, nombre: 'Potosí', departamento: 'Potosí' },
+  { id: 8, nombre: 'Tarija', departamento: 'Tarija' },
+  { id: 9, nombre: 'Trinidad', departamento: 'Beni' },
+  { id: 10, nombre: 'Cobija', departamento: 'Pando' }
 ];
 
 // 🎪 Feria Virtual Mock (Estructura PHP Real)
@@ -587,16 +587,15 @@ export const mockFeriaStands = [
   }
 ];
 
-// 🏙️ Departamentos (Estructura PHP Real)
+// 🏙️ Departamentos - Datos INE 2024
 export const mockDepartments = [
+  { code: 'CHQ', name: 'Chuquisaca' },
   { code: 'LPZ', name: 'La Paz' },
-  { code: 'ALT', name: 'El Alto' },
-  { code: 'SCZ', name: 'Santa Cruz' },
   { code: 'CBA', name: 'Cochabamba' },
   { code: 'ORU', name: 'Oruro' },
   { code: 'PTS', name: 'Potosí' },
   { code: 'TJA', name: 'Tarija' },
-  { code: 'CHQ', name: 'Chuquisaca' },
+  { code: 'SCZ', name: 'Santa Cruz' },
   { code: 'BEN', name: 'Beni' },
   { code: 'PND', name: 'Pando' }
 ];
