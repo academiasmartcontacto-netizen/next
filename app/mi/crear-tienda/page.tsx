@@ -26,8 +26,21 @@ function CrearTiendaContent() {
   const [formData, setFormData] = useState({
     nombre: '',
     slug: '',
-    whatsapp: ''
+    whatsapp: '',
+    categoria_id: ''
   })
+
+  // Categorías principales (mismas que en ProductosDrawer)
+  const categorias = [
+    { id: '1', nombre: 'Vehículos' },
+    { id: '2', nombre: 'Dispositivos' },
+    { id: '3', nombre: 'Electrodomésticos' },
+    { id: '4', nombre: 'Herramientas' },
+    { id: '5', nombre: 'Inmuebles' },
+    { id: '6', nombre: 'Juguetes' },
+    { id: '7', nombre: 'Muebles' },
+    { id: '8', nombre: 'Prendas' }
+  ]
 
   // Verificar si ya tiene tienda
   useEffect(() => {
@@ -356,6 +369,28 @@ function CrearTiendaContent() {
                       onChange={(e) => handleWhatsappChange(e)}
                       autoComplete="tel"
                     />
+
+                    {/* Categoría */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Categoría de la Tienda <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="categoria_id"
+                        name="categoria_id"
+                        value={formData.categoria_id}
+                        onChange={(e) => setFormData(prev => ({...prev, categoria_id: e.target.value}))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      >
+                        <option value="">Selecciona una categoría</option>
+                        {categorias.map(categoria => (
+                          <option key={categoria.id} value={categoria.id}>
+                            {categoria.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>

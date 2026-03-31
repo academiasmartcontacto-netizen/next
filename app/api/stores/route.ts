@@ -42,28 +42,50 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🔍 DEBUG: Body recibido:', JSON.stringify(body, null, 2))
     
-    const { nombre, slug, whatsapp, feria_sector, feria_city, feria_pos } = body
+    // Intentar con ambos formatos de campos
+    const { 
+      name, phone, link, categoria_id,
+      nombre, whatsapp, slug, categoria_id: cat_id_alt
+    } = body
 
-    // Validar campos requeridos del PHP original
-    if (!nombre || !slug || !whatsapp) {
-      console.log('🔍 DEBUG: Campos faltantes:', { nombre, slug, whatsapp })
+    console.log('🔍 DEBUG: Campos name/phone/link:', { name, phone, link, categoria_id })
+    console.log('🔍 DEBUG: Campos nombre/whatsapp/slug:', { nombre, whatsapp, slug, categoria_id: cat_id_alt })
+
+    // Usar los campos que existen
+    const finalName = name || nombre
+    const finalPhone = phone || whatsapp  
+    const finalLink = link || slug
+    const finalCategoria = categoria_id || cat_id_alt
+
+    console.log('🔍 DEBUG: Campos finales:', { finalName, finalPhone, finalLink, finalCategoria })
+
+    // Validar campos requeridos
+    if (!finalName || !finalPhone || !finalLink || !finalCategoria) {
+      console.log('🔍 DEBUG: Campos faltantes:', { finalName, finalPhone, finalLink, finalCategoria })
       return NextResponse.json({ error: 'Todos los campos son obligatorios' }, { status: 400 })
     }
 
-    // Validaciones específicas como el PHP
-    if (nombre.length < 3) {
-      console.log('🔍 DEBUG: Nombre muy corto:', nombre.length)
+    // Validaciones específicas
+    if (finalName.length < 3) {
+      console.log('🔍 DEBUG: Nombre muy corto:', finalName.length)
       return NextResponse.json({ error: 'El nombre debe tener al menos 3 caracteres' }, { status: 400 })
     }
 
-    if (!/^[a-z0-9\-]+$/.test(slug)) {
-      console.log('🔍 DEBUG: Slug inválido:', slug)
+    if (!/^[a-z0-9\-]+$/.test(finalLink)) {
+      console.log('🔍 DEBUG: Link inválido:', finalLink)
       return NextResponse.json({ error: 'La URL solo puede contener letras minúsculas, números y guiones' }, { status: 400 })
     }
 
-    if (!/^[0-9]{8}$/.test(whatsapp)) {
-      console.log('🔍 DEBUG: WhatsApp inválido:', whatsapp)
-      return NextResponse.json({ error: 'El número debe tener 8 dígitos válidos' }, { status: 400 })
+    if (!/^[67]\d{7}$/.test(finalPhone)) {
+      console.log('🔍 DEBUG: Teléfono inválido:', finalPhone)
+      return NextResponse.json({ error: 'El teléfono debe comenzar con 6 o 7 y tener 8 dígitos' }, { status: 400 })
+    }
+
+    // Validar categoría (1-8)
+    const categoriaNum = parseInt(finalCategoria)
+    if (isNaN(categoriaNum) || categoriaNum < 1 || categoriaNum > 8) {
+      console.log('🔍 DEBUG: Categoría inválida:', finalCategoria)
+      return NextResponse.json({ error: 'Categoría inválida' }, { status: 400 })
     }
 
     console.log('🔍 DEBUG: Validaciones pasadas, verificando tienda existente')
@@ -87,7 +109,7 @@ export async function POST(request: NextRequest) {
     const existingSlug = await db
       .select()
       .from(stores)
-      .where(eq(stores.link, slug))
+      .where(eq(stores.link, finalLink))
       .limit(1)
 
     console.log('🔍 DEBUG: Slug existente:', existingSlug.length > 0 ? 'SÍ' : 'NO')
@@ -98,35 +120,32 @@ export async function POST(request: NextRequest) {
 
     console.log('🔍 DEBUG: Creando tienda con datos:', {
       userId: session.id,
-      name: nombre,
-      link: slug,
-      domain: `donebolivia.com/tienda/${slug}`,
-      phone: whatsapp,
+      name: finalName,
+      link: finalLink,
+      domain: `donebolivia.com/tienda/${finalLink}`,
+      phone: finalPhone,
+      categoria_id: categoriaNum,
       isActive: true,
       isPublished: false,
       theme: 'claro'
     })
 
-    // Create store con los campos del PHP original
+    // Create store con los campos finales
     const [newStore] = await db
       .insert(stores)
       .values({
         userId: session.id,
-        name: nombre,
-        link: slug,
-        domain: `donebolivia.com/tienda/${slug}`,
-        phone: whatsapp, // WhatsApp como teléfono
-        whatsapp: whatsapp, // También guardar en campo específico
+        name: finalName,
+        link: finalLink,
+        domain: `donebolivia.com/tienda/${finalLink}`,
+        phone: finalPhone, // Teléfono como teléfono
+        whatsapp: finalPhone, // También guardar en campo específico
+        categoria_id: categoriaNum, // Nueva categoría
         isActive: true,
         isPublished: false,
-        theme: 'claro', // Tema por defecto del PHP
-        settings: JSON.stringify({
-          feria_sector: feria_sector || null,
-          feria_city: feria_city || null,
-          feria_pos: feria_pos || null
-        }),
-        seoTitle: `${nombre} - Done!`,
-        seoDescription: `Tienda virtual de ${nombre} en Done! Bolivia`,
+        theme: 'claro', // Tema por defecto
+        seoTitle: `${finalName} - Done!`,
+        seoDescription: `Tienda virtual de ${finalName} en Done! Bolivia`,
       })
       .returning()
 
@@ -137,26 +156,25 @@ export async function POST(request: NextRequest) {
     await db.insert(userActivityLog).values({
       userId: session.id,
       action: 'store_created',
-      metadata: JSON.stringify({ 
-        storeId: newStore.id, 
-        storeName: nombre,
-        storeSlug: slug,
-        whatsapp: whatsapp,
-        feria_sector,
-        feria_city,
-        feria_pos
+      metadata: JSON.stringify({
+        storeId: newStore.id,
+        storeName: name,
+        storeLink: link,
+        categoria_id: categoriaNum
       }),
+      ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      userAgent: request.headers.get('user-agent') || 'unknown',
     })
 
     console.log('🔍 DEBUG: Actividad registrada')
 
     // Notificación a Telegram (como el PHP)
-    console.log(`🏪 Nueva Tienda Creada\n\n🛒 Nombre: ${nombre}\n🔗 Slug: /tienda/${slug}\n📱 WhatsApp: ${whatsapp}\n👤 Usuario ID: ${session.id}`)
+    console.log(`🏪 Nueva Tienda Creada\n\n🛒 Nombre: ${name}\n🔗 Slug: /tienda/${link}\n📱 WhatsApp: ${phone}\n👤 Usuario ID: ${session.id}`)
 
     // Redirección según contexto (como el PHP)
     let redirectUrl = '/mi/tienda-editor?success=created'
-    if (feria_sector && feria_city && feria_pos) {
-      redirectUrl = `/feria?dept=${feria_city}&success=created_and_assigned`
+    if (false && false && false) {
+      redirectUrl = `/feria?dept=&success=created_and_assigned`
     }
 
     console.log('🔍 DEBUG: Respuesta exitosa, redirectUrl:', redirectUrl)

@@ -113,6 +113,9 @@ export const stores = pgTable('stores', {
   mostrarContacto: boolean('mostrar_contacto').default(true),
   mostrarAcercaDe: boolean('mostrar_acerca_de').default(true),
   
+  // Campo de categoría de la tienda
+  categoria_id: integer('categoria_id'), // Referencia a las 8 categorías principales
+  
   // Campos de PHP
   estado: text('estado').default('activo'), // activo, suspendido, eliminado
   suspensionFin: timestamp('suspension_fin'), // Fecha fin de suspensión
