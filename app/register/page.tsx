@@ -144,17 +144,12 @@ export default function RegisterPage() {
   // Cargar municipios cuando cambia el departamento
   useEffect(() => {
     if (departamento) {
-      console.log('DEBUG: Departamento cambiado a:', departamento)
       const fetchMunicipios = async () => {
         try {
           setLoadingMunicipios(true)
-          console.log('DEBUG: Fetching municipios for:', departamento)
           const response = await fetch(`/api/municipios/${departamento}`)
-          console.log('DEBUG: Response status:', response.status)
           if (response.ok) {
             const data = await response.json()
-            console.log('DEBUG: Municipios recibidos:', data.length)
-            console.log('DEBUG: Data completa:', data)
             setMunicipios(data)
           } else {
             console.error('Error fetching municipios')
