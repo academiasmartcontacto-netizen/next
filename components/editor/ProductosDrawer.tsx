@@ -237,15 +237,15 @@ export default function ProductosDrawer({ onClose, store, updateStore, editingPr
     ]
   }
 
-  // Departamentos de Bolivia (códigos)
+  // Departamentos de Bolivia (códigos) - Datos INE 2024
   const departamentos = [
+    { codigo: 'CH', nombre: 'Chuquisaca' },
     { codigo: 'LP', nombre: 'La Paz' },
     { codigo: 'CB', nombre: 'Cochabamba' },
-    { codigo: 'SC', nombre: 'Santa Cruz' },
     { codigo: 'OR', nombre: 'Oruro' },
     { codigo: 'PT', nombre: 'Potosí' },
     { codigo: 'TJ', nombre: 'Tarija' },
-    { codigo: 'CH', nombre: 'Chuquisaca' },
+    { codigo: 'SC', nombre: 'Santa Cruz' },
     { codigo: 'BN', nombre: 'Beni' },
     { codigo: 'PA', nombre: 'Pando' }
   ]
