@@ -214,118 +214,122 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Crear cuenta
           </h1>
-          <p className="text-lg text-gray-600">
-            Únete a nuestra plataforma y accede a contenido educativo de calidad.
-          </p>
         </div>
 
         {/* Form */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-8">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="p-10">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
               {/* Personal Information */}
-              <div className="space-y-6">
-                <div className="border-b border-gray-200 pb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Información Personal</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-8">
+                <div className="border-b border-gray-200 pb-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Información Personal</h2>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <MinimalInput
+                        id="nombres"
+                        label="Nombres"
+                        placeholder="Ingresa tus nombres"
+                        required
+                        error={errors.nombres?.message}
+                        {...register('nombres')}
+                        autoComplete="given-name"
+                      />
+                      
+                      <MinimalInput
+                        id="apellidos"
+                        label="Apellidos"
+                        placeholder="Ingresa tus apellidos"
+                        required
+                        error={errors.apellidos?.message}
+                        {...register('apellidos')}
+                        autoComplete="family-name"
+                      />
+                    </div>
+
                     <MinimalInput
-                      id="nombres"
-                      label="Nombres"
-                      placeholder="Ingresa tus nombres"
+                      id="email"
+                      label="Email"
+                      type="email"
+                      placeholder="tu@email.com"
                       required
-                      error={errors.nombres?.message}
-                      {...register('nombres')}
-                      autoComplete="given-name"
+                      error={errors.email?.message}
+                      {...register('email')}
+                      autoComplete="email"
                     />
-                    
+
                     <MinimalInput
-                      id="apellidos"
-                      label="Apellidos"
-                      placeholder="Ingresa tus apellidos"
+                      id="telefono"
+                      label="Teléfono"
+                      type="tel"
+                      placeholder="60000000"
                       required
-                      error={errors.apellidos?.message}
-                      {...register('apellidos')}
-                      autoComplete="family-name"
+                      error={errors.telefono?.message}
+                      {...register('telefono')}
+                      autoComplete="tel"
                     />
                   </div>
-
-                  <MinimalInput
-                    id="email"
-                    label="Email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    required
-                    error={errors.email?.message}
-                    helperText="Usaremos este email para comunicarnos contigo"
-                    {...register('email')}
-                    autoComplete="email"
-                  />
-
-                  <MinimalInput
-                    id="telefono"
-                    label="Teléfono"
-                    type="tel"
-                    placeholder="60000000"
-                    required
-                    error={errors.telefono?.message}
-                    helperText="Número de teléfono boliviano (8 dígitos)"
-                    {...register('telefono')}
-                    autoComplete="tel"
-                  />
                 </div>
 
                 {/* Location */}
-                <div className="border-b border-gray-200 pb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Ubicación</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <MinimalSelect
-                      label="Departamento"
-                      placeholder="Seleccionar departamento"
-                      required
-                      value={departamento}
-                      onValueChange={(value) => {
-                        setValue('departamento', value)
-                        trigger('departamento')
-                      }}
-                      options={departamentos}
-                      error={errors.departamento?.message}
-                    />
-                    
-                    <MinimalSelect
-                      label="Municipio"
-                      placeholder="Seleccionar municipio"
-                      required
-                      value={watchedFields.municipio}
-                      onValueChange={(value) => {
-                        setValue('municipio', value)
-                        trigger('municipio')
-                      }}
-                      options={departamento ? municipios[departamento] || [] : []}
-                      error={errors.municipio?.message}
-                      disabled={!departamento}
-                    />
+                <div className="border-b border-gray-200 pb-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Ubicación</h2>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <MinimalSelect
+                        label="Departamento"
+                        placeholder="Seleccionar departamento"
+                        required
+                        value={departamento}
+                        onValueChange={(value) => {
+                          setValue('departamento', value)
+                          trigger('departamento')
+                        }}
+                        options={departamentos}
+                        error={errors.departamento?.message}
+                      />
+                      
+                      <MinimalSelect
+                        label="Municipio"
+                        placeholder="Seleccionar municipio"
+                        required
+                        value={watchedFields.municipio}
+                        onValueChange={(value) => {
+                          setValue('municipio', value)
+                          trigger('municipio')
+                        }}
+                        options={departamento ? municipios[departamento] || [] : []}
+                        error={errors.municipio?.message}
+                        disabled={!departamento}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Security */}
-                <div className="pb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Seguridad</h2>
-                  <MinimalInput
-                    id="password"
-                    label="Contraseña"
-                    type="password"
-                    placeholder="Crea una contraseña segura"
-                    required
-                    error={errors.password?.message}
-                    {...register('password')}
-                    autoComplete="new-password"
-                  />
+                <div className="pb-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Seguridad</h2>
                   
-                  {password && (
-                    <div className="mt-4">
-                      <PasswordStrength password={password} />
-                    </div>
-                  )}
+                  <div className="space-y-6">
+                    <MinimalInput
+                      id="password"
+                      label="Contraseña"
+                      type="password"
+                      placeholder="Crea una contraseña segura"
+                      required
+                      error={errors.password?.message}
+                      {...register('password')}
+                      autoComplete="new-password"
+                    />
+                    
+                    {password && (
+                      <div>
+                        <PasswordStrength password={password} />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Terms */}
