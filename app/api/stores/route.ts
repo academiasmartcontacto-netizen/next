@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!/^[67]\d{7}$/.test(finalPhone)) {
-      console.log('🔍 DEBUG: Teléfono inválido:', finalPhone)
-      return NextResponse.json({ error: 'El teléfono debe comenzar con 6 o 7 y tener 8 dígitos' }, { status: 400 })
+      console.log('🔍 DEBUG: Celular inválido:', finalPhone)
+      return NextResponse.json({ error: 'El celular debe comenzar con 6 o 7 y tener 8 dígitos' }, { status: 400 })
     }
 
     // Validar categoría (1-8)
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         name: finalName,
         link: finalLink,
         domain: `donebolivia.com/tienda/${finalLink}`,
-        phone: finalPhone, // Teléfono como teléfono
+        phone: finalPhone, // Celular como celular
         whatsapp: finalPhone, // También guardar en campo específico
         categoria_id: categoriaNum, // Nueva categoría
         isActive: true,

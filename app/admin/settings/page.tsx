@@ -66,8 +66,8 @@ export default function AdminSettings() {
       key: 'contact_phone',
       value: '+591-70000000',
       type: 'text',
-      label: 'Teléfono de Contacto',
-      description: 'Teléfono principal de contacto',
+      label: 'Celular de Contacto',
+      description: 'Celular principal de contacto',
       category: 'general'
     },
     {

@@ -21,7 +21,7 @@ import Navbar from '@/components/layout/navbar'
 
 const storeSchema = z.object({
   storeName: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-  phone: z.string().regex(/^[67]\d{7}$/, { message: "El teléfono debe comenzar con 6 o 7 y tener 8 dígitos" }),
+  phone: z.string().regex(/^[67]\d{7}$/, { message: "El celular debe comenzar con 6 o 7 y tener 8 dígitos" }),
   storeLink: z.string()
     .min(3, { message: "El link debe tener al menos 3 caracteres" })
     .max(30, { message: "El link no puede exceder 30 caracteres" })
@@ -212,7 +212,7 @@ export default function CreateStorePage() {
               {/* Phone */}
               <MinimalInput
                 id="phone"
-                label="Teléfono de Contacto"
+                label="Celular de Contacto"
                 type="tel"
                 placeholder="60000000"
                 required

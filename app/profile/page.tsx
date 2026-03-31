@@ -18,7 +18,7 @@ import Navbar from "@/components/layout/navbar"
 const profileSchema = z.object({
   firstName: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
   lastName: z.string().min(2, { message: "El apellido debe tener al menos 2 caracteres" }),
-  phone: z.string().regex(/^[67]\d{7}$/, { message: "El teléfono debe comenzar con 6 o 7 y tener 8 dígitos" }).optional().or(z.literal('')),
+  phone: z.string().regex(/^[67]\d{7}$/, { message: "El celular debe comenzar con 6 o 7 y tener 8 dígitos" }).optional().or(z.literal('')),
   department: z.string().optional(),
   municipality: z.string().optional(),
   bio: z.string().max(500, { message: "La biografía no puede exceder 500 caracteres" }).optional().or(z.literal('')),
@@ -396,7 +396,7 @@ export default function ProfilePage() {
 
                     <MinimalInput
                       id="phone"
-                      label="Teléfono"
+                      label="Celular"
                       type="tel"
                       placeholder="60000000"
                       error={profileErrors.phone?.message}

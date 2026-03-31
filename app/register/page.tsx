@@ -30,7 +30,7 @@ const registerSchema = z.object({
     .email({ message: "Email inválido" })
     .max(100, { message: "El email no puede exceder 100 caracteres" }),
   telefono: z.string()
-    .regex(/^[67]\d{7}$/, { message: "El teléfono debe comenzar con 6 o 7 y tener 8 dígitos" }),
+    .regex(/^[67]\d{7}$/, { message: "El celular debe comenzar con 6 o 7 y tener 8 dígitos" }),
   departamento: z.string({ required_error: "Debes seleccionar un departamento" }),
   municipio: z.string({ required_error: "Debes seleccionar un municipio" }),
   password: z.string()
@@ -247,7 +247,7 @@ export default function RegisterPage() {
 
                     <MinimalInput
                       id="telefono"
-                      label="Teléfono"
+                      label="Celular"
                       type="tel"
                       placeholder="60000000"
                       required
