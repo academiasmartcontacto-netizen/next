@@ -193,177 +193,62 @@ export default function ProfilePage() {
     }
   }
 
-  const departamentos = [
-    { value: 'ch', label: 'Chuquisaca' },
-    { value: 'lp', label: 'La Paz' },
-    { value: 'cb', label: 'Cochabamba' },
-    { value: 'or', label: 'Oruro' },
-    { value: 'pt', label: 'Potosí' },
-    { value: 'tj', label: 'Tarija' },
-    { value: 'sc', label: 'Santa Cruz' },
-    { value: 'bn', label: 'Beni' },
-    { value: 'pd', label: 'Pando' }
-  ]
+  const [departamentos, setDepartamentos] = useState<Array<{value: string; label: string}>>([])
+  const [municipios, setMunicipios] = useState<Array<{value: string; label: string}>>([])
+  const [loadingDepartamentos, setLoadingDepartamentos] = useState(true)
+  const [loadingMunicipios, setLoadingMunicipios] = useState(false)
 
-  const municipios: Record<string, Array<{ value: string; label: string }>> = {
-    'ch': [
-      { value: 'ch-001', label: 'Sucre' },
-      { value: 'ch-002', label: 'Yotala' },
-      { value: 'ch-003', label: 'Poroma' },
-      { value: 'ch-004', label: 'Azurduy' },
-      { value: 'ch-005', label: 'Tarvita' },
-      { value: 'ch-006', label: 'Villa Zudáñez' },
-      { value: 'ch-007', label: 'Presto' },
-      { value: 'ch-008', label: 'Villa Mojocoya' },
-      { value: 'ch-009', label: 'Icla' },
-      { value: 'ch-010', label: 'Padilla' },
-      { value: 'ch-011', label: 'Tomina' },
-      { value: 'ch-012', label: 'Sopachuy' },
-      { value: 'ch-013', label: 'Villa Alcalá' },
-      { value: 'ch-014', label: 'El Villar' },
-      { value: 'ch-015', label: 'Monteagudo' },
-      { value: 'ch-016', label: 'Huacareta' },
-      { value: 'ch-017', label: 'Tarabuco' },
-      { value: 'ch-018', label: 'Yamparáez' },
-      { value: 'ch-019', label: 'Camargo' },
-      { value: 'ch-020', label: 'San Lucas' },
-      { value: 'ch-021', label: 'Incahuasi' },
-      { value: 'ch-022', label: 'Villa Charcas' },
-      { value: 'ch-023', label: 'Villa Serrano' },
-      { value: 'ch-024', label: 'Villa Abecia' },
-      { value: 'ch-025', label: 'Culpina' },
-      { value: 'ch-026', label: 'Las Carreras' },
-      { value: 'ch-027', label: 'Villa Vaca Guzmán (Muyupampa)' },
-      { value: 'ch-028', label: 'Huacaya' },
-      { value: 'ch-029', label: 'Macharetí' }
-    ],
-    'lp': [
-      { value: 'lp-001', label: 'La Paz' },
-      { value: 'lp-002', label: 'Palca' },
-      { value: 'lp-003', label: 'Mecapaca' },
-      { value: 'lp-004', label: 'Achocalla' },
-      { value: 'lp-005', label: 'El Alto' },
-      { value: 'lp-006', label: 'Achacachi' },
-      { value: 'lp-007', label: 'Ancoraimes' },
-      { value: 'lp-008', label: 'Huarina' },
-      { value: 'lp-009', label: 'Santiago de Huata' },
-      { value: 'lp-010', label: 'Huatajata' },
-      { value: 'lp-011', label: 'Chua Cocani' },
-      { value: 'lp-012', label: 'Coro Coro' },
-      { value: 'lp-013', label: 'Caquiaviri' },
-      { value: 'lp-014', label: 'Calacoto' },
-      { value: 'lp-015', label: 'Comanche' },
-      { value: 'lp-016', label: 'Charaña' },
-      { value: 'lp-017', label: 'Waldo Ballivian' },
-      { value: 'lp-018', label: 'Nazacara de Pacajes' },
-      { value: 'lp-019', label: 'Callapa' },
-      { value: 'lp-020', label: 'Puerto Acosta' },
-      { value: 'lp-021', label: 'Mocomoco' },
-      { value: 'lp-022', label: 'Puerto Carabuco' },
-      { value: 'lp-023', label: 'Humanata' },
-      { value: 'lp-024', label: 'Escoma' },
-      { value: 'lp-025', label: 'Chuma' },
-      { value: 'lp-026', label: 'Ayata' },
-      { value: 'lp-027', label: 'Aucapata' },
-      { value: 'lp-028', label: 'Sorata' },
-      { value: 'lp-029', label: 'Guanay' },
-      { value: 'lp-030', label: 'Tacacoma' },
-      { value: 'lp-031', label: 'Quiabaya' },
-      { value: 'lp-032', label: 'Combaya' },
-      { value: 'lp-033', label: 'Tipuani' },
-      { value: 'lp-034', label: 'Mapiri' },
-      { value: 'lp-035', label: 'Teoponte' },
-      { value: 'lp-036', label: 'Apolo' },
-      { value: 'lp-037', label: 'Pelechuco' },
-      { value: 'lp-038', label: 'Viacha' },
-      { value: 'lp-039', label: 'Guaqui' },
-      { value: 'lp-040', label: 'Tiahuanacu' },
-      { value: 'lp-041', label: 'Desaguadero' },
-      { value: 'lp-042', label: 'San Andrés de Machaca' },
-      { value: 'lp-043', label: 'Jesús de Machaca' },
-      { value: 'lp-044', label: 'Taraco' },
-      { value: 'lp-045', label: 'Luribay' },
-      { value: 'lp-046', label: 'Sapahaqui' },
-      { value: 'lp-047', label: 'Yaco' },
-      { value: 'lp-048', label: 'Malla' },
-      { value: 'lp-049', label: 'Cairoma' },
-      { value: 'lp-050', label: 'Inquisivi' },
-      { value: 'lp-051', label: 'Quime' },
-      { value: 'lp-052', label: 'Cajuata' },
-      { value: 'lp-053', label: 'Colquiri' },
-      { value: 'lp-054', label: 'Ichoca' },
-      { value: 'lp-055', label: 'Villa Libertad Licoma' },
-      { value: 'lp-056', label: 'Chulumani' },
-      { value: 'lp-057', label: 'Irupana' },
-      { value: 'lp-058', label: 'Yanacachi' },
-      { value: 'lp-059', label: 'Palos Blancos' },
-      { value: 'lp-060', label: 'La Asunta' },
-      { value: 'lp-061', label: 'Pucarani' },
-      { value: 'lp-062', label: 'Laja' },
-      { value: 'lp-063', label: 'Batallas' },
-      { value: 'lp-064', label: 'Puerto Pérez' },
-      { value: 'lp-065', label: 'Sica Sica' },
-      { value: 'lp-066', label: 'Umala' },
-      { value: 'lp-067', label: 'Ayo Ayo' },
-      { value: 'lp-068', label: 'Calamarca' },
-      { value: 'lp-069', label: 'Patacamaya' },
-      { value: 'lp-070', label: 'Colquencha' },
-      { value: 'lp-071', label: 'Collana' },
-      { value: 'lp-072', label: 'Coroico' },
-      { value: 'lp-073', label: 'Coripata' },
-      { value: 'lp-074', label: 'Ixiamas' },
-      { value: 'lp-075', label: 'San Buenaventura' },
-      { value: 'lp-076', label: 'Charazani' },
-      { value: 'lp-077', label: 'Curva' },
-      { value: 'lp-078', label: 'Copacabana' },
-      { value: 'lp-079', label: 'San Pedro de Tiquina' },
-      { value: 'lp-080', label: 'Tito Yupanqui' },
-      { value: 'lp-081', label: 'San Pedro Cuarahuara' },
-      { value: 'lp-082', label: 'Papel Pampa' },
-      { value: 'lp-083', label: 'Chacarilla' },
-      { value: 'lp-084', label: 'Santiago de Machaca' },
-      { value: 'lp-085', label: 'Catacora' },
-      { value: 'lp-086', label: 'Caranavi' },
-      { value: 'lp-087', label: 'Alto Beni' }
-    ],
-    'sc': [
-      { value: 'sc-1', label: 'Santa Cruz de la Sierra' },
-      { value: 'sc-2', label: 'Warnes' },
-      { value: 'sc-3', label: 'Montero' },
-      { value: 'sc-4', label: 'Lagunillas' }
-    ],
-    'cb': [
-      { value: 'cb-1', label: 'Cochabamba' },
-      { value: 'cb-2', label: 'Quillacollo' },
-      { value: 'cb-3', label: 'Sacaba' },
-      { value: 'cb-4', label: 'Tiquipaya' }
-    ],
-    'or': [
-      { value: 'or-1', label: 'Oruro' },
-      { value: 'or-2', label: 'Huanuni' },
-      { value: 'or-3', label: 'Machacamarca' }
-    ],
-    'pt': [
-      { value: 'pt-1', label: 'Potosí' },
-      { value: 'pt-2', label: 'Llallagua' },
-      { value: 'pt-3', label: 'Uyuni' }
-    ],
-    'tj': [
-      { value: 'tj-1', label: 'Tarija' },
-      { value: 'tj-2', label: 'Yacuiba' },
-      { value: 'tj-3', label: 'Bermejo' }
-    ],
-    'bn': [
-      { value: 'bn-1', label: 'Trinidad' },
-      { value: 'bn-2', label: 'Riberalta' },
-      { value: 'bn-3', label: 'Guayaramerín' }
-    ],
-    'pd': [
-      { value: 'pd-1', label: 'Cobija' },
-      { value: 'pd-2', label: 'Porvenir' },
-      { value: 'pd-3', label: 'Filadelfia' }
-    ]
-  }
+  // Cargar departamentos al montar el componente
+  useEffect(() => {
+    const fetchDepartamentos = async () => {
+      try {
+        const response = await fetch('/api/departments')
+        if (response.ok) {
+          const data = await response.json()
+          setDepartamentos(data)
+        } else {
+          console.error('Error fetching departamentos')
+        }
+      } catch (error) {
+        console.error('Error:', error)
+      } finally {
+        setLoadingDepartamentos(false)
+      }
+    }
+
+    fetchDepartamentos()
+  }, [])
+
+  // Cargar municipios cuando cambia el departamento
+  useEffect(() => {
+    if (watchProfile('department')) {
+      const fetchMunicipios = async () => {
+        try {
+          setLoadingMunicipios(true)
+          const response = await fetch(`/api/municipios/${watchProfile('department')}`)
+          if (response.ok) {
+            const data = await response.json()
+            setMunicipios(data)
+          } else {
+            console.error('Error fetching municipios')
+          }
+        } catch (error) {
+          console.error('Error:', error)
+        } finally {
+          setLoadingMunicipios(false)
+        }
+      }
+
+      fetchMunicipios()
+    }
+  }, [watchProfile('department')])
+
+  // Resetear municipio cuando cambia el departamento
+  useEffect(() => {
+    if (watchProfile('department')) {
+      setProfileValue('municipality', '')
+    }
+  }, [watchProfile('department')])
 
   if (isLoading) {
     return (
@@ -531,9 +416,9 @@ export default function ProfilePage() {
                       <MinimalSelect
                         label="Municipio"
                         placeholder="Seleccionar municipio"
-                        value={watchProfile('municipio')}
-                        onValueChange={(value) => setProfileValue('municipio', value)}
-                        options={departamento ? municipios[departamento] || [] : []}
+                        value={watchProfile('municipality')}
+                        onValueChange={(value) => setProfileValue('municipality', value)}
+                        options={departamento ? municipios : []}
                         error={profileErrors.municipality?.message}
                         disabled={!departamento}
                       />

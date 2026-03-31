@@ -237,37 +237,65 @@ export default function ProductosDrawer({ onClose, store, updateStore, editingPr
     ]
   }
 
-  // Departamentos de Bolivia (códigos) - Datos INE 2024
-  const departamentos = [
-    { codigo: 'CH', nombre: 'Chuquisaca' },
-    { codigo: 'LP', nombre: 'La Paz' },
-    { codigo: 'CB', nombre: 'Cochabamba' },
-    { codigo: 'OR', nombre: 'Oruro' },
-    { codigo: 'PT', nombre: 'Potosí' },
-    { codigo: 'TJ', nombre: 'Tarija' },
-    { codigo: 'SC', nombre: 'Santa Cruz' },
-    { codigo: 'BN', nombre: 'Beni' },
-    { codigo: 'PA', nombre: 'Pando' }
-  ]
+  const [departamentos, setDepartamentos] = useState<Array<{codigo: string; nombre: string}>>([])
+  const [municipios, setMunicipios] = useState<Array<{codigo: string; nombre: string}>>([])
+  const [loadingDepartamentos, setLoadingDepartamentos] = useState(true)
+  const [loadingMunicipios, setLoadingMunicipios] = useState(false)
 
-  // Municipios (ejemplo para La Paz)
-  const municipios: Record<string, Array<{codigo: string, nombre: string}>> = {
-    'LP': [
-      { codigo: 'LP001', nombre: 'La Paz' },
-      { codigo: 'LP002', nombre: 'El Alto' },
-      { codigo: 'LP003', nombre: 'Viacha' }
-    ],
-    'CB': [
-      { codigo: 'CB001', nombre: 'Cochabamba' },
-      { codigo: 'CB002', nombre: 'Sacaba' },
-      { codigo: 'CB003', nombre: 'Quillacollo' }
-    ],
-    'SC': [
-      { codigo: 'SC001', nombre: 'Santa Cruz de la Sierra' },
-      { codigo: 'SC002', nombre: 'Montero' },
-      { codigo: 'SC003', nombre: 'Warnes' }
-    ]
-  }
+  // Cargar departamentos al montar el componente
+  useEffect(() => {
+    const fetchDepartamentos = async () => {
+      try {
+        const response = await fetch('/api/departments')
+        if (response.ok) {
+          const data = await response.json()
+          // Convertir formato {value, label} a {codigo, nombre}
+          const formattedData = data.map((dept: {value: string, label: string}) => ({
+            codigo: dept.value,
+            nombre: dept.label
+          }))
+          setDepartamentos(formattedData)
+        } else {
+          console.error('Error fetching departamentos')
+        }
+      } catch (error) {
+        console.error('Error:', error)
+      } finally {
+        setLoadingDepartamentos(false)
+      }
+    }
+
+    fetchDepartamentos()
+  }, [])
+
+  // Cargar municipios cuando cambia el departamento
+  useEffect(() => {
+    if (formData.departamento) {
+      const fetchMunicipios = async () => {
+        try {
+          setLoadingMunicipios(true)
+          const response = await fetch(`/api/municipios/${formData.departamento}`)
+          if (response.ok) {
+            const data = await response.json()
+            // Convertir formato {value, label} a {codigo, nombre}
+            const formattedData = data.map((muni: {value: string, label: string}) => ({
+              codigo: muni.value,
+              nombre: muni.label
+            }))
+            setMunicipios(formattedData)
+          } else {
+            console.error('Error fetching municipios')
+          }
+        } catch (error) {
+          console.error('Error:', error)
+        } finally {
+          setLoadingMunicipios(false)
+        }
+      }
+
+      fetchMunicipios()
+    }
+  }, [formData.departamento])
 
   // Estados del producto
   const estados = [
@@ -467,7 +495,7 @@ export default function ProductosDrawer({ onClose, store, updateStore, editingPr
   }
 
   const selectedDepartamento = departamentos.find(d => d.codigo === formData.departamento)
-  const municipiosDisponibles = selectedDepartamento ? municipios[selectedDepartamento.codigo] || [] : []
+  const municipiosDisponibles = municipios
   const subcategoriasDisponibles = formData.categoria_id ? subcategorias[parseInt(formData.categoria_id)] || [] : []
 
   return (
