@@ -10,14 +10,25 @@ export interface UploadResult {
 }
 
 export class SupabaseStorageService {
-  private supabase: any
+  private _supabase: any = null
   private bucket: string = 'productos'
 
+  private get supabase() {
+    if (!this._supabase) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase URL and Service Role Key are required at runtime')
+      }
+
+      this._supabase = createClient(supabaseUrl, supabaseKey)
+    }
+    return this._supabase
+  }
+
   constructor() {
-    this.supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // No inicializar aquí para evitar errores en tiempo de build
   }
 
   async uploadImage(file: File, folder: string = 'productos', prefix: string = 'img'): Promise<UploadResult> {
@@ -144,6 +155,3 @@ export class SupabaseStorageService {
     }
   }
 }
-
-// Instancia global
-export const supabaseStorageService = new SupabaseStorageService()
