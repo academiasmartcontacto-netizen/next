@@ -224,6 +224,7 @@ export async function DELETE(request: NextRequest) {
     // 4. Eliminar del Storage
     if (urlsToDelete.length > 0) {
       console.log('=== INICIANDO ELIMINACIÓN STORAGE ===')
+      console.log('URLs a eliminar:', urlsToDelete)
       try {
         for (const url of urlsToDelete) {
           console.log('Procesando URL:', url)
@@ -231,6 +232,7 @@ export async function DELETE(request: NextRequest) {
           console.log('Path extraído:', path)
           
           if (path) {
+            console.log('🗑️ LLAMANDO A deleteImage con path:', path)
             await storageService.deleteImage(path)
             console.log('✅ Imagen eliminada:', path)
           } else {
@@ -240,8 +242,11 @@ export async function DELETE(request: NextRequest) {
         console.log('✅ Todas las imágenes eliminadas del Storage')
       } catch (error: any) {
         console.error('❌ Error eliminando del Storage:', error.message)
+        console.error('Error completo:', error)
         // Continuar con eliminación de BD
       }
+    } else {
+      console.log('⚠️ NO HAY URLS PARA ELIMINAR')
     }
 
     // 5. Eliminar de la BD
