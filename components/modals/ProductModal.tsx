@@ -28,21 +28,30 @@ export default function ProductModal({ isOpen, onClose, product, store }: Produc
 
   // Obtener todas las imágenes del producto
   const allImages = product.allImages || []
+  
   // Manejar diferentes estructuras de datos de imágenes
   const currentImage = (() => {
+    let imgUrl = ''
     if (allImages.length > 0) {
       const img = allImages[currentImageIndex]
-      return img?.url || img
+      imgUrl = img?.url || img
+    } else {
+      imgUrl = product.image || product.imagen
     }
-    return product.image
+
+    // Asegurar que la URL sea absoluta o tenga el prefijo correcto
+    if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
+      return `/uploads/productos/${imgUrl}`
+    }
+    return imgUrl
   })()
 
   // Debug: Ver qué datos están llegando
-  console.log('=== DEBUG PRODUCT MODAL ===')
-  console.log('Product:', product)
-  console.log('All Images:', allImages)
-  console.log('Current Image Index:', currentImageIndex)
-  console.log('Current Image:', currentImage)
+  if (isOpen) {
+    console.log('=== DEBUG PRODUCT MODAL ===')
+    console.log('Product ID:', product.id)
+    console.log('Current Image URL:', currentImage)
+  }
 
   // Navegación de imágenes
   const nextImage = () => {
