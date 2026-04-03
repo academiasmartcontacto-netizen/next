@@ -221,32 +221,59 @@ export async function DELETE(request: NextRequest) {
 
     console.log('Total URLs a eliminar:', urlsToDelete.length)
 
-    // 4. Eliminar del Storage
-    if (urlsToDelete.length > 0) {
-      console.log('=== INICIANDO ELIMINACIÓN STORAGE ===')
-      console.log('URLs a eliminar:', urlsToDelete)
-      try {
-        for (const url of urlsToDelete) {
-          console.log('Procesando URL:', url)
-          const path = storageService.extractPathFromUrl(url)
-          console.log('Path extraído:', path)
-          
-          if (path) {
-            console.log('🗑️ LLAMANDO A deleteImage con path:', path)
-            await storageService.deleteImage(path)
-            console.log('✅ Imagen eliminada:', path)
-          } else {
-            console.log('❌ No se pudo extraer path de:', url)
-          }
-        }
-        console.log('✅ Todas las imágenes eliminadas del Storage')
-      } catch (error: any) {
-        console.error('❌ Error eliminando del Storage:', error.message)
-        console.error('Error completo:', error)
-        // Continuar con eliminación de BD
+    // 4. Eliminar del Storage - FORZAR ELIMINACIÓN DIRECTA
+    console.log('=== ELIMINACIÓN STORAGE FORZADA ===')
+    
+    // Buscar todas las imágenes posibles
+    const allUrls = []
+    
+    // Imagen principal
+    if (product.image) {
+      allUrls.push(product.image)
+      console.log('URL principal encontrada:', product.image)
+    }
+    
+    // Imágenes de productImages
+    productImagesData.forEach(img => {
+      if (img.url) {
+        allUrls.push(img.url)
+        console.log('URL productImage encontrada:', img.url)
       }
-    } else {
-      console.log('⚠️ NO HAY URLS PARA ELIMINAR')
+    })
+    
+    // Imágenes del array JSON
+    if (product.images) {
+      try {
+        const parsedImages = JSON.parse(product.images)
+        if (Array.isArray(parsedImages)) {
+          parsedImages.forEach(url => {
+            if (url) {
+              allUrls.push(url)
+              console.log('URL array encontrada:', url)
+            }
+          })
+        }
+      } catch (e) {
+        console.log('Error parseando images JSON:', e)
+      }
+    }
+    
+    console.log('Total URLs encontradas:', allUrls.length)
+    
+    // Eliminar TODAS las URLs encontradas
+    if (allUrls.length > 0) {
+      for (const url of allUrls) {
+        try {
+          const path = storageService.extractPathFromUrl(url)
+          if (path) {
+            console.log('🗑️ Eliminando:', path)
+            await storageService.deleteImage(path)
+            console.log('✅ Eliminada:', path)
+          }
+        } catch (error) {
+          console.log('❌ Error eliminando:', url, error.message)
+        }
+      }
     }
 
     // 5. Eliminar de la BD
