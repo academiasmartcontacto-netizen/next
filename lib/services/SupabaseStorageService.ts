@@ -144,8 +144,24 @@ export class SupabaseStorageService {
       const fullPath = parts[1] // "productos/productos/archivo.jpg"
       const bucketPrefix = `${this.bucket}/`
       
+      console.log('=== DEBUG EXTRACT PATH ===')
+      console.log('URL:', url)
+      console.log('Full path:', fullPath)
+      console.log('Bucket prefix:', bucketPrefix)
+      console.log('Empieza con bucket prefix?', fullPath.startsWith(bucketPrefix))
+      
       if (fullPath.startsWith(bucketPrefix)) {
-        return fullPath.substring(bucketPrefix.length) // "productos/archivo.jpg"
+        const result = fullPath.substring(bucketPrefix.length) // "productos/archivo.jpg"
+        console.log('Path después de quitar bucket:', result)
+        
+        // CORRECCIÓN: Si el path resultante empieza con el bucket name otra vez, quitarlo
+        if (result.startsWith(`${this.bucket}/`)) {
+          const finalResult = result.substring(`${this.bucket}/`.length)
+          console.log('Path final corregido:', finalResult)
+          return finalResult
+        }
+        
+        return result
       }
       return null
     } catch (e) {
