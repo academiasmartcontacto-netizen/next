@@ -287,7 +287,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Product and its images deleted successfully',
       deletedProduct: deleteResult[0],
-      deletedImages: imagesToDelete.length
+      deletedImages: uniqueImagesToDelete.length
     })
 
   } catch (error: any) {
