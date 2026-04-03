@@ -109,7 +109,7 @@ export default function TiendaEditorPage() {
                   margin: '0'
                 }}
               >
-                {isNavbarDrawerOpen ? 'Barra de Navegación' : isSeccionesDrawerOpen ? 'Secciones' : isInventarioDrawerOpen ? 'Gestión de Inventario' : 'Administrador'}
+                {isNavbarDrawerOpen ? 'Barra de Navegación' : isSeccionesDrawerOpen ? 'Secciones' : isInventarioDrawerOpen ? 'Inventario' : 'Administrador'}
               </h2>
             </div>
             {isSeccionesDrawerOpen && (
