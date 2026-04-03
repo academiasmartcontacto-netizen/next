@@ -100,7 +100,10 @@ export async function GET(
       // Timestamps
       createdAt: productData.createdAt,
       updatedAt: productData.updatedAt,
-      fecha_publicacion: productData.fecha_publicacion || productData.createdAt
+      fecha_publicacion: productData.fecha_publicacion || productData.createdAt,
+      
+      // Galería completa
+      allImages: images
     }
 
     console.log('=== PRODUCTO MAPEADO PARA FRONTEND ===')
@@ -220,6 +223,16 @@ export async function PUT(
 
     // Mapear respuesta igual que en GET
     const productData = updatedProduct[0]
+    
+    // Obtener imágenes actualizadas si es necesario, o usar las existentes
+    const images = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, productId))
+      .orderBy(productImages.order)
+    
+    const imagenPrincipal = images.find(img => img.isPrincipal)?.url || images[0]?.url || productData.image || productData.imagen || ''
+
     const mappedProduct = {
       id: productData.id,
       name: productData.name || productData.titulo || '',
@@ -230,9 +243,10 @@ export async function PUT(
       precio: productData.precio || productData.price || 0,
       category: productData.category || productData.categoria || '',
       categoria: productData.categoria || productData.category || '',
-      categoria_tienda: productData.categoria_tienda || '',
-      image: productData.image || productData.imagen || '',
-      imagen: productData.imagen || productData.image || '',
+      categoria_tienda: (productData as any).categoria_tienda || '',
+      image: imagenPrincipal,
+      imagen: imagenPrincipal,
+      allImages: images,
       visible: productData.isActive || productData.activo || true, // ✅ Campo para frontend
       estado: (productData as any).estado || 'nuevo',
       departamento: (productData as any).departamento || '',

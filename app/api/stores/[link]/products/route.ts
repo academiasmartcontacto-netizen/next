@@ -113,7 +113,12 @@ export async function GET(
       name: product.titulo || product.name,
       price: Number(product.precio || product.price) || 0,
       originalPrice: Number(product.precio_original || product.originalPrice) || 0,
-      image: product.productImages?.url || (product.imagen || product.image ? `/uploads/products/${product.imagen || product.image}` : null),
+      image: product.productImages?.url || 
+             (product.imagen || product.image 
+               ? (String(product.imagen || product.image).startsWith('http') 
+                   ? String(product.imagen || product.image) 
+                   : `/uploads/products/${product.imagen || product.image}`)
+               : null),
       visible: (product.isActive ?? true) || (product.activo ?? true), // ✅ Campo para frontend con nullish coalescing
       allImages: product.allImages || [], // Incluir todas las imágenes
       onSale: (Number(product.precio_original || product.originalPrice) || 0) > (Number(product.precio || product.price) || 0),
