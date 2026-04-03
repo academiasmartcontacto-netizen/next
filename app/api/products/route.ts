@@ -173,6 +173,7 @@ export async function DELETE(request: NextRequest) {
 
     console.log('=== ELIMINANDO PRODUCTO CON IMÁGENES ===')
     console.log('Product ID:', productId)
+    console.log('Timestamp:', new Date().toISOString())
 
     // Inicializar servicio de Storage
     const storageService = new SupabaseStorageService()
@@ -197,8 +198,10 @@ export async function DELETE(request: NextRequest) {
 
     const product = productData[0]
     console.log('Producto encontrado:', product.name)
+    console.log('ID completo:', product.id)
     console.log('Imagen principal (product.image):', product.image)
     console.log('Imágenes array (product.images):', product.images)
+    console.log('Todos los campos del producto:', Object.keys(product))
     
     // También verificar en productImages
     const productImagesData = await db
@@ -209,7 +212,12 @@ export async function DELETE(request: NextRequest) {
     console.log('=== IMÁGENES EN TABLA productImages ===')
     console.log('Cantidad:', productImagesData.length)
     productImagesData.forEach((img, index) => {
-      console.log(`Imagen ${index + 1}:`, img.url)
+      console.log(`Imagen ${index + 1}:`, {
+        id: img.id,
+        url: img.url,
+        isPrincipal: img.isPrincipal,
+        order: img.order
+      })
     })
 
     // 2. Eliminar imágenes del Supabase Storage
@@ -217,23 +225,36 @@ export async function DELETE(request: NextRequest) {
 
     // Agregar imagen principal si existe
     if (product.image) {
+      console.log('=== PROCESANDO IMAGEN PRINCIPAL ===')
+      console.log('URL original:', product.image)
       const imagePath = storageService.extractPathFromUrl(product.image)
+      console.log('Path extraído:', imagePath)
       if (imagePath) {
         imagesToDelete.push(imagePath)
-        console.log('Agregando imagen principal para eliminar:', imagePath)
+        console.log('✅ Agregando imagen principal para eliminar:', imagePath)
+      } else {
+        console.log('❌ No se pudo extraer path de imagen principal')
       }
     }
 
     // Agregar imágenes del array si existe
     if (product.images) {
+      console.log('=== PROCESANDO ARRAY DE IMÁGENES ===')
       try {
         const imagesArray = JSON.parse(product.images)
+        console.log('Array parseado:', imagesArray)
+        console.log('Es array?', Array.isArray(imagesArray))
         if (Array.isArray(imagesArray)) {
-          imagesArray.forEach((imgUrl: string) => {
+          imagesArray.forEach((imgUrl: string, index: number) => {
+            console.log(`=== PROCESANDO IMAGEN ARRAY[${index}] ===`)
+            console.log('URL original:', imgUrl)
             const imagePath = storageService.extractPathFromUrl(imgUrl)
+            console.log('Path extraído:', imagePath)
             if (imagePath) {
               imagesToDelete.push(imagePath)
-              console.log('Agregando imagen del array para eliminar:', imagePath)
+              console.log('✅ Agregando imagen del array para eliminar:', imagePath)
+            } else {
+              console.log('❌ No se pudo extraer path de imagen array:', imgUrl)
             }
           })
         }
@@ -243,12 +264,18 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Agregar imágenes de la tabla productImages
-    productImagesData.forEach((img: any) => {
+    console.log('=== PROCESANDO TABLA productImages ===')
+    productImagesData.forEach((img: any, index: number) => {
       if (img.url) {
+        console.log(`=== PROCESANDO PRODUCTIMAGE[${index}] ===`)
+        console.log('URL original:', img.url)
         const imagePath = storageService.extractPathFromUrl(img.url)
+        console.log('Path extraído:', imagePath)
         if (imagePath) {
           imagesToDelete.push(imagePath)
-          console.log('Agregando imagen de productImages para eliminar:', imagePath)
+          console.log('✅ Agregando imagen de productImages para eliminar:', imagePath)
+        } else {
+          console.log('❌ No se pudo extraer path de productImage:', img.url)
         }
       }
     })
@@ -256,9 +283,11 @@ export async function DELETE(request: NextRequest) {
     // Eliminar duplicados
     const uniqueImagesToDelete = [...new Set(imagesToDelete)]
     console.log('=== TOTAL DE IMÁGENES ÚNICAS PARA ELIMINAR ===')
-    console.log('Cantidad:', uniqueImagesToDelete.length)
+    console.log('Antes de deduplicación:', imagesToDelete.length)
+    console.log('Después de deduplicación:', uniqueImagesToDelete.length)
+    console.log('Lista completa:')
     uniqueImagesToDelete.forEach((path, index) => {
-      console.log(`${index + 1}. ${path}`)
+      console.log(`${index + 1}. "${path}"`)
     })
 
     // Eliminar imágenes del Storage

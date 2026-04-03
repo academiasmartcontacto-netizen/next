@@ -119,8 +119,51 @@ export class SupabaseStorageService {
   }
 
   async deleteMultipleImages(paths: string[]): Promise<void> {
-    const deletePromises = paths.map(path => this.deleteImage(path))
-    await Promise.all(deletePromises)
+    console.log('=== DELETE MULTIPLE IMAGES ===')
+    console.log('Paths a eliminar:', paths.length)
+    console.log('Lista de paths:')
+    paths.forEach((path, index) => {
+      console.log(`${index + 1}. "${path}"`)
+    })
+
+    try {
+      const deletePromises = paths.map(async (path, index) => {
+        console.log(`=== INICIANDO ELIMINACIÓN ${index + 1}/${paths.length} ===`)
+        console.log(`Path: "${path}"`)
+        try {
+          await this.deleteImage(path)
+          console.log(`✅ Eliminación ${index + 1} exitosa`)
+          return { success: true, path, index }
+        } catch (error) {
+          console.error(`❌ Eliminación ${index + 1} falló:`, error)
+          return { success: false, path, index, error }
+        }
+      })
+      
+      const results = await Promise.all(deletePromises)
+      
+      console.log('=== RESULTADOS DE ELIMINACIÓN ===')
+      const successful = results.filter(r => r.success)
+      const failed = results.filter(r => !r.success)
+      
+      console.log(`✅ Exitosas: ${successful.length}/${results.length}`)
+      console.log(`❌ Fallidas: ${failed.length}/${results.length}`)
+      
+      if (failed.length > 0) {
+        console.log('Detalles de fallas:')
+        failed.forEach(result => {
+          console.log(`- Path: "${result.path}" - Error: ${result.error?.message || result.error}`)
+        })
+      }
+      
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} imágenes no se pudieron eliminar`)
+      }
+      
+    } catch (error) {
+      console.error('❌ Error general en deleteMultipleImages:', error)
+      throw error
+    }
   }
 
   async getImageUrl(path: string): Promise<string> {
