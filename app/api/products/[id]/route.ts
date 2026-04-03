@@ -314,14 +314,15 @@ export async function DELETE(
 
     // 3. Eliminar imágenes de Supabase Storage una por una
     for (const url of Array.from(urlsToDelete)) {
-      if (url && url.startsWith('http')) {
+      if (url && (url.startsWith('http') || url.includes('supabase.co'))) {
         const path = storageService.extractPathFromUrl(url)
+        console.log(`🌐 Procesando URL: ${url} -> Path extraído: ${path}`)
         if (path) {
           try {
             console.log(`🗑️ Intentando eliminar de Storage: ${path}`)
             await storageService.deleteImage(path)
           } catch (storageErr) {
-            console.error(`⚠️ Error no crítico borrando de storage (${path}):`, storageErr)
+            console.error(`⚠️ Error borrando de storage (${path}):`, storageErr)
           }
         }
       }

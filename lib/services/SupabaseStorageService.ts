@@ -133,15 +133,19 @@ export class SupabaseStorageService {
 
   // Extraer el path relativo del bucket desde una URL pública
   extractPathFromUrl(url: string): string | null {
-    if (!url || !url.includes('/public/')) return null
+    if (!url || !url.includes('/storage/v1/object/public/')) return null
     
     try {
-      // Busca lo que hay después de ".../public/productos/" o ".../public/logos/"
-      const searchStr = `/public/${this.bucket}/`
-      const index = url.indexOf(searchStr)
-      if (index !== -1) {
-        // Retornar todo lo que sigue después del nombre del bucket
-        return url.substring(index + searchStr.length)
+      // Formato: .../storage/v1/object/public/[bucket_name]/[file_path]
+      // Ejemplo: .../storage/v1/object/public/productos/productos/archivo.jpg
+      const parts = url.split('/storage/v1/object/public/')
+      if (parts.length < 2) return null
+      
+      const fullPath = parts[1] // "productos/productos/archivo.jpg"
+      const bucketPrefix = `${this.bucket}/`
+      
+      if (fullPath.startsWith(bucketPrefix)) {
+        return fullPath.substring(bucketPrefix.length) // "productos/archivo.jpg"
       }
       return null
     } catch (e) {
