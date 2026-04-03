@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { products, stores } from '@/lib/db/schema'
 import { eq, desc } from 'drizzle-orm'
+import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
 
 export async function GET(request: NextRequest) {
   try {
@@ -112,14 +113,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name } = await request.json()
+    const { name, storeId } = await request.json()
 
     console.log('=== CREANDO NUEVO PRODUCTO ===')
     console.log('Nombre:', name)
+    console.log('StoreId:', storeId)
 
     if (!name) {
       return NextResponse.json(
         { error: 'Nombre es requerido' },
+        { status: 400 }
+      )
+    }
+
+    if (!storeId) {
+      return NextResponse.json(
+        { error: 'Store ID es requerido' },
         { status: 400 }
       )
     }
@@ -129,9 +138,11 @@ export async function POST(request: NextRequest) {
       .insert(products)
       .values({
         name: name.trim(),
+        storeId: storeId,
+        price: '0.00', // Precio por defecto
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       })
       .returning()
 
@@ -159,31 +170,92 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    console.log('Deleting product:', productId)
+    console.log('=== ELIMINANDO PRODUCTO CON IMÁGENES ===')
+    console.log('Product ID:', productId)
 
-    // Eliminar el producto de la base de datos
-    const deleteResult = await db
-      .delete(products)
+    // Inicializar servicio de Storage
+    const storageService = new SupabaseStorageService()
+
+    // 1. Obtener el producto completo antes de eliminar para tener las imágenes
+    const productData = await db
+      .select()
+      .from(products)
       .where(eq(products.id, productId))
-      .returning({ id: products.id, name: products.name })
+      .limit(1)
 
-    console.log('Delete result:', deleteResult)
-
-    if (deleteResult.length === 0) {
+    if (productData.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
         { status: 404 }
       )
     }
 
+    const product = productData[0]
+    console.log('Producto encontrado:', product.name)
+    console.log('Imagen principal:', product.image)
+    console.log('Imágenes array:', product.images)
+
+    // 2. Eliminar imágenes del Supabase Storage
+    const imagesToDelete: string[] = []
+
+    // Agregar imagen principal si existe
+    if (product.image) {
+      const imagePath = storageService.extractPathFromUrl(product.image)
+      if (imagePath) {
+        imagesToDelete.push(imagePath)
+        console.log('Agregando imagen principal para eliminar:', imagePath)
+      }
+    }
+
+    // Agregar imágenes del array si existe
+    if (product.images) {
+      try {
+        const imagesArray = JSON.parse(product.images)
+        if (Array.isArray(imagesArray)) {
+          imagesArray.forEach((imgUrl: string) => {
+            const imagePath = storageService.extractPathFromUrl(imgUrl)
+            if (imagePath) {
+              imagesToDelete.push(imagePath)
+              console.log('Agregando imagen del array para eliminar:', imagePath)
+            }
+          })
+        }
+      } catch (e) {
+        console.error('Error parseando images JSON:', e)
+      }
+    }
+
+    // Eliminar imágenes del Storage
+    if (imagesToDelete.length > 0) {
+      console.log('Eliminando imágenes del Storage:', imagesToDelete)
+      try {
+        await storageService.deleteMultipleImages(imagesToDelete)
+        console.log('✅ Imágenes eliminadas del Storage correctamente')
+      } catch (error: any) {
+        console.error('❌ Error eliminando imágenes del Storage:', error)
+        // Continuar con la eliminación del producto aunque falle el Storage
+      }
+    } else {
+      console.log('No hay imágenes para eliminar del Storage')
+    }
+
+    // 3. Eliminar el producto de la base de datos
+    const deleteResult = await db
+      .delete(products)
+      .where(eq(products.id, productId))
+      .returning({ id: products.id, name: products.name })
+
+    console.log('✅ Producto eliminado de la BD:', deleteResult[0])
+
     return NextResponse.json({
       success: true,
-      message: 'Product deleted successfully',
-      deletedProduct: deleteResult[0]
+      message: 'Product and its images deleted successfully',
+      deletedProduct: deleteResult[0],
+      deletedImages: imagesToDelete.length
     })
 
   } catch (error: any) {
-    console.error('Error deleting product:', error)
+    console.error('❌ Error deleting product:', error)
     return NextResponse.json(
       { 
         success: false, 
