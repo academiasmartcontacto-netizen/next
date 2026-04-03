@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { products, productImages } from '@/lib/db/schema-products'
 import { eq } from 'drizzle-orm'
+import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
+
+const storageService = new SupabaseStorageService()
 
 export async function GET(
   request: NextRequest,
@@ -286,7 +289,24 @@ export async function DELETE(
 
     console.log('Deleting product:', productId)
 
-    // Eliminar el producto de la base de datos
+    // 1. Buscar imágenes del producto antes de borrar
+    const images = await db
+      .select({ url: productImages.url })
+      .from(productImages)
+      .where(eq(productImages.productId, productId))
+
+    // 2. Eliminar imágenes de Supabase Storage
+    for (const image of images) {
+      if (image.url && image.url.startsWith('http')) {
+        const path = storageService.extractPathFromUrl(image.url)
+        if (path) {
+          console.log(`🗑️ Eliminando imagen de Storage: ${path}`)
+          await storageService.deleteImage(path)
+        }
+      }
+    }
+
+    // 3. Eliminar el producto de la base de datos (Cascade borrará productImages)
     const deleteResult = await db
       .delete(products)
       .where(eq(products.id, productId))
