@@ -96,19 +96,25 @@ export class SupabaseStorageService {
     try {
       console.log(`🗑️ Eliminando imagen de Supabase: ${path}`)
 
+      // Asegurar que el path no tenga el nombre del bucket al inicio si se pasa la ruta completa
+      const cleanPath = path.startsWith(`${this.bucket}/`) 
+        ? path.replace(`${this.bucket}/`, '') 
+        : path
+
       const { error } = await this.supabase.storage
         .from(this.bucket)
-        .remove([path])
+        .remove([cleanPath])
 
       if (error) {
-        console.warn('⚠️ Error eliminando imagen:', error)
-        return
+        console.error('❌ Error eliminando imagen en Supabase:', error)
+        throw error
       }
 
-      console.log(`✅ Imagen eliminada exitosamente`)
+      console.log(`✅ Imagen eliminada exitosamente: ${cleanPath}`)
 
     } catch (error: any) {
-      console.warn('⚠️ Error en deleteImage:', error)
+      console.error('❌ Error en deleteImage:', error)
+      throw error
     }
   }
 
