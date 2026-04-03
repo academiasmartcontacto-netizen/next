@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { products, stores } from '@/lib/db/schema'
+import { products as productsTable, productImages } from '@/lib/db/schema-products'
 import { eq, desc } from 'drizzle-orm'
 import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
 
@@ -21,9 +22,9 @@ export async function GET(request: NextRequest) {
     // Obtener productos de la tienda - Traer TODOS los campos para debug
     const productsData = await db
       .select()
-      .from(products)
-      .where(eq(products.storeId, storeId))
-      .orderBy(desc(products.createdAt))
+      .from(productsTable)
+      .where(eq(productsTable.storeId, storeId))
+      .orderBy(desc(productsTable.createdAt))
 
     console.log('Products fetched:', productsData.length)
 
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     // Crear nuevo producto
     const insertResult = await db
-      .insert(products)
+      .insert(productsTable)
       .values({
         name: name.trim(),
         storeId: storeId,
@@ -179,11 +180,15 @@ export async function DELETE(request: NextRequest) {
     // 1. Obtener el producto completo antes de eliminar para tener las imágenes
     const productData = await db
       .select()
-      .from(products)
-      .where(eq(products.id, productId))
+      .from(productsTable)
+      .where(eq(productsTable.id, productId))
       .limit(1)
 
+    console.log('=== PRODUCTO ENCONTRADO EN BD ===')
+    console.log('Cantidad de productos:', productData.length)
+
     if (productData.length === 0) {
+      console.log('❌ Producto no encontrado en BD')
       return NextResponse.json(
         { success: false, error: 'Product not found' },
         { status: 404 }
@@ -192,8 +197,20 @@ export async function DELETE(request: NextRequest) {
 
     const product = productData[0]
     console.log('Producto encontrado:', product.name)
-    console.log('Imagen principal:', product.image)
-    console.log('Imágenes array:', product.images)
+    console.log('Imagen principal (product.image):', product.image)
+    console.log('Imágenes array (product.images):', product.images)
+    
+    // También verificar en productImages
+    const productImagesData = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, productId))
+    
+    console.log('=== IMÁGENES EN TABLA productImages ===')
+    console.log('Cantidad:', productImagesData.length)
+    productImagesData.forEach((img, index) => {
+      console.log(`Imagen ${index + 1}:`, img.url)
+    })
 
     // 2. Eliminar imágenes del Supabase Storage
     const imagesToDelete: string[] = []
@@ -225,11 +242,30 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
+    // Agregar imágenes de la tabla productImages
+    productImagesData.forEach((img: any) => {
+      if (img.url) {
+        const imagePath = storageService.extractPathFromUrl(img.url)
+        if (imagePath) {
+          imagesToDelete.push(imagePath)
+          console.log('Agregando imagen de productImages para eliminar:', imagePath)
+        }
+      }
+    })
+
+    // Eliminar duplicados
+    const uniqueImagesToDelete = [...new Set(imagesToDelete)]
+    console.log('=== TOTAL DE IMÁGENES ÚNICAS PARA ELIMINAR ===')
+    console.log('Cantidad:', uniqueImagesToDelete.length)
+    uniqueImagesToDelete.forEach((path, index) => {
+      console.log(`${index + 1}. ${path}`)
+    })
+
     // Eliminar imágenes del Storage
-    if (imagesToDelete.length > 0) {
-      console.log('Eliminando imágenes del Storage:', imagesToDelete)
+    if (uniqueImagesToDelete.length > 0) {
+      console.log('Eliminando imágenes del Storage:', uniqueImagesToDelete)
       try {
-        await storageService.deleteMultipleImages(imagesToDelete)
+        await storageService.deleteMultipleImages(uniqueImagesToDelete)
         console.log('✅ Imágenes eliminadas del Storage correctamente')
       } catch (error: any) {
         console.error('❌ Error eliminando imágenes del Storage:', error)
@@ -241,9 +277,9 @@ export async function DELETE(request: NextRequest) {
 
     // 3. Eliminar el producto de la base de datos
     const deleteResult = await db
-      .delete(products)
-      .where(eq(products.id, productId))
-      .returning({ id: products.id, name: products.name })
+      .delete(productsTable)
+      .where(eq(productsTable.id, productId))
+      .returning({ id: productsTable.id, name: productsTable.name })
 
     console.log('✅ Producto eliminado de la BD:', deleteResult[0])
 
