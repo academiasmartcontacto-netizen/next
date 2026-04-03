@@ -275,10 +275,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id
+    const resolvedParams = await params
+    const productId = resolvedParams.id
     
     if (!productId) {
       return NextResponse.json(
@@ -289,24 +290,44 @@ export async function DELETE(
 
     console.log('Deleting product:', productId)
 
-    // 1. Buscar imágenes del producto antes de borrar
-    const images = await db
+    // 1. Buscar el producto y sus imágenes adicionales antes de borrar
+    const productData = await db
+      .select({ image: products.image, imagen: products.imagen })
+      .from(products)
+      .where(eq(products.id, productId))
+      .limit(1)
+
+    const additionalImages = await db
       .select({ url: productImages.url })
       .from(productImages)
       .where(eq(productImages.productId, productId))
 
-    // 2. Eliminar imágenes de Supabase Storage
-    for (const image of images) {
-      if (image.url && image.url.startsWith('http')) {
-        const path = storageService.extractPathFromUrl(image.url)
+    // 2. Recolectar todas las URLs únicas
+    const urlsToDelete = new Set<string>()
+    if (productData[0]?.image) urlsToDelete.add(productData[0].image)
+    if (productData[0]?.imagen) urlsToDelete.add(productData[0].imagen)
+    additionalImages.forEach(img => {
+      if (img.url) urlsToDelete.add(img.url)
+    })
+
+    console.log(`🔍 URLs encontradas para eliminar: ${urlsToDelete.size}`)
+
+    // 3. Eliminar imágenes de Supabase Storage una por una
+    for (const url of Array.from(urlsToDelete)) {
+      if (url && url.startsWith('http')) {
+        const path = storageService.extractPathFromUrl(url)
         if (path) {
-          console.log(`🗑️ Eliminando imagen de Storage: ${path}`)
-          await storageService.deleteImage(path)
+          try {
+            console.log(`🗑️ Intentando eliminar de Storage: ${path}`)
+            await storageService.deleteImage(path)
+          } catch (storageErr) {
+            console.error(`⚠️ Error no crítico borrando de storage (${path}):`, storageErr)
+          }
         }
       }
     }
 
-    // 3. Eliminar el producto de la base de datos (Cascade borrará productImages)
+    // 4. Finalmente eliminar el producto de la base de datos
     const deleteResult = await db
       .delete(products)
       .where(eq(products.id, productId))
