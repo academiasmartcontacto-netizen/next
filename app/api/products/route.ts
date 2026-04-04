@@ -196,64 +196,32 @@ export async function DELETE(request: NextRequest) {
     // 2. Eliminar imagen principal si existe
     if (product.image) {
       try {
-        console.log('🗑️ Intentando eliminar imagen principal')
-        console.log('URL completa:', product.image)
+        console.log('🗑️ Eliminando imagen')
         
-        // Extraer fileName de la URL
-        const urlParts = product.image.split('/')
-        const fileName = urlParts[urlParts.length - 1]
-        console.log('Nombre del archivo extraído:', fileName)
-        
-        // Probar con el path completo también
+        // Extraer path completo después de /public/
         const pathParts = product.image.split('/storage/v1/object/public/productos/')
-        const fullPath = pathParts[pathParts.length - 1]
-        console.log('Path completo:', fullPath)
+        const imagePath = pathParts[pathParts.length - 1]
         
-        // Usar Service Role Key directamente
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+        console.log('Path a eliminar:', imagePath)
         
-        console.log('Supabase URL:', supabaseUrl ? '✅' : '❌')
-        console.log('Service Role Key existe:', serviceRoleKey ? '✅' : '❌')
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
         
-        if (supabaseUrl && serviceRoleKey) {
-          const { createClient } = await import('@supabase/supabase-js')
-          const supabase = createClient(supabaseUrl, serviceRoleKey)
+        const { error } = await supabase.storage
+          .from('productos')
+          .remove([imagePath])
           
-          console.log('🗑️ Intentando eliminar con fileName:', fileName)
-          const { error: error1 } = await supabase.storage
-            .from('productos')
-            .remove([fileName])
-            
-          console.log('Resultado con fileName:', error1 || '✅ Éxito')
-          
-          if (error1) {
-            console.log('❌ Error con fileName:', error1.message)
-            
-            console.log('🗑️ Intentando eliminar con fullPath:', fullPath)
-            const { error: error2 } = await supabase.storage
-              .from('productos')
-              .remove([fullPath])
-              
-            console.log('Resultado con fullPath:', error2 || '✅ Éxito')
-            
-            if (error2) {
-              console.log('❌ Error con fullPath:', error2.message)
-            } else {
-              console.log('✅ Imagen eliminada con fullPath:', fullPath)
-            }
-          } else {
-            console.log('✅ Imagen eliminada con fileName:', fileName)
-          }
+        if (error) {
+          console.log('❌ Error:', error.message)
         } else {
-          console.log('❌ Variables de entorno no configuradas')
+          console.log('✅ Imagen eliminada')
         }
       } catch (error: any) {
-        console.log('❌ Error eliminando imagen:', error.message)
-        console.log('Stack:', error.stack)
+        console.log('❌ Error:', error.message)
       }
-    } else {
-      console.log('⚠️ El producto no tiene imagen principal')
     }
 
     // 3. Eliminar de la BD
