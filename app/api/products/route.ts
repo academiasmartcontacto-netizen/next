@@ -191,72 +191,22 @@ export async function DELETE(request: NextRequest) {
 
     const product = productData[0]
     
-    // DEBUG: Mostrar TODOS los campos del producto
-    console.log('=== PRODUCTO COMPLETO DEBUG ===')
-    console.log('ID:', product.id)
-    console.log('Nombre:', product.name)
-    console.log('Image:', product.image)
-    console.log('Imagen (PHP):', product.imagen)
-    console.log('Images (JSON):', product.images)
-    console.log('Imagenes (PHP JSON):', product.imagenes)
-    console.log('=== TODOS LOS CAMPOS ===')
-    Object.keys(product).forEach(key => {
-      console.log(`${key}:`, (product as any)[key])
+    // 2. Obtener imágenes de productImages (AQUÍ ESTÁN LAS IMÁGENES REALES)
+    const productImagesData = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, productId))
+    
+    console.log(`📸 Imágenes en productImages: ${productImagesData.length}`)
+    productImagesData.forEach((img, index) => {
+      console.log(`📸 Imagen ${index + 1}:`, img.url)
+      console.log(`📸 Es principal:`, img.isPrincipal)
+      console.log(`📸 Order:`, img.order)
     })
-    console.log('=== FIN DEBUG ===')
-    
-    console.log('Producto encontrado:', product.name)
 
-    // 2. Eliminar CUALQUIER imagen que exista
-    const imagenesAEliminar = []
-    
-    if (product.image) {
-      imagenesAEliminar.push(product.image)
-      console.log('✅ Imagen encontrada en campo image:', product.image)
-    }
-    
-    if (product.imagen) {
-      imagenesAEliminar.push(product.imagen)
-      console.log('✅ Imagen encontrada en campo imagen:', product.imagen)
-    }
-    
-    if (product.images) {
-      try {
-        const parsedImages = JSON.parse(product.images)
-        if (Array.isArray(parsedImages)) {
-          parsedImages.forEach(url => {
-            if (url) {
-              imagenesAEliminar.push(url)
-              console.log('✅ Imagen encontrada en campo images:', url)
-            }
-          })
-        }
-      } catch (e) {
-        console.log('❌ Error parseando campo images:', e)
-      }
-    }
-    
-    if (product.imagenes) {
-      try {
-        const parsedImagenes = JSON.parse(product.imagenes)
-        if (Array.isArray(parsedImagenes)) {
-          parsedImagenes.forEach(url => {
-            if (url) {
-              imagenesAEliminar.push(url)
-              console.log('✅ Imagen encontrada en campo imagenes:', url)
-            }
-          })
-        }
-      } catch (e) {
-        console.log('❌ Error parseando campo imagenes:', e)
-      }
-    }
-    
-    console.log(`📸 Total imágenes a eliminar: ${imagenesAEliminar.length}`)
-
-    // 3. Eliminar TODAS las imágenes encontradas
-    if (imagenesAEliminar.length > 0) {
-      console.log('🗑️ INICIANDO ELIMINACIÓN DE IMÁGENES')
+    // 3. Eliminar TODAS las imágenes de productImages
+    if (productImagesData.length > 0) {
+      console.log('🗑️ INICIANDO ELIMINACIÓN DE IMÁGENES REALES')
       
       const { createClient } = await import('@supabase/supabase-js')
       const supabase = createClient(
@@ -264,12 +214,12 @@ export async function DELETE(request: NextRequest) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       )
       
-      for (const imageUrl of imagenesAEliminar) {
+      for (const img of productImagesData) {
         try {
-          console.log('🗑️ Procesando imagen:', imageUrl)
+          console.log('🗑️ Procesando imagen:', img.url)
           
           // Extraer path después de /public/productos/
-          const pathParts = imageUrl.split('/storage/v1/object/public/productos/')
+          const pathParts = img.url.split('/storage/v1/object/public/productos/')
           const imagePath = pathParts[pathParts.length - 1]
           
           console.log('🗑️ Path a eliminar:', imagePath)
@@ -290,7 +240,7 @@ export async function DELETE(request: NextRequest) {
       
       console.log('🏁 Eliminación de imágenes completada')
     } else {
-      console.log('⚠️ No se encontraron imágenes para eliminar')
+      console.log('⚠️ No se encontraron imágenes en productImages')
     }
 
     // 3. Eliminar de la BD
