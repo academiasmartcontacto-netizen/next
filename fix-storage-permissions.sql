@@ -32,11 +32,11 @@ CREATE POLICY "Allow authenticated delete productos" ON storage.objects
 FOR DELETE TO authenticated
 USING (bucket_id = 'productos');
 
--- 4. Verificar que las políticas se crearon correctamente
-SELECT * FROM pg_policies WHERE tablename = 'storage.objects' AND bucket_id = 'productos';
+-- 4. Verificar que las políticas se crearon correctamente (SIN bucket_id en pg_policies)
+SELECT * FROM pg_policies WHERE tablename = 'storage.objects';
 
--- 5. Opcional: Permitir acceso total con service role (para bypass RLS)
--- Esto debería funcionar automáticamente con SUPABASE_SERVICE_ROLE_KEY
-
--- 6. Verificar permisos del bucket
+-- 5. Verificar permisos del bucket
 SELECT * FROM storage.buckets WHERE name = 'productos';
+
+-- 6. Verificar archivos en el bucket
+SELECT * FROM storage.objects WHERE bucket_id = 'productos' LIMIT 5;
