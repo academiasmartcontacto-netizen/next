@@ -167,8 +167,7 @@ export async function POST(request: NextRequest) {
 
         try {
           // SUBIR A SUPABASE STORAGE con estructura jerárquica
-          const uploadResult = await supabaseStorageService.uploadImage(imagen, store_id, producto_id, 'productos')
-          const imageUrl = uploadResult.publicUrl
+          const { publicUrl: imageUrl } = await supabaseStorageService.uploadImage(imagen, store_id, producto_id, 'productos')
 
           // Insertar registro en la base de datos
           const isPrincipalValue = i === 0

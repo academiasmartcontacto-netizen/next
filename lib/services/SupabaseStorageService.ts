@@ -11,7 +11,7 @@ export interface UploadResult {
 
 export class SupabaseStorageService {
   private supabase: any
-  private bucket: string = 'productos'
+  private bucket: string = 'tiendas'
 
   constructor() {
     this.supabase = createClient(
