@@ -20,13 +20,21 @@ export class SupabaseStorageService {
     )
   }
 
-  async uploadImage(file: File, productId: string): Promise<UploadResult> {
+  async uploadImage(file: File, storeId: string, productId: string, folder: string = ''): Promise<UploadResult> {
     try {
       // Generar nombre único
       const timestamp = Date.now()
       const random = Math.random().toString(36).substring(2, 8)
-      const fileName = `producto_${productId}_${timestamp}_${random}.${file.name.split('.').pop()}`
-      const filePath = `productos/${fileName}`
+      const fileName = `${folder ? folder + '_' : ''}${productId}_${timestamp}_${random}.${file.name.split('.').pop()}`
+      
+      // Estructura jerárquica: storeId/productId/fileName
+      // O si es un logo: storeId/logos/fileName
+      const pathParts = [storeId]
+      if (folder) pathParts.push(folder)
+      if (productId && productId !== storeId) pathParts.push(productId)
+      pathParts.push(fileName)
+      
+      const filePath = pathParts.join('/')
 
       console.log(`📤 Subiendo imagen a Supabase Storage: ${filePath}`)
 
@@ -62,14 +70,14 @@ export class SupabaseStorageService {
     }
   }
 
-  async uploadMultipleImages(files: File[], productId: string): Promise<UploadResult[]> {
+  async uploadMultipleImages(files: File[], storeId: string, productId: string, folder: string = ''): Promise<UploadResult[]> {
     const results: UploadResult[] = []
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
       
       try {
-        const result = await this.uploadImage(file, productId)
+        const result = await this.uploadImage(file, storeId, productId, folder)
         results.push(result)
       } catch (error) {
         console.error(`❌ Error subiendo imagen ${i + 1}:`, error)
