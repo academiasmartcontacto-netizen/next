@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
-
-const storageService = new SupabaseStorageService()
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,12 +23,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File too large' }, { status: 400 })
     }
 
-    // Subir a Supabase Storage
-    const uploadResult = await storageService.uploadImage(file, 'uploads', 'img')
+    // Create unique filename
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
     
-    return NextResponse.json({ url: uploadResult.publicUrl })
-  } catch (error: any) {
+    // Determine upload directory based on file type or user preference
+    const uploadDir = join(process.cwd(), 'public', 'uploads')
+    const filename = `${uuidv4()}.${file.type.split('/')[1]}`
+    const filepath = join(uploadDir, filename)
+
+    // Ensure upload directory exists
+    await mkdir(uploadDir, { recursive: true })
+
+    // Write file
+    await writeFile(filepath, buffer)
+
+    // Return the URL
+    const url = `/uploads/${filename}`
+    
+    return NextResponse.json({ url })
+  } catch (error) {
     console.error('Upload error:', error)
-    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }

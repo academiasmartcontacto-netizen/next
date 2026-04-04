@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { products, productImages } from '@/lib/db/schema-products'
 import { eq } from 'drizzle-orm'
-import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
-
-const storageService = new SupabaseStorageService()
+import { supabaseStorageService } from '@/lib/services/SupabaseStorageService'
 
 export async function GET(
   request: NextRequest,
@@ -103,10 +101,7 @@ export async function GET(
       // Timestamps
       createdAt: productData.createdAt,
       updatedAt: productData.updatedAt,
-      fecha_publicacion: productData.fecha_publicacion || productData.createdAt,
-      
-      // Galería completa
-      allImages: images
+      fecha_publicacion: productData.fecha_publicacion || productData.createdAt
     }
 
     console.log('=== PRODUCTO MAPEADO PARA FRONTEND ===')
@@ -226,16 +221,6 @@ export async function PUT(
 
     // Mapear respuesta igual que en GET
     const productData = updatedProduct[0]
-    
-    // Obtener imágenes actualizadas si es necesario, o usar las existentes
-    const images = await db
-      .select()
-      .from(productImages)
-      .where(eq(productImages.productId, productId))
-      .orderBy(productImages.order)
-    
-    const imagenPrincipal = images.find(img => img.isPrincipal)?.url || images[0]?.url || productData.image || productData.imagen || ''
-
     const mappedProduct = {
       id: productData.id,
       name: productData.name || productData.titulo || '',
@@ -246,10 +231,9 @@ export async function PUT(
       precio: productData.precio || productData.price || 0,
       category: productData.category || productData.categoria || '',
       categoria: productData.categoria || productData.category || '',
-      categoria_tienda: (productData as any).categoria_tienda || '',
-      image: imagenPrincipal,
-      imagen: imagenPrincipal,
-      allImages: images,
+      categoria_tienda: productData.categoria_tienda || '',
+      image: productData.image || productData.imagen || '',
+      imagen: productData.imagen || productData.image || '',
       visible: productData.isActive || productData.activo || true, // ✅ Campo para frontend
       estado: (productData as any).estado || 'nuevo',
       departamento: (productData as any).departamento || '',
@@ -288,60 +272,85 @@ export async function DELETE(
       )
     }
 
-    console.log('Deleting product:', productId)
+    console.log('=== ELIMINANDO PRODUCTO CON STORAGE ===')
+    console.log('Product ID:', productId)
 
-    // 1. Buscar el producto y sus imágenes adicionales antes de borrar
+    // 1. Obtener el producto para tener sus URLs de imagen
     const productData = await db
-      .select({ image: products.image, imagen: products.imagen })
+      .select()
       .from(products)
       .where(eq(products.id, productId))
       .limit(1)
 
-    const additionalImages = await db
-      .select({ url: productImages.url })
-      .from(productImages)
-      .where(eq(productImages.productId, productId))
-
-    // 2. Recolectar todas las URLs únicas
-    const urlsToDelete = new Set<string>()
-    if (productData[0]?.image) urlsToDelete.add(productData[0].image)
-    if (productData[0]?.imagen) urlsToDelete.add(productData[0].imagen)
-    additionalImages.forEach(img => {
-      if (img.url) urlsToDelete.add(img.url)
-    })
-
-    console.log(`🔍 URLs encontradas para eliminar: ${urlsToDelete.size}`)
-
-    // 3. Eliminar imágenes de Supabase Storage una por una
-    for (const url of Array.from(urlsToDelete)) {
-      if (url && (url.startsWith('http') || url.includes('supabase.co'))) {
-        const path = storageService.extractPathFromUrl(url)
-        console.log(`🌐 Procesando URL: ${url} -> Path extraído: ${path}`)
-        if (path) {
-          try {
-            console.log(`🗑️ Intentando eliminar de Storage: ${path}`)
-            await storageService.deleteImage(path)
-          } catch (storageErr) {
-            console.error(`⚠️ Error borrando de storage (${path}):`, storageErr)
-          }
-        }
-      }
+    if (productData.length === 0) {
+      console.log('❌ Producto no encontrado')
+      return NextResponse.json(
+        { success: false, error: 'Product not found' },
+        { status: 404 }
+      )
     }
 
-    // 4. Finalmente eliminar el producto de la base de datos
+    const product = productData[0]
+
+    // 2. Obtener TODAS las posibles URLs de imágenes del producto
+    const imageUrls: string[] = []
+    
+    // a. De los campos del producto
+    const fieldsToCheck = ['image', 'imagen', 'images', 'imagenes']
+    fieldsToCheck.forEach(field => {
+      const val = (product as any)[field]
+      if (!val) return
+      
+      try {
+        if (typeof val === 'string' && (val.startsWith('[') || val.startsWith('{'))) {
+          const parsed = JSON.parse(val)
+          if (Array.isArray(parsed)) {
+            parsed.forEach(url => {
+              if (typeof url === 'string' && url.includes('supabase')) imageUrls.push(url)
+              else if (url && typeof url === 'object' && url.url) imageUrls.push(url.url)
+            })
+          }
+        } else if (typeof val === 'string' && val.includes('supabase')) {
+          imageUrls.push(val)
+        }
+      } catch (e) {
+        console.error(`Error procesando campo ${field}:`, e)
+      }
+    })
+
+    // b. De la tabla productImages (IMÁGENES ADICIONALES)
+    const imagesTableData = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, productId))
+    
+    console.log(`📸 Imágenes en productImages: ${imagesTableData.length}`)
+    imagesTableData.forEach((img) => {
+      if (img.url && img.url.includes('supabase')) {
+        imageUrls.push(img.url)
+      }
+    })
+
+    // 3. Eliminar imágenes de Supabase Storage
+    if (imageUrls.length > 0) {
+      console.log('🗑️ INICIANDO ELIMINACIÓN DE IMÁGENES DE SUPABASE')
+      // Eliminar duplicados
+      const uniqueUrls = [...new Set(imageUrls)]
+      console.log('URLs únicas a procesar:', uniqueUrls)
+      
+      await supabaseStorageService.deleteMultipleImagesByUrls(uniqueUrls)
+      console.log('🏁 Eliminación de imágenes completada')
+    } else {
+      console.log('⚠️ No se encontraron imágenes para eliminar en Supabase')
+    }
+
+    // 4. Eliminar el producto de la base de datos
     const deleteResult = await db
       .delete(products)
       .where(eq(products.id, productId))
       .returning({ id: products.id, name: products.name })
 
     console.log('Delete result:', deleteResult)
-
-    if (deleteResult.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Product not found' },
-        { status: 404 }
-      )
-    }
 
     return NextResponse.json({
       success: true,

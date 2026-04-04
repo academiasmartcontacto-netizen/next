@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { products, stores } from '@/lib/db/schema'
 import { products as productsTable, productImages } from '@/lib/db/schema-products'
 import { eq, desc } from 'drizzle-orm'
-import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
+import { supabaseStorageService } from '@/lib/services/SupabaseStorageService'
 
 export async function GET(request: NextRequest) {
   try {
@@ -191,59 +191,59 @@ export async function DELETE(request: NextRequest) {
 
     const product = productData[0]
     
-    // 2. Obtener imágenes de productImages (AQUÍ ESTÁN LAS IMÁGENES REALES)
+    // 2. Obtener TODAS las posibles URLs de imágenes del producto
+    const imageUrls: string[] = []
+    
+    // a. De los campos del producto
+    const fieldsToCheck = ['image', 'imagen', 'images', 'imagenes']
+    fieldsToCheck.forEach(field => {
+      const val = (product as any)[field]
+      if (!val) return
+      
+      try {
+        if (typeof val === 'string' && (val.startsWith('[') || val.startsWith('{'))) {
+          const parsed = JSON.parse(val)
+          if (Array.isArray(parsed)) {
+            parsed.forEach(url => {
+              if (typeof url === 'string' && url.includes('supabase')) imageUrls.push(url)
+              else if (url && typeof url === 'object' && url.url) imageUrls.push(url.url)
+            })
+          }
+        } else if (typeof val === 'string' && val.includes('supabase')) {
+          imageUrls.push(val)
+        }
+      } catch (e) {
+        console.error(`Error procesando campo ${field}:`, e)
+      }
+    })
+
+    // b. De la tabla productImages (IMÁGENES ADICIONALES)
     const productImagesData = await db
       .select()
       .from(productImages)
       .where(eq(productImages.productId, productId))
     
     console.log(`📸 Imágenes en productImages: ${productImagesData.length}`)
-    productImagesData.forEach((img, index) => {
-      console.log(`📸 Imagen ${index + 1}:`, img.url)
-      console.log(`📸 Es principal:`, img.isPrincipal)
-      console.log(`📸 Order:`, img.order)
+    productImagesData.forEach((img) => {
+      if (img.url && img.url.includes('supabase')) {
+        imageUrls.push(img.url)
+      }
     })
 
-    // 3. Eliminar TODAS las imágenes de productImages
-    if (productImagesData.length > 0) {
-      console.log('🗑️ INICIANDO ELIMINACIÓN DE IMÁGENES REALES')
+    // 3. Eliminar imágenes de Supabase Storage
+    if (imageUrls.length > 0) {
+      console.log('🗑️ INICIANDO ELIMINACIÓN DE IMÁGENES DE SUPABASE')
+      // Eliminar duplicados
+      const uniqueUrls = [...new Set(imageUrls)]
+      console.log('URLs únicas a procesar:', uniqueUrls)
       
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      )
-      
-      for (const img of productImagesData) {
-        try {
-          console.log('🗑️ Procesando imagen:', img.url)
-          
-          // Extraer path después de /public/productos/
-          const pathParts = img.url.split('/storage/v1/object/public/productos/')
-          const imagePath = pathParts[pathParts.length - 1]
-          
-          console.log('🗑️ Path a eliminar:', imagePath)
-          
-          const { error } = await supabase.storage
-            .from('productos')
-            .remove([imagePath])
-            
-          if (error) {
-            console.log('❌ Error eliminando:', error.message)
-          } else {
-            console.log('✅ Imagen eliminada:', imagePath)
-          }
-        } catch (error: any) {
-          console.log('❌ Error procesando imagen:', error.message)
-        }
-      }
-      
+      await supabaseStorageService.deleteMultipleImagesByUrls(uniqueUrls)
       console.log('🏁 Eliminación de imágenes completada')
     } else {
-      console.log('⚠️ No se encontraron imágenes en productImages')
+      console.log('⚠️ No se encontraron imágenes para eliminar en Supabase')
     }
 
-    // 3. Eliminar de la BD
+    // 4. Eliminar de la BD
     const deleteResult = await db
       .delete(productsTable)
       .where(eq(productsTable.id, productId))

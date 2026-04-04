@@ -318,11 +318,38 @@ export default function InventarioDrawer({
   }
 
   // Eliminación masiva
-  const bulkDelete = () => {
+  const bulkDelete = async () => {
     if (selectedItems.length === 0) return
     if (confirm(`¿Eliminar ${selectedItems.length} productos seleccionados del inventario?`)) {
-      setInventoryItems(prev => prev.filter(item => !selectedItems.includes(item.id)))
-      setSelectedItems([])
+      try {
+        setLoading(true)
+        console.log('=== ELIMINACIÓN MASIVA ===')
+        console.log('IDs a eliminar:', selectedItems)
+        
+        // Eliminar cada producto uno por uno (o podrías crear un endpoint de bulk delete)
+        const deletePromises = selectedItems.map(id => 
+          fetch(`/api/products?id=${id}`, { method: 'DELETE' })
+        )
+        
+        const results = await Promise.all(deletePromises)
+        const allOk = results.every(r => r.ok)
+        
+        if (allOk) {
+          setInventoryItems(prev => prev.filter(item => !selectedItems.includes(item.id)))
+          setSelectedItems([])
+          console.log('✅ Eliminación masiva completada con éxito')
+        } else {
+          console.error('❌ Algunos productos no se pudieron eliminar')
+          alert('Algunos productos no se pudieron eliminar. Por favor verifica el inventario.')
+          // Recargar para estar seguros del estado actual
+          loadInventory()
+        }
+      } catch (error) {
+        console.error('Error en eliminación masiva:', error)
+        alert('Error al procesar la eliminación masiva')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 

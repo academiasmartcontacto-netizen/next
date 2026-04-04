@@ -4,9 +4,8 @@ import { db } from '@/lib/db'
 import { users, stores } from '@/lib/db/schema'
 import { products, productImages, productBadges, badges } from '@/lib/db/schema-products'
 import { eq, and } from 'drizzle-orm'
-import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
-
-const storageService = new SupabaseStorageService()
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -167,29 +166,48 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        try {
-          // Subir a Supabase Storage en lugar de local
-          const uploadResult = await storageService.uploadImage(imagen, 'productos', `producto_${producto_id}`)
-          const publicUrl = uploadResult.publicUrl
+        // Generar nombre de archivo único
+        const timestamp = Date.now()
+        const random = Math.random().toString(36).substring(2, 8)
+        const extension = imagen.name.split('.').pop()
+        const filename = `producto_${producto_id}_${timestamp}_${random}.${extension}`
+        
+        // Guardar archivo en el sistema de archivos
+        const buffer = Buffer.from(await imagen.arrayBuffer())
+        
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'productos')
+        await mkdir(uploadDir, { recursive: true })
+        
+        const filepath = path.join(uploadDir, filename)
+        await writeFile(filepath, buffer)
 
-          // Insertar registro en la base de datos
-          const isPrincipalValue = i === 0  // ✅ true/false para boolean
-          
+        // Insertar registro en la base de datos
+        const isPrincipalValue = i === 0  // ✅ true/false para boolean
+        console.log('=== DEBUG productImages ===')
+        console.log('i:', i)
+        console.log('i === 0:', i === 0)
+        console.log('isPrincipalValue (boolean):', isPrincipalValue)
+        console.log('typeof isPrincipalValue:', typeof isPrincipalValue)
+        console.log('productId:', producto_id)
+        console.log('url:', `/uploads/productos/${filename}`)
+        console.log('order:', i)
+        
+        try {
           await db.insert(productImages)
             .values({
               productId: producto_id,
-              url: publicUrl,
-              isPrincipal: isPrincipalValue,
+              url: `/uploads/productos/${filename}`,  // ✅ Con / al inicio
+              isPrincipal: isPrincipalValue, // ✅ true/false para boolean
               order: i
             })
-          
-          console.log(`✅ Imagen ${i+1} subida a Supabase: ${publicUrl}`)
-          imagenes_subidas++
-        } catch (uploadError) {
-          console.error(`❌ ERROR subiendo imagen ${i+1}:`, uploadError)
-          // Si es la primera imagen y falla, podríamos querer lanzar el error
-          if (i === 0) throw uploadError
+          console.log('✅ Insert productImages EXITOSO')
+        } catch (dbError) {
+          console.error('❌ ERROR en INSERT productImages:', dbError)
+          console.error('❌ Detalles del error:', JSON.stringify(dbError, null, 2))
+          throw dbError
         }
+
+        imagenes_subidas++
       }
 
       if (imagenes_subidas === 0) {

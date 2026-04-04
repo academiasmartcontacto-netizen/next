@@ -10,48 +10,23 @@ export interface UploadResult {
 }
 
 export class SupabaseStorageService {
-  private _supabase: any = null
+  private supabase: any
   private bucket: string = 'productos'
 
-  private get supabase() {
-    if (!this._supabase) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-      console.log('=== DEBUG SUPABASE CLIENT ===')
-      console.log('Supabase URL:', supabaseUrl ? '✅ Configurada' : '❌ No configurada')
-      console.log('Service Role Key:', supabaseKey ? '✅ Configurada' : '❌ No configurada')
-      console.log('Longitud Service Role Key:', supabaseKey?.length || 0)
-
-      if (!supabaseUrl || !supabaseKey) {
-        console.log('❌ Error: Variables no configuradas')
-        throw new Error('Supabase URL and Service Role Key are required at runtime')
-      }
-
-      this._supabase = createClient(supabaseUrl, supabaseKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      })
-
-      console.log('✅ Cliente Supabase creado con Service Role Key')
-    }
-    return this._supabase
-  }
-
   constructor() {
-    // No inicializar aquí para evitar errores en tiempo de build
+    this.supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
   }
 
-  async uploadImage(file: File, folder: string = 'productos', prefix: string = 'img'): Promise<UploadResult> {
+  async uploadImage(file: File, productId: string): Promise<UploadResult> {
     try {
       // Generar nombre único
       const timestamp = Date.now()
       const random = Math.random().toString(36).substring(2, 8)
-      const extension = file.name.split('.').pop()
-      const fileName = `${prefix}_${timestamp}_${random}.${extension}`
-      const filePath = `${folder}/${fileName}`
+      const fileName = `producto_${productId}_${timestamp}_${random}.${file.name.split('.').pop()}`
+      const filePath = `productos/${fileName}`
 
       console.log(`📤 Subiendo imagen a Supabase Storage: ${filePath}`)
 
@@ -87,14 +62,14 @@ export class SupabaseStorageService {
     }
   }
 
-  async uploadMultipleImages(files: File[], folder: string = 'productos', prefix: string = 'img'): Promise<UploadResult[]> {
+  async uploadMultipleImages(files: File[], productId: string): Promise<UploadResult[]> {
     const results: UploadResult[] = []
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
       
       try {
-        const result = await this.uploadImage(file, folder, prefix)
+        const result = await this.uploadImage(file, productId)
         results.push(result)
       } catch (error) {
         console.error(`❌ Error subiendo imagen ${i + 1}:`, error)
@@ -105,85 +80,58 @@ export class SupabaseStorageService {
     return results
   }
 
+  async deleteImageByUrl(url: string): Promise<void> {
+    if (!url || !url.includes('/storage/v1/object/public/')) return
+
+    try {
+      console.log(`🗑️ Procesando URL para eliminar de Supabase: ${url}`)
+      
+      // Extraer path después del nombre del bucket
+      // El formato suele ser: .../storage/v1/object/public/[bucket]/[path]
+      const bucketSearchStr = `/storage/v1/object/public/${this.bucket}/`
+      const pathParts = url.split(bucketSearchStr)
+      
+      if (pathParts.length < 2) {
+        console.warn(`⚠️ No se pudo extraer el path de la URL: ${url}`)
+        return
+      }
+
+      const imagePath = pathParts[pathParts.length - 1]
+      await this.deleteImage(imagePath)
+    } catch (error: any) {
+      console.warn(`⚠️ Error en deleteImageByUrl: ${error.message}`)
+    }
+  }
+
+  async deleteMultipleImagesByUrls(urls: string[]): Promise<void> {
+    if (!urls || urls.length === 0) return
+    const deletePromises = urls.map(url => this.deleteImageByUrl(url))
+    await Promise.all(deletePromises)
+  }
+
   async deleteImage(path: string): Promise<void> {
     try {
       console.log(`🗑️ Eliminando imagen de Supabase: ${path}`)
 
-      // Asegurar que el path no tenga el nombre del bucket al inicio si se pasa la ruta completa
-      const cleanPath = path.startsWith(`${this.bucket}/`) 
-        ? path.replace(`${this.bucket}/`, '') 
-        : path
-
-      console.log('=== DEBUG DELETE IMAGE ===')
-      console.log('Path original:', path)
-      console.log('Clean path:', cleanPath)
-      console.log('Bucket:', this.bucket)
-
       const { error } = await this.supabase.storage
         .from(this.bucket)
-        .remove([cleanPath])
-
-      console.log('Resultado de Supabase:', { error })
+        .remove([path])
 
       if (error) {
-        console.error('❌ Error eliminando imagen en Supabase:', error)
-        throw new Error(`Error eliminando imagen: ${error.message || error}`)
+        console.warn('⚠️ Error eliminando imagen:', error)
+        return
       }
 
-      console.log(`✅ Imagen eliminada exitosamente: ${cleanPath}`)
+      console.log(`✅ Imagen eliminada exitosamente`)
 
     } catch (error: any) {
-      console.error('❌ Error en deleteImage:', error)
-      throw error
+      console.warn('⚠️ Error en deleteImage:', error)
     }
   }
 
   async deleteMultipleImages(paths: string[]): Promise<void> {
-    console.log('=== DELETE MULTIPLE IMAGES ===')
-    console.log('Paths a eliminar:', paths.length)
-    console.log('Lista de paths:')
-    paths.forEach((path, index) => {
-      console.log(`${index + 1}. "${path}"`)
-    })
-
-    try {
-      const deletePromises = paths.map(async (path, index) => {
-        console.log(`=== INICIANDO ELIMINACIÓN ${index + 1}/${paths.length} ===`)
-        console.log(`Path: "${path}"`)
-        try {
-          await this.deleteImage(path)
-          console.log(`✅ Eliminación ${index + 1} exitosa`)
-          return { success: true, path, index }
-        } catch (error) {
-          console.error(`❌ Eliminación ${index + 1} falló:`, error)
-          return { success: false, path, index, error }
-        }
-      })
-      
-      const results = await Promise.all(deletePromises)
-      
-      console.log('=== RESULTADOS DE ELIMINACIÓN ===')
-      const successful = results.filter(r => r.success)
-      const failed = results.filter(r => !r.success)
-      
-      console.log(`✅ Exitosas: ${successful.length}/${results.length}`)
-      console.log(`❌ Fallidas: ${failed.length}/${results.length}`)
-      
-      if (failed.length > 0) {
-        console.log('Detalles de fallas:')
-        failed.forEach(result => {
-          console.log(`- Path: "${result.path}" - Error: ${result.error?.message || result.error}`)
-        })
-      }
-      
-      if (failed.length > 0) {
-        throw new Error(`${failed.length} imágenes no se pudieron eliminar`)
-      }
-      
-    } catch (error) {
-      console.error('❌ Error general en deleteMultipleImages:', error)
-      throw error
-    }
+    const deletePromises = paths.map(path => this.deleteImage(path))
+    await Promise.all(deletePromises)
   }
 
   async getImageUrl(path: string): Promise<string> {
@@ -192,45 +140,6 @@ export class SupabaseStorageService {
       .getPublicUrl(path)
 
     return publicUrl
-  }
-
-  // Extraer el path relativo del bucket desde una URL pública
-  extractPathFromUrl(url: string): string | null {
-    if (!url || !url.includes('/storage/v1/object/public/')) return null
-    
-    try {
-      // Formato: .../storage/v1/object/public/[bucket_name]/[file_path]
-      // Ejemplo: .../storage/v1/object/public/productos/productos/archivo.jpg
-      const parts = url.split('/storage/v1/object/public/')
-      if (parts.length < 2) return null
-      
-      const fullPath = parts[1] // "productos/productos/archivo.jpg"
-      const bucketPrefix = `${this.bucket}/`
-      
-      console.log('=== DEBUG EXTRACT PATH ===')
-      console.log('URL:', url)
-      console.log('Full path:', fullPath)
-      console.log('Bucket prefix:', bucketPrefix)
-      console.log('Empieza con bucket prefix?', fullPath.startsWith(bucketPrefix))
-      
-      if (fullPath.startsWith(bucketPrefix)) {
-        const result = fullPath.substring(bucketPrefix.length) // "productos/archivo.jpg"
-        console.log('Path después de quitar bucket:', result)
-        
-        // CORRECCIÓN: Si el path resultante empieza con el bucket name otra vez, quitarlo
-        if (result.startsWith(`${this.bucket}/`)) {
-          const finalResult = result.substring(`${this.bucket}/`.length)
-          console.log('Path final corregido:', finalResult)
-          return finalResult
-        }
-        
-        return result
-      }
-      return null
-    } catch (e) {
-      console.error('Error extrayendo path de URL:', e)
-      return null
-    }
   }
 
   // Crear bucket si no existe
@@ -263,3 +172,6 @@ export class SupabaseStorageService {
     }
   }
 }
+
+// Instancia global
+export const supabaseStorageService = new SupabaseStorageService()

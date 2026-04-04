@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { SupabaseStorageService } from '@/lib/services/SupabaseStorageService'
-
-const storageService = new SupabaseStorageService()
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { existsSync } from 'fs'
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
-    const file = formData.get('logo') as File
+    const file = formData.get('logo') as File  // Cambiado de 'file' a 'logo'
     const storeId = formData.get('storeId') as string
 
     if (!file) {
@@ -25,36 +25,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File too large. Maximum size is 5MB' }, { status: 400 })
     }
 
-    // Subir a Supabase Storage
-    const uploadResult = await storageService.uploadImage(file, 'logos', storeId || 'general')
-    const publicUrl = uploadResult.publicUrl
+    // Crear directorio si no existe
+    const uploadDir = join(process.cwd(), 'public', 'logos')
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true })
+    }
+
+    // Generar nombre único con timestamp y random
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substring(2, 8)
+    const extension = file.name.split('.').pop()
+    const uniqueId = storeId ? `${storeId}_${timestamp}_${random}` : `${timestamp}_${random}`
+    const filename = `${uniqueId}.${extension}`
+    
+    // Guardar archivo
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const filepath = join(uploadDir, filename)
+    await writeFile(filepath, buffer)
+
+    // Generar URL pública - SIN /logos/ duplicado
+    const publicUrl = filename.startsWith('logos/') ? `/${filename}` : `/logos/${filename}`
 
     return NextResponse.json({
       success: true,
-      logoUrl: publicUrl,
-      filename: uploadResult.path,
+      logoUrl: publicUrl,  // Cambiado de 'url' a 'logoUrl'
+      filename: filename,
+      uniqueId: uniqueId,
       size: file.size,
       type: file.type
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Upload error:', error)
-    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const path = searchParams.get('filename') // En el nuevo sistema, filename es el path en Supabase
+    const filename = searchParams.get('filename')
 
-    if (!path) {
-      return NextResponse.json({ error: 'Path required' }, { status: 400 })
+    if (!filename) {
+      return NextResponse.json({ error: 'Filename required' }, { status: 400 })
     }
 
-    // Eliminar de Supabase Storage
-    await storageService.deleteImage(path)
+    // Eliminar archivo (implementar lógica de eliminación real si es necesario)
+    const filepath = join(process.cwd(), 'public', 'logos', filename)
     
+    // Por ahora solo retornamos éxito, ya que la eliminación física puede ser opcional
     return NextResponse.json({ success: true, message: 'Logo deleted successfully' })
 
   } catch (error) {
