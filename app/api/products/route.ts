@@ -192,36 +192,94 @@ export async function DELETE(request: NextRequest) {
     const product = productData[0]
     console.log('Producto encontrado:', product.name)
     console.log('Imagen principal:', product.image)
+    console.log('Campo imagen (PHP):', product.imagen)
+    console.log('Campo images (JSON):', product.images)
+    console.log('Campo imagenes (PHP):', product.imagenes)
 
-    // 2. Eliminar imagen principal si existe
+    // 2. Eliminar CUALQUIER imagen que exista
+    const imagenesAEliminar = []
+    
     if (product.image) {
+      imagenesAEliminar.push(product.image)
+      console.log('✅ Imagen encontrada en campo image:', product.image)
+    }
+    
+    if (product.imagen) {
+      imagenesAEliminar.push(product.imagen)
+      console.log('✅ Imagen encontrada en campo imagen:', product.imagen)
+    }
+    
+    if (product.images) {
       try {
-        console.log('🗑️ Eliminando imagen')
-        
-        // Extraer path completo después de /public/
-        const pathParts = product.image.split('/storage/v1/object/public/productos/')
-        const imagePath = pathParts[pathParts.length - 1]
-        
-        console.log('Path a eliminar:', imagePath)
-        
-        const { createClient } = await import('@supabase/supabase-js')
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
-        
-        const { error } = await supabase.storage
-          .from('productos')
-          .remove([imagePath])
-          
-        if (error) {
-          console.log('❌ Error:', error.message)
-        } else {
-          console.log('✅ Imagen eliminada')
+        const parsedImages = JSON.parse(product.images)
+        if (Array.isArray(parsedImages)) {
+          parsedImages.forEach(url => {
+            if (url) {
+              imagenesAEliminar.push(url)
+              console.log('✅ Imagen encontrada en campo images:', url)
+            }
+          })
         }
-      } catch (error: any) {
-        console.log('❌ Error:', error.message)
+      } catch (e) {
+        console.log('❌ Error parseando campo images:', e)
       }
+    }
+    
+    if (product.imagenes) {
+      try {
+        const parsedImagenes = JSON.parse(product.imagenes)
+        if (Array.isArray(parsedImagenes)) {
+          parsedImagenes.forEach(url => {
+            if (url) {
+              imagenesAEliminar.push(url)
+              console.log('✅ Imagen encontrada en campo imagenes:', url)
+            }
+          })
+        }
+      } catch (e) {
+        console.log('❌ Error parseando campo imagenes:', e)
+      }
+    }
+    
+    console.log(`📸 Total imágenes a eliminar: ${imagenesAEliminar.length}`)
+
+    // 3. Eliminar TODAS las imágenes encontradas
+    if (imagenesAEliminar.length > 0) {
+      console.log('🗑️ INICIANDO ELIMINACIÓN DE IMÁGENES')
+      
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      
+      for (const imageUrl of imagenesAEliminar) {
+        try {
+          console.log('🗑️ Procesando imagen:', imageUrl)
+          
+          // Extraer path después de /public/productos/
+          const pathParts = imageUrl.split('/storage/v1/object/public/productos/')
+          const imagePath = pathParts[pathParts.length - 1]
+          
+          console.log('🗑️ Path a eliminar:', imagePath)
+          
+          const { error } = await supabase.storage
+            .from('productos')
+            .remove([imagePath])
+            
+          if (error) {
+            console.log('❌ Error eliminando:', error.message)
+          } else {
+            console.log('✅ Imagen eliminada:', imagePath)
+          }
+        } catch (error: any) {
+          console.log('❌ Error procesando imagen:', error.message)
+        }
+      }
+      
+      console.log('🏁 Eliminación de imágenes completada')
+    } else {
+      console.log('⚠️ No se encontraron imágenes para eliminar')
     }
 
     // 3. Eliminar de la BD
