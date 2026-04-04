@@ -60,7 +60,7 @@ export async function GET(
           name: product.titulo || product.name,
           price: product.precio || product.price || 0,
           originalPrice: product.precio_original || product.originalPrice,
-          image: principalImage?.url || (product.imagen || product.image ? `/uploads/products/${product.imagen || product.image}` : null),
+          image: principalImage?.url || product.imagen || product.image,
           allImages: images || [],
           onSale: (product.precio_original || product.originalPrice) && 
                    (product.precio_original || product.originalPrice) > 
