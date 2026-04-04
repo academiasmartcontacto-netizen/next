@@ -190,11 +190,22 @@ export async function DELETE(request: NextRequest) {
     }
 
     const product = productData[0]
+    
+    // DEBUG: Mostrar TODOS los campos del producto
+    console.log('=== PRODUCTO COMPLETO DEBUG ===')
+    console.log('ID:', product.id)
+    console.log('Nombre:', product.name)
+    console.log('Image:', product.image)
+    console.log('Imagen (PHP):', product.imagen)
+    console.log('Images (JSON):', product.images)
+    console.log('Imagenes (PHP JSON):', product.imagenes)
+    console.log('=== TODOS LOS CAMPOS ===')
+    Object.keys(product).forEach(key => {
+      console.log(`${key}:`, (product as any)[key])
+    })
+    console.log('=== FIN DEBUG ===')
+    
     console.log('Producto encontrado:', product.name)
-    console.log('Imagen principal:', product.image)
-    console.log('Campo imagen (PHP):', product.imagen)
-    console.log('Campo images (JSON):', product.images)
-    console.log('Campo imagenes (PHP):', product.imagenes)
 
     // 2. Eliminar CUALQUIER imagen que exista
     const imagenesAEliminar = []
