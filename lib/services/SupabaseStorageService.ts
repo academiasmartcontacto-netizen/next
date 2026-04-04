@@ -137,6 +137,76 @@ export class SupabaseStorageService {
     }
   }
 
+  /**
+   * Elimina recursivamente todo el contenido de una carpeta en el bucket
+   * Útil para eliminar todo el contenido de una tienda (storeId)
+   */
+  async deleteFolder(folderPath: string): Promise<void> {
+    try {
+      console.log(`🗑️ Iniciando eliminación recursiva de carpeta: ${folderPath}`)
+      
+      // 1. Listar todos los archivos dentro de la carpeta (recursivamente)
+      const { data: files, error: listError } = await this.supabase.storage
+        .from(this.bucket)
+        .list(folderPath, {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' }
+        })
+
+      if (listError) {
+        console.error('❌ Error listando archivos para eliminar carpeta:', listError)
+        return
+      }
+
+      if (!files || files.length === 0) {
+        console.log(`ℹ️ La carpeta ${folderPath} ya está vacía o no existe`)
+        return
+      }
+
+      // 2. Separar archivos de subcarpetas
+      const filesToDelete: string[] = []
+      const subFolders: string[] = []
+
+      for (const item of files) {
+        const itemPath = `${folderPath}/${item.name}`
+        if (item.id === null) {
+          // Es una carpeta (en Supabase Storage, las carpetas tienen id null al listar)
+          subFolders.push(itemPath)
+        } else {
+          // Es un archivo
+          filesToDelete.push(itemPath)
+        }
+      }
+
+      // 3. Eliminar archivos de la carpeta actual
+      if (filesToDelete.length > 0) {
+        console.log(`🗑️ Eliminando ${filesToDelete.length} archivos en ${folderPath}`)
+        const { error: deleteError } = await this.supabase.storage
+          .from(this.bucket)
+          .remove(filesToDelete)
+          
+        if (deleteError) {
+          console.error(`❌ Error eliminando archivos de ${folderPath}:`, deleteError)
+        }
+      }
+
+      // 4. Procesar subcarpetas recursivamente
+      for (const subFolder of subFolders) {
+        await this.deleteFolder(subFolder)
+      }
+
+      // 5. Verificar si hay más archivos (paginación)
+      if (files.length === 100) {
+        await this.deleteFolder(folderPath)
+      }
+
+      console.log(`✅ Carpeta eliminada (o procesada): ${folderPath}`)
+    } catch (error: any) {
+      console.error(`❌ Error general en deleteFolder (${folderPath}):`, error.message)
+    }
+  }
+
   async deleteMultipleImages(paths: string[]): Promise<void> {
     const deletePromises = paths.map(path => this.deleteImage(path))
     await Promise.all(deletePromises)

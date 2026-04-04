@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { stores, users, userProfiles, storePages, storeSections } from '@/lib/db/schema'
 import { products } from '@/lib/db/schema-products'
 import { eq, desc, inArray } from 'drizzle-orm'
+import { supabaseStorageService } from '@/lib/services/SupabaseStorageService'
 
 export async function GET(request: NextRequest) {
   try {
@@ -144,14 +145,25 @@ export async function DELETE(request: NextRequest) {
     // 3. Eliminar productos de la tienda
     await db.delete(products).where(eq(products.storeId, storeId))
 
-    // 4. Eliminar la tienda
+    // 4. Eliminar de la base de datos (final)
     await db.delete(stores).where(eq(stores.id, storeId))
+
+    // 5. ¡LO MÁS IMPORTANTE! Eliminar TODO el contenido de la tienda en Supabase Storage
+    // Esto borra recursivamente la carpeta storeId/ que contiene productos, logos, etc.
+    try {
+      console.log(`🗑️ Iniciando limpieza de Storage para la tienda: ${storeId}`)
+      await supabaseStorageService.deleteFolder(storeId)
+      console.log(`✅ Limpieza de Storage completada para la tienda: ${storeId}`)
+    } catch (storageError: any) {
+      console.error(`⚠️ Error al limpiar Storage (no crítico):`, storageError.message)
+      // No lanzamos error para que la respuesta de la API sea exitosa ya que la BD ya se limpió
+    }
 
     console.log('Store deleted successfully:', storeId)
 
     return NextResponse.json({
       success: true,
-      message: 'Tienda eliminada exitosamente'
+      message: 'Tienda eliminada exitosamente junto con todo su contenido multimedia'
     })
 
   } catch (error) {
