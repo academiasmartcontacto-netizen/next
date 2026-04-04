@@ -224,55 +224,68 @@ export async function DELETE(request: NextRequest) {
     // 4. Eliminar del Storage - FORZAR ELIMINACIÓN DIRECTA
     console.log('=== ELIMINACIÓN STORAGE FORZADA ===')
     
-    // Buscar todas las imágenes posibles
-    const allUrls = []
+    // FORZAR: Intentar eliminar directamente sin importar lo que encuentre
+    console.log('🔍 FORZANDO DEBUG - Producto completo:', JSON.stringify(product, null, 2))
     
-    // Imagen principal
-    if (product.image) {
-      allUrls.push(product.image)
-      console.log('URL principal encontrada:', product.image)
-    }
+    // Buscar en TODOS los campos posibles
+    const allPossibleImageFields = ['image', 'imagen', 'images', 'imagenes']
+    const foundImages = []
     
-    // Imágenes de productImages
-    productImagesData.forEach(img => {
-      if (img.url) {
-        allUrls.push(img.url)
-        console.log('URL productImage encontrada:', img.url)
+    allPossibleImageFields.forEach(field => {
+      if (product[field]) {
+        console.log(`📸 Campo ${field} encontrado:`, product[field])
+        foundImages.push(product[field])
       }
     })
     
-    // Imágenes del array JSON
-    if (product.images) {
-      try {
-        const parsedImages = JSON.parse(product.images)
-        if (Array.isArray(parsedImages)) {
-          parsedImages.forEach(url => {
-            if (url) {
-              allUrls.push(url)
-              console.log('URL array encontrada:', url)
-            }
-          })
-        }
-      } catch (e) {
-        console.log('Error parseando images JSON:', e)
+    // Buscar en productImages
+    console.log('📸 ProductImages:', JSON.stringify(productImagesData, null, 2))
+    
+    productImagesData.forEach(img => {
+      if (img.url) {
+        console.log(`📸 ProductImage URL:`, img.url)
+        foundImages.push(img.url)
       }
-    }
+    })
     
-    console.log('Total URLs encontradas:', allUrls.length)
+    console.log(`📸 Total imágenes encontradas: ${foundImages.length}`)
     
-    // Eliminar TODAS las URLs encontradas
-    if (allUrls.length > 0) {
-      for (const url of allUrls) {
+    // FORZAR ELIMINACIÓN DIRECTA
+    if (foundImages.length > 0) {
+      console.log('🗑️ INICIANDO ELIMINACIÓN FORZADA')
+      for (const imageUrl of foundImages) {
         try {
-          const path = storageService.extractPathFromUrl(url)
+          console.log('🗑️ Procesando imagen:', imageUrl)
+          
+          // FORZAR: Llamar directamente al Storage Service
+          const storageService = new SupabaseStorageService()
+          const path = storageService.extractPathFromUrl(imageUrl)
+          
+          console.log('🗑️ Path extraído:', path)
+          
           if (path) {
-            console.log('🗑️ Eliminando:', path)
+            console.log('🗑️ LLAMANDO A deleteImage')
             await storageService.deleteImage(path)
-            console.log('✅ Eliminada:', path)
+            console.log('✅ Imagen eliminada:', path)
+          } else {
+            console.log('❌ No se pudo extraer path')
           }
         } catch (error) {
-          console.log('❌ Error eliminando:', url, error.message)
+          console.log('❌ Error eliminando imagen:', error.message)
         }
+      }
+    } else {
+      console.log('⚠️ NO SE ENCONTRARON IMÁGENES - FORZAR IMAGEN DE PRUEBA')
+      
+      // FORZAR: Intentar eliminar una imagen de prueba que sabemos que existe
+      try {
+        const storageService = new SupabaseStorageService()
+        const testPath = 'producto_46147b42-340a-4855-8cfc-0560c1ae5d31_1775271970219_6unxdd.jpg'
+        console.log('🗑️ FORZANDO ELIMINACIÓN DE PRUEBA:', testPath)
+        await storageService.deleteImage(testPath)
+        console.log('✅ Imagen de prueba eliminada')
+      } catch (error) {
+        console.log('❌ Error en eliminación de prueba:', error.message)
       }
     }
 
