@@ -16,13 +16,18 @@ export class SupabaseStorageService {
   private get supabase() {
     if (!this._supabase) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
       if (!supabaseUrl || !supabaseKey) {
         throw new Error('Supabase URL and Service Role Key are required at runtime')
       }
 
-      this._supabase = createClient(supabaseUrl, supabaseKey)
+      this._supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      })
     }
     return this._supabase
   }
