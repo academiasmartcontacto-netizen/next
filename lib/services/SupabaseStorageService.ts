@@ -16,9 +16,15 @@ export class SupabaseStorageService {
   private get supabase() {
     if (!this._supabase) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+      console.log('=== DEBUG SUPABASE CLIENT ===')
+      console.log('Supabase URL:', supabaseUrl ? '✅ Configurada' : '❌ No configurada')
+      console.log('Service Role Key:', supabaseKey ? '✅ Configurada' : '❌ No configurada')
+      console.log('Longitud Service Role Key:', supabaseKey?.length || 0)
 
       if (!supabaseUrl || !supabaseKey) {
+        console.log('❌ Error: Variables no configuradas')
         throw new Error('Supabase URL and Service Role Key are required at runtime')
       }
 
@@ -28,6 +34,8 @@ export class SupabaseStorageService {
           persistSession: false
         }
       })
+
+      console.log('✅ Cliente Supabase creado con Service Role Key')
     }
     return this._supabase
   }
@@ -106,13 +114,20 @@ export class SupabaseStorageService {
         ? path.replace(`${this.bucket}/`, '') 
         : path
 
+      console.log('=== DEBUG DELETE IMAGE ===')
+      console.log('Path original:', path)
+      console.log('Clean path:', cleanPath)
+      console.log('Bucket:', this.bucket)
+
       const { error } = await this.supabase.storage
         .from(this.bucket)
         .remove([cleanPath])
 
+      console.log('Resultado de Supabase:', { error })
+
       if (error) {
         console.error('❌ Error eliminando imagen en Supabase:', error)
-        throw error
+        throw new Error(`Error eliminando imagen: ${error.message || error}`)
       }
 
       console.log(`✅ Imagen eliminada exitosamente: ${cleanPath}`)
