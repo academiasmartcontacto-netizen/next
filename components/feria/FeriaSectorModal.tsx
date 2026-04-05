@@ -10,6 +10,21 @@ interface FeriaSectorModalProps {
   onSave: (sector: any) => void
 }
 
+// Función helper para convertir base64 a File
+const base64ToFile = (base64: string, filename: string): File => {
+  const arr = base64.split(',')
+  const mime = arr[0].match(/:(.*?);/)?.[1]
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  
+  while(n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  
+  return new File([u8arr], filename, { type: mime || 'image/avif' })
+}
+
 export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: FeriaSectorModalProps) {
   const [formData, setFormData] = useState({
     titulo: sector?.titulo || '',
@@ -39,33 +54,64 @@ export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: Fe
     setIsLoading(true)
 
     try {
+      // PRIMERO: Crear el sector sin banner para obtener UUID
+      const sectorData = {
+        slug: formData.slug,
+        titulo: formData.titulo,
+        descripcion: formData.descripcion,
+        colorHex: formData.colorHex,
+        categoriaDefaultId: formData.categoriaDefaultId,
+        activo: true
+      }
+
       const method = sector?.id ? 'PUT' : 'POST'
       const url = sector?.id 
         ? `/api/admin/feria-sectores/${sector.id}`
         : '/api/admin/feria-sectores'
 
-      const response = await fetch(url, {
+      // Crear/actualizar sector primero
+      const sectorResponse = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sectorData)
       })
 
-      if (response.ok) {
-        onSave(formData)
-        onClose()
-        setFormData({
-          titulo: '',
-          slug: '',
-          descripcion: '',
-          colorHex: '#FF6B35',
-          categoriaDefaultId: '',
-          imagenBanner: ''
-        })
-      } else {
-        alert('Error al guardar el sector')
+      if (!sectorResponse.ok) {
+        throw new Error('Error al guardar el sector')
       }
+
+      const savedSector = await sectorResponse.json()
+
+      // SEGUNDO: Si hay imagen, subirla con el UUID correcto
+      if (formData.imagenBanner && formData.imagenBanner.startsWith('data:')) {
+        // Es imagen base64, subirla directamente
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', base64ToFile(formData.imagenBanner, 'banner.avif'))
+        uploadFormData.append('sectorId', savedSector.id)
+        uploadFormData.append('slug', formData.slug)
+
+        const uploadResponse = await fetch('/api/admin/feria-sectores/upload', {
+          method: 'POST',
+          body: uploadFormData
+        })
+
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json()
+          // Actualizar el sector con la URL del banner
+          await fetch(`/api/admin/feria-sectores/${savedSector.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...savedSector,
+              imagenBanner: uploadData.url
+            })
+          })
+        }
+      }
+
+      onSave(savedSector)
+      onClose()
+
     } catch (error) {
       console.error('Error:', error)
       alert('Error al guardar el sector')
