@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     // Redirección según contexto (como el PHP)
     let redirectUrl = '/mi/tienda-editor?success=created'
     if (false && false && false) {
-      redirectUrl = `/feria?dept=&success=created_and_assigned`
+      redirectUrl = `/feria-virtual?dept=&success=created_and_assigned`
     }
 
     console.log('🔍 DEBUG: Respuesta exitosa, redirectUrl:', redirectUrl)

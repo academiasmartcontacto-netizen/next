@@ -1,0 +1,550 @@
+/* =========================================
+   FERIA VIRTUAL DONE! - BENTO GRID UI 2026
+   Estilo Symbaloo para Next.js/React
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+    --bg-app: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #86868B;
+    --accent-orange: #FF6B35;
+    
+    --radius-xl: 24px;
+    --radius-md: 12px;
+    
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.04);
+    --shadow-hover: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+/* Layout Principal */
+.feria-layout {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 40px 60px 40px;
+}
+
+/* =========================================
+   TARJETA CENTRAL PRO (Header)
+   ========================================= */
+
+.feria-pro-card-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 20px 0 30px 0;
+    padding: 0 20px;
+    margin-top: 0 !important;
+}
+
+.feria-pro-card {
+    background-color: #F1F5F9;
+    border-radius: 20px;
+    padding: 24px 32px;
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0;
+}
+
+.pro-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+}
+
+.pro-card-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: black;
+    margin: 0 0 24px 0;
+    max-width: 500px;
+    line-height: 1.5;
+}
+
+/* Barra de Herramientas Unificada */
+.pro-unified-bar {
+    background: white;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 50;
+}
+
+.pro-unified-bar:focus-within {
+    border-color: var(--accent-orange);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+/* Selector de Departamento */
+.pro-dept-wrapper {
+    position: relative;
+    height: 100%;
+}
+
+.pro-dept-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 999px;
+    transition: background 0.2s;
+    user-select: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #334155;
+}
+
+.pro-dept-trigger:hover {
+    background: #f8fafc;
+}
+
+.pro-dept-icon {
+    color: var(--accent-orange);
+    font-size: 1.1rem;
+}
+
+.pro-chevron {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-left: 2px;
+}
+
+.pro-divider {
+    width: 1px;
+    height: 24px;
+    background: #cbd5e1;
+    margin: 0 8px;
+}
+
+/* Buscador */
+.pro-search-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 0 12px;
+}
+
+.pro-search-icon {
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+.pro-search-input {
+    width: 100%;
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: #1e293b;
+    padding: 8px 0;
+    flex: 1;
+}
+
+.pro-search-input::placeholder {
+    color: #94a3b8;
+}
+
+/* Menú Dropdown */
+.dept-menu {
+    top: calc(100% + 12px);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    z-index: 9999 !important;
+    background: white;
+    text-align: left;
+    display: none;
+    position: absolute;
+    min-width: 220px;
+    left: 0;
+    overflow: visible;
+    padding: 8px 0;
+}
+
+.dept-menu.show-menu {
+    display: block !important;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.dept-item {
+    display: block;
+    padding: 10px 20px;
+    color: #334155;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.1s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.dept-item:hover {
+    background-color: #f1f5f9;
+    color: var(--accent-orange);
+}
+
+/* =========================================
+   BENTO GRID (El Layout Maestro)
+   ========================================= */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 30px;
+}
+
+/* Bloques Grandes (Sectores) */
+.sector-block {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: 0;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid var(--accent-orange);
+    min-height: 400px;
+    overflow: hidden;
+}
+
+/* Header Híbrido: Texto + Imagen Lateral */
+.sector-header-split {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    background: white;
+    border-bottom: 1px solid var(--accent-orange);
+    height: 140px;
+    transition: background 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+/* Efecto Hover Moderno */
+.sector-block:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    border-color: var(--accent-orange);
+}
+
+.sector-block:hover .sector-header-split {
+    background: white;
+}
+
+.split-text-col {
+    flex: 1;
+    width: 50%;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sector-title-pro {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.1;
+    transition: color 0.3s ease;
+}
+
+.sector-desc-pro {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.3s ease;
+}
+
+.sector-block:hover .sector-title-pro {
+    color: var(--text-primary);
+}
+
+.sector-block:hover .sector-desc-pro {
+    color: var(--text-primary);
+}
+
+.split-image-col {
+    width: 50%;
+    position: relative;
+    overflow: hidden;
+}
+
+.image-box {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    background: #eff1f3;
+    transition: transform 0.5s ease;
+}
+
+.image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+    display: block;
+    filter: brightness(1.02) contrast(1.02);
+    mix-blend-mode: multiply;
+}
+
+.sector-block:hover .image-box img {
+    transform: none;
+}
+
+.sector-block:hover .image-box {
+    transform: none;
+}
+
+.view-all-pill {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(30, 41, 59, 0.7);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.view-all-pill svg {
+    transition: transform 0.2s ease;
+}
+
+.sector-block:hover .view-all-pill {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.view-all-pill:hover {
+    background: rgba(15, 23, 42, 0.9);
+    transform: scale(1.05);
+}
+
+/* Rejilla Interna con Padding */
+.stores-inner-grid {
+    padding: 0 24px 24px 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.store-item {
+    aspect-ratio: 1;
+    background: #FAFAFA;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Tienda Ocupada (Real) */
+.store-item.real {
+    background: #fff;
+    border: 1px solid var(--accent-orange);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Efecto Hover Symbaloo */
+.store-item.real:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    border-color: var(--accent-orange);
+    z-index: 2;
+}
+
+.store-item.real:active {
+    transform: scale(0.98);
+}
+
+.store-logo-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+}
+
+.store-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+}
+
+.store-item.real:hover .store-img {
+    transform: none;
+}
+
+.store-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-align: center;
+    line-height: 1.1;
+    width: 100%;
+    padding: 0 4px 8px 4px;
+    transition: color 0.3s;
+}
+
+.store-item.real:hover .store-label {
+    color: var(--accent-orange);
+}
+
+/* Estado Vacío: Disponible */
+.store-item.empty {
+    background-color: #ffffff;
+    border: 1px solid rgba(255, 107, 53, 0.4);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.empty-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.store-item.empty:hover {
+    background: #FFF;
+    border-color: var(--accent-orange);
+    border-style: solid;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+/* Animación de carga */
+.fade-in-fast {
+    animation: fadeInImage 0.3s ease-out forwards;
+}
+
+@keyframes fadeInImage {
+    0% { opacity: 0; transform: scale(1.02); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .feria-layout { padding: 20px; }
+    .sector-block.wide { grid-column: span 1; }
+}
+
+@media (max-width: 768px) {
+    .feria-topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+    
+    .mini-search { width: 100%; }
+    
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stores-inner-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .feria-pro-card {
+        padding: 32px 24px;
+    }
+    
+    .pro-card-title {
+        font-size: 2rem;
+    }
+    
+    .pro-unified-bar {
+        flex-direction: column;
+        border-radius: 20px;
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .pro-dept-wrapper, .pro-search-wrapper {
+        width: 100%;
+    }
+    
+    .pro-divider {
+        width: 100%;
+        height: 1px;
+        margin: 4px 0;
+    }
+    
+    .pro-dept-trigger {
+        justify-content: space-between;
+        width: 100%;
+    }
+}

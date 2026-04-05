@@ -448,157 +448,15 @@ export const mockCities = [
   { id: 10, nombre: 'Cobija', departamento: 'Pando' }
 ];
 
-// 🎪 Feria Virtual Mock (Estructura PHP Real)
-export const mockFeriaSectors = [
-  {
-    slug: 'tech',
-    title: 'Celulares',
-    desc: 'Las mejores tiendas y marcas',
-    color: '#007AFF',
-    capacity: 12,
-    ocupados: 2,
-    image: 'https://picsum.photos/seed/tech-banner/400/200.jpg'
-  },
-  {
-    slug: 'fashion',
-    title: 'Ropa',
-    desc: 'Moda Nacional y Americana',
-    color: '#FF3B30',
-    capacity: 12,
-    ocupados: 1,
-    image: 'https://picsum.photos/seed/fashion-banner/400/200.jpg'
-  },
-  {
-    slug: 'home',
-    title: 'Muebles',
-    desc: 'Hogar, Camas y Roperos',
-    color: '#34C759',
-    capacity: 12,
-    ocupados: 0,
-    image: 'https://picsum.photos/seed/home-banner/400/200.jpg'
-  },
-  {
-    slug: 'toys',
-    title: 'Juguetes',
-    desc: 'Niños y Coleccionables',
-    color: '#AF52DE',
-    capacity: 12,
-    ocupados: 1,
-    image: 'https://picsum.photos/seed/toys-banner/400/200.jpg'
-  },
-  {
-    slug: 'tools',
-    title: 'Herramientas',
-    desc: 'Ferretería y Construcción',
-    color: '#FF9500',
-    capacity: 12,
-    ocupados: 0,
-    image: 'https://picsum.photos/seed/tools-banner/400/200.jpg'
-  },
-  {
-    slug: 'auto',
-    title: 'Vehículos',
-    desc: 'Autopartes y Accesorios',
-    color: '#5AC8FA',
-    capacity: 12,
-    ocupados: 1,
-    image: 'https://picsum.photos/seed/auto-banner/400/200.jpg'
-  },
-  {
-    slug: 'electro',
-    title: 'Electrodomésticos',
-    desc: 'Línea Blanca y TV',
-    color: '#FF2D55',
-    capacity: 12,
-    ocupados: 0,
-    image: 'https://picsum.photos/seed/electro-banner/400/200.jpg'
-  },
-  {
-    slug: 'realestate',
-    title: 'Inmuebles',
-    desc: 'Terrenos y Casas',
-    color: '#8E8E93',
-    capacity: 12,
-    ocupados: 0,
-    image: 'https://picsum.photos/seed/realestate-banner/400/200.jpg'
-  }
-];
+// 🎪 Feria Virtual Mock (Eliminado - ahora usa /feria-virtual)
+// export const mockFeriaSectors = [] // Eliminado
+// export const mockFeriaStands = [] // Eliminado
 
-// 🏪 Puestos de Feria (Estructura PHP Real)
-export const mockFeriaStands = [
-  // Sector Tech - Posición 1, 3
-  {
-    sector: 'tech',
-    position: 1,
-    estado: 'ocupado',
-    tienda: {
-      nombre: 'Tienda Juan - Celulares',
-      slug: 'tienda-juan-celulares',
-      logo: 'https://picsum.photos/seed/tienda1/100/100.jpg',
-      url: '/tienda/tienda-juan-celulares'
-    }
-  },
-  {
-    sector: 'tech',
-    position: 3,
-    estado: 'ocupado',
-    tienda: {
-      nombre: 'Tech Store SCZ',
-      slug: 'tech-store-sc',
-      logo: 'https://picsum.photos/seed/tienda2/100/100.jpg',
-      url: '/tienda/tech-store-sc'
-    }
-  },
-  // Sector Fashion - Posición 2
-  {
-    sector: 'fashion',
-    position: 2,
-    estado: 'ocupado',
-    tienda: {
-      nombre: 'Fashion Boutique',
-      slug: 'fashion-boutique',
-      logo: 'https://picsum.photos/seed/fashion1/100/100.jpg',
-      url: '/tienda/fashion-boutique'
-    }
-  },
-  // Sector Toys - Posición 5
-  {
-    sector: 'toys',
-    position: 5,
-    estado: 'ocupado',
-    tienda: {
-      nombre: 'Toylandia',
-      slug: 'toylandia',
-      logo: 'https://picsum.photos/seed/toys1/100/100.jpg',
-      url: '/tienda/toylandia'
-    }
-  },
-  // Sector Auto - Posición 8
-  {
-    sector: 'auto',
-    position: 8,
-    estado: 'ocupado',
-    tienda: {
-      nombre: 'AutoParts Plus',
-      slug: 'autoparts-plus',
-      logo: 'https://picsum.photos/seed/auto1/100/100.jpg',
-      url: '/tienda/autoparts-plus'
-    }
-  }
-];
+// 🏪 Puestos de Feria (Eliminado - ahora usa /feria-virtual)
+// export const mockFeriaStands = [] // Eliminado
 
-// 🏙️ Departamentos - Datos INE 2024
-export const mockDepartments = [
-  { code: 'CHQ', name: 'Chuquisaca' },
-  { code: 'LPZ', name: 'La Paz' },
-  { code: 'CBA', name: 'Cochabamba' },
-  { code: 'ORU', name: 'Oruro' },
-  { code: 'PTS', name: 'Potosí' },
-  { code: 'TJA', name: 'Tarija' },
-  { code: 'SCZ', name: 'Santa Cruz' },
-  { code: 'BEN', name: 'Beni' },
-  { code: 'PND', name: 'Pando' }
-];
+// 🏙️ Departamentos (Eliminado - ahora usa /feria-virtual)
+// export const mockDepartments = [] // Eliminado
 
 // 📊 Analytics Mock
 export const mockAnalytics = {
@@ -667,8 +525,8 @@ export const mockData = {
   categories: mockCategories,
   products: mockProducts,
   cities: mockCities,
-  feriaStands: mockFeriaStands,
-  feriaSectors: mockFeriaSectors,
+  // feriaStands: mockFeriaStands, // Eliminado - usa /feria-virtual
+  // feriaSectors: mockFeriaSectors, // Eliminado - usa /feria-virtual
   analytics: mockAnalytics,
   logs: mockLogs
 };

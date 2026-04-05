@@ -124,7 +124,7 @@ export default function AdminAnalytics() {
     { page: '/tienda/computer-world', views: 987, change: -5.2 },
     { page: '/explore', views: 876, change: 8.1 },
     { page: '/', views: 765, change: 3.4 },
-    { page: '/feria', views: 654, change: -2.1 }
+    { page: '/feria-virtual', views: 654, change: -2.1 }
   ]
 
   const topProducts = [

@@ -105,7 +105,7 @@ export default function AdminTraffic() {
       timestamp: '2024-03-24 15:29:12',
       ip: '78.90.123.45',
       userAgent: 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
-      url: '/feria',
+      url: '/feria-virtual',
       method: 'GET',
       statusCode: 200,
       responseTime: 312,
@@ -156,7 +156,7 @@ export default function AdminTraffic() {
       { url: '/tienda/tech-store', visits: 1234, change: 12.5 },
       { url: '/explore', visits: 987, change: -5.2 },
       { url: '/', visits: 876, change: 8.1 },
-      { url: '/feria', visits: 654, change: 3.4 },
+      { url: '/feria-virtual', visits: 654, change: -2.1 },
       { url: '/tienda/computer-world', visits: 543, change: -2.1 }
     ],
     topCountries: [

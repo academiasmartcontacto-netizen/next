@@ -109,7 +109,7 @@ function CrearTiendaContent() {
         if (feriaContext.sector && feriaContext.city) {
           setSuccess('¡Tienda creada y puesto asignado! Redirigiendo a la feria...')
           setTimeout(() => {
-            router.push(`/feria?dept=${feriaContext.city}&success=created_and_assigned`)
+            router.push(`/feria-virtual?dept=${feriaContext.city}&success=created_and_assigned`)
           }, 2000)
         } else {
           setSuccess('¡Tienda creada exitosamente! Redirigiendo al editor...')
@@ -213,7 +213,7 @@ function CrearTiendaContent() {
               
               <div className="flex justify-center gap-4">
                 <Link 
-                  href="/feria" 
+                  href="/feria-virtual" 
                   className="px-6 py-3 text-gray-600 border-2 border-gray-300 rounded-lg font-semibold hover:border-gray-400 transition-colors"
                 >
                   Cancelar
