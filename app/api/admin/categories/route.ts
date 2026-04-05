@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { categories } from '@/lib/db/schema'
-import { asc, eq } from 'drizzle-orm'
 
-// GET /api/admin/categories - Obtener todas las categorías
-export async function GET() {
+// GET /api/admin/categories - Obtener todas las categorías (hardcoded)
+export async function GET(request: NextRequest) {
   try {
-    const categoriesList = await db
-      .select()
-      .from(categories)
-      .where(eq(categories.activa, true))
-      .orderBy(asc(categories.orden))
+    // Categorías hardcoded (como en tu sistema actual)
+    const categories = [
+      { id: '1', nombre: 'Vehículos' },
+      { id: '2', nombre: 'Dispositivos' },
+      { id: '3', nombre: 'Electrodomésticos' },
+      { id: '4', nombre: 'Herramientas' },
+      { id: '5', nombre: 'Inmuebles' },
+      { id: '6', nombre: 'Juguetes' },
+      { id: '7', nombre: 'Muebles' },
+      { id: '8', nombre: 'Prendas' }
+    ]
 
-    return NextResponse.json(categoriesList)
+    return NextResponse.json(categories)
+    
   } catch (error) {
     console.error('Error al obtener categorías:', error)
     return NextResponse.json(
