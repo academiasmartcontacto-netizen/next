@@ -85,7 +85,18 @@ export default function LogoUploader({ currentLogo, onLogoChange, storeId }: Log
     e.target.value = ''
   }
 
-  const handleRemoveLogo = () => {
+  const handleRemoveLogo = async () => {
+    // Eliminar de Storage si existe un logo actual
+    if (currentLogo) {
+      try {
+        await fetch(`/api/upload/logo?url=${encodeURIComponent(currentLogo)}`, {
+          method: 'DELETE'
+        })
+      } catch (error) {
+        console.error('Error eliminando logo:', error)
+      }
+    }
+    
     onLogoChange(null)
     setError(null)
   }
