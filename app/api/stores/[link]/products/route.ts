@@ -99,10 +99,13 @@ export async function GET(
 
         const principalImage = images.find(img => img.isPrincipal) || images[0]
 
+        // Asegurar que allImages siempre tenga al menos la imagen principal
+        const allImages = images.length > 0 ? images : (principalImage ? [principalImage] : [])
+        
         return {
           ...product,
           productImages: principalImage || null,
-          allImages: images
+          allImages: allImages
         }
       })
     )
