@@ -87,6 +87,7 @@ export const stores = pgTable('stores', {
   navbarColor: text('navbar_color'), // Color de la barra de navegación
   logo: text('logo'), // URL del logo
   logoPrincipal: text('logo_principal'), // Logo principal
+  logo_feria_url: text('logo_feria_url'), // Logo de feria virtual
   mostrarLogo: boolean('mostrar_logo').default(true),
   mostrarNombre: boolean('mostrar_nombre').default(true),
   
