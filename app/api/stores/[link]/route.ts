@@ -54,6 +54,7 @@ export async function GET(
         emailContacto: stores.emailContacto,
         logo: stores.logo,
         logoPrincipal: stores.logoPrincipal,
+        logo_feria_url: stores.logo_feria_url,
         mostrarLogo: stores.mostrarLogo,
         mostrarNombre: stores.mostrarNombre,
         bannerImagen: stores.bannerImagen,
