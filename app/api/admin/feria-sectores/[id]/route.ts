@@ -1,0 +1,207 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { feriaSectores } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
+
+// PUT /api/admin/feria-sectores/[id] - Actualizar sector
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = params.id
+    const body = await request.json()
+    const { titulo, slug, descripcion, colorHex, categoriaDefaultId, imagenBanner } = body
+
+    if (!titulo || !slug) {
+      return NextResponse.json(
+        { error: 'Título y slug son obligatorios' },
+        { status: 400 }
+      )
+    }
+
+    const updatedSector = await db
+      .update(feriaSectores)
+      .set({
+        titulo,
+        slug,
+        descripcion,
+        colorHex: colorHex || '#FF6B35',
+        categoriaDefaultId: categoriaDefaultId || null,
+        imagenBanner: imagenBanner || null,
+        updatedAt: new Date()
+      })
+      .where(eq(feriaSectores.id, id))
+      .returning()
+
+    if (updatedSector.length === 0) {
+      return NextResponse.json(
+        { error: 'Sector no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(updatedSector[0])
+  } catch (error) {
+    console.error('Error al actualizar sector:', error)
+    return NextResponse.json(
+      { error: 'Error al actualizar sector' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/admin/feria-sectores/[id] - Eliminar sector
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = params.id
+
+    const deletedSector = await db
+      .delete(feriaSectores)
+      .where(eq(feriaSectores.id, id))
+      .returning()
+
+    if (deletedSector.length === 0) {
+      return NextResponse.json(
+        { error: 'Sector no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error al eliminar sector:', error)
+    return NextResponse.json(
+      { error: 'Error al eliminar sector' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH /api/admin/feria-sectores/[id]/toggle - Cambiar estado activo/inactivo
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = params.id
+    const body = await request.json()
+    const { direction } = body
+
+    // Obtener sector actual
+    const currentSector = await db
+      .select()
+      .from(feriaSectores)
+      .where(eq(feriaSectores.id, id))
+
+    if (currentSector.length === 0) {
+      return NextResponse.json(
+        { error: 'Sector no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    // Cambiar estado
+    const updatedSector = await db
+      .update(feriaSectores)
+      .set({
+        activo: !currentSector[0].activo,
+        updatedAt: new Date()
+      })
+      .where(eq(feriaSectores.id, id))
+      .returning()
+
+    return NextResponse.json(updatedSector[0])
+  } catch (error) {
+    console.error('Error al cambiar estado:', error)
+    return NextResponse.json(
+      { error: 'Error al cambiar estado' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH /api/admin/feria-sectores/[id]/reorder - Reordenar sectores
+export async function REORDER(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = params.id
+    const body = await request.json()
+    const { direction } = body
+
+    if (!direction || !['up', 'down'].includes(direction)) {
+      return NextResponse.json(
+        { error: 'Dirección inválida' },
+        { status: 400 }
+      )
+    }
+
+    // Obtener sector actual
+    const currentSector = await db
+      .select({ id: feriaSectores.id, orden: feriaSectores.orden })
+      .from(feriaSectores)
+      .where(eq(feriaSectores.id, id))
+
+    if (currentSector.length === 0) {
+      return NextResponse.json(
+        { error: 'Sector no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    const currentOrder = currentSector[0].orden
+
+    // Buscar vecino para intercambiar
+    let neighborQuery
+    if (direction === 'up') {
+      neighborQuery = db
+        .select({ id: feriaSectores.id, orden: feriaSectores.orden })
+        .from(feriaSectores)
+        .where(feriaSectores.orden.lt(currentOrder))
+        .orderBy(desc(feriaSectores.orden))
+        .limit(1)
+    } else {
+      neighborQuery = db
+        .select({ id: feriaSectores.id, orden: feriaSectores.orden })
+        .from(feriaSectores)
+        .where(feriaSectores.orden.gt(currentOrder))
+        .orderBy(asc(feriaSectores.orden))
+        .limit(1)
+    }
+
+    const neighbor = await neighborQuery
+
+    if (neighbor.length === 0) {
+      return NextResponse.json(
+        { error: 'No hay sector para intercambiar' },
+        { status: 400 }
+      )
+    }
+
+    // Intercambiar órdenes
+    await db.transaction(async (tx) => {
+      await tx
+        .update(feriaSectores)
+        .set({ orden: neighbor[0].orden })
+        .where(eq(feriaSectores.id, id))
+
+      await tx
+        .update(feriaSectores)
+        .set({ orden: currentOrder })
+        .where(eq(feriaSectores.id, neighbor[0].id))
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error al reordenar:', error)
+    return NextResponse.json(
+      { error: 'Error al reordenar' },
+      { status: 500 }
+    )
+  }
+}

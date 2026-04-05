@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "sharp": "^0.33.1",
+    "@supabase/supabase-js": "^2.99.1"
+  }
+}

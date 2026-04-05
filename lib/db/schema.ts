@@ -5,6 +5,56 @@ import { relations } from 'drizzle-orm'
 // Importar products desde el archivo separado
 import { products, productImages, type Product } from './schema-products'
 
+// ========================================
+// FERIA VIRTUAL - TABLAS PRINCIPALES
+// ========================================
+
+// Sectores de la Feria Virtual
+export const feriaSectores = pgTable('feria_sectores', {
+  id: uuid('id').primaryKey().defaultRandom(), // Para Storage y relaciones
+  slug: text('slug').notNull().unique(), // Para URLs y SEO (tech, fashion, home)
+  titulo: text('titulo').notNull(),
+  descripcion: text('descripcion'),
+  colorHex: text('color_hex').default('#FF6B35'), // Color del tema
+  imagenBanner: text('imagen_banner'), // URL del banner en Supabase Storage
+  orden: integer('orden').notNull().default(1), // Orden de visualización
+  capacidad: integer('capacidad').notNull().default(12), // Cantidad de puestos (ej: 12)
+  categoriaDefaultId: text('categoria_default_id'), // Texto para categoría (hardcoded)
+  activo: boolean('activo').default(true), // Para activar/desactivar sectores
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Puestos/Ocupaciones de la Feria
+export const feriaPuestos = pgTable('feria_puestos', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sectorId: uuid('sector_id').notNull().references(() => feriaSectores.id, { onDelete: 'cascade' }),
+  bloqueId: integer('bloque_id').notNull().default(1), // Número de bloque (1-N)
+  posicion: integer('posicion').notNull(), // Posición dentro del bloque (1-12)
+  usuarioId: uuid('usuario_id').references(() => users.id, { onDelete: 'cascade' }), // Dueño de la tienda
+  ciudad: text('ciudad').notNull().default('LPZ'), // Código de departamento
+  estado: text('estado').notNull().default('disponible'), // disponible, ocupado, reservado
+  fechaOcupacion: timestamp('fecha_ocupacion'), // Cuándo se ocupó
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Relaciones para la feria
+export const feriaSectoresRelations = relations(feriaSectores, ({ many }) => ({
+  puestos: many(feriaPuestos),
+}))
+
+export const feriaPuestosRelations = relations(feriaPuestos, ({ one }) => ({
+  sector: one(feriaSectores, {
+    fields: [feriaPuestos.sectorId],
+    references: [feriaSectores.id],
+  }),
+  usuario: one(users, {
+    fields: [feriaPuestos.usuarioId],
+    references: [users.id],
+  }),
+}))
+
 // Users table - Enhanced for complete auth system
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),

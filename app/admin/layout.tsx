@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Feria Virtual', href: '/admin/feria-virtual', icon: Store },
   { name: 'Usuarios', href: '/admin/users', icon: Users },
   { name: 'Productos', href: '/admin/products', icon: Package },
   { name: 'Tiendas', href: '/admin/stores', icon: Store },

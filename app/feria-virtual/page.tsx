@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { MapPin, ChevronDown, Store, Plus } from 'lucide-react'
 import '@/styles/feria-virtual.css'
 
-// Datos de ejemplo - vendrán de la API
+// Departamentos de Bolivia
 const DEPARTMENTS = {
   'LPZ': 'La Paz',
   'ALT': 'El Alto', 
@@ -18,7 +18,7 @@ const DEPARTMENTS = {
   'PND': 'Pando'
 }
 
-// Sectores predefinidos (8 categorías Symbaloo)
+// Datos de ejemplo - vendrán de la API
 const SECTORES = [
   {
     id: 'tech',
@@ -30,118 +30,6 @@ const SECTORES = [
     capacidad: 12,
     tiendas: Array(12).fill(null).map((_, i) => ({
       id: `tech-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'fashion',
-    titulo: 'Ropa',
-    slug: 'fashion', 
-    descripcion: 'Moda Nacional y Americana',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `fashion-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'home',
-    titulo: 'Muebles',
-    slug: 'home',
-    descripcion: 'Hogar, Camas y Roperos',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `home-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'toys',
-    titulo: 'Juguetes',
-    slug: 'toys',
-    descripcion: 'Niños y Coleccionables',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `toys-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'tools',
-    titulo: 'Herramientas',
-    slug: 'tools',
-    descripcion: 'Ferretería y Construcción',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `tools-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'auto',
-    titulo: 'Vehículos',
-    slug: 'auto',
-    descripcion: 'Autopartes y Accesorios',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `auto-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'electro',
-    titulo: 'Electrodomésticos',
-    slug: 'electro',
-    descripcion: 'Línea Blanca y TV',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `electro-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  },
-  {
-    id: 'realestate',
-    titulo: 'Inmuebles',
-    slug: 'realestate',
-    descripcion: 'Terrenos y Casas',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `realestate-${i}`,
       nombre: null,
       logo: null,
       url: null,
@@ -159,7 +47,7 @@ export default function FeriaVirtualPage() {
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = (e: any) => {
       if (!e.target.closest('.pro-dept-wrapper')) {
         setShowDeptMenu(false)
       }
@@ -168,12 +56,12 @@ export default function FeriaVirtualPage() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
-  const handleDeptChange = (deptCode) => {
+  const handleDeptChange = (deptCode: string) => {
     setCurrentDept(deptCode)
     setShowDeptMenu(false)
   }
 
-  const handleSlotClick = (sector, slotIndex) => {
+  const handleSlotClick = (sector: any, slotIndex: number) => {
     const tienda = sector.tiendas[slotIndex]
     if (tienda && tienda.ocupado) {
       // Navegar a la tienda
@@ -207,7 +95,7 @@ export default function FeriaVirtualPage() {
                 onClick={() => setShowDeptMenu(!showDeptMenu)}
               >
                 <MapPin className="pro-dept-icon" />
-                <span>{DEPARTMENTS[currentDept]}</span>
+                <span>{DEPARTMENTS[currentDept as keyof typeof DEPARTMENTS]}</span>
                 <ChevronDown className="pro-chevron" />
               </div>
               <div className={`dept-menu ${showDeptMenu ? 'show-menu' : ''}`}>
@@ -216,7 +104,7 @@ export default function FeriaVirtualPage() {
                     key={code}
                     href="#"
                     className="dept-item"
-                    onClick={(e) => {
+                    onClick={(e: any) => {
                       e.preventDefault()
                       handleDeptChange(code)
                     }}
@@ -233,7 +121,7 @@ export default function FeriaVirtualPage() {
       {/* Bento Grid de Sectores */}
       <div className="bento-grid">
         {SECTORES.map((sector) => (
-          <div key={sector.id} className="sector-block" style={{ '--sector-color': sector.colorHex }}>
+          <div key={sector.id} className="sector-block" style={{ '--sector-color': sector.colorHex } as any}>
             <div className="sector-header-split">
               <div className="split-text-col">
                 <h2 className="sector-title-pro">{sector.titulo}</h2>
@@ -290,7 +178,7 @@ export default function FeriaVirtualPage() {
       {/* Modal para ocupar espacio */}
       {showModal && (
         <div className="feria-modal-overlay active" onClick={closeModal}>
-          <div className="feria-modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="feria-modal-content" onClick={(e: any) => e.stopPropagation()}>
             <button className="feria-modal-close" onClick={closeModal}>&times;</button>
             
             <div className="modal-state" style={{ display: 'block' }}>
@@ -298,7 +186,7 @@ export default function FeriaVirtualPage() {
                 <Store />
               </div>
               <h3>¡Ocupa este espacio!</h3>
-              <p>El espacio #{selectedSlot + 1} en {selectedSector?.titulo} está disponible.</p>
+              <p>El espacio #{selectedSlot! + 1} en {selectedSector?.titulo} está disponible.</p>
               <p>Para ocupar este puesto, primero necesitas crear tu tienda virtual.</p>
               <div className="modal-actions">
                 <a href="/mi/crear-tienda" className="btn-modal primary">
