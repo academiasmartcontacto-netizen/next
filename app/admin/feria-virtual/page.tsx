@@ -298,14 +298,14 @@ export default function AdminFeriaVirtualPage() {
                         </button>
                         <button
                           onClick={() => handleEditSector(sector)}
-                          className="p-2 text-blue-600 hover:text-blue-800"
+                          className="p-2 text-indigo-600 hover:text-indigo-800"
                           title="Gestionar Puestos"
                         >
                           <Package size={16} />
                         </button>
                         <button
                           onClick={() => handleEditSector(sector)}
-                          className="p-2 text-indigo-600 hover:text-indigo-800"
+                          className="p-2 text-blue-600 hover:text-blue-800"
                           title="Editar"
                         >
                           <Edit size={16} />

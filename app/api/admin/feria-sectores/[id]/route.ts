@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { feriaSectores } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, desc, asc, lt, gt } from 'drizzle-orm'
 
 // PUT /api/admin/feria-sectores/[id] - Actualizar sector
 export async function PUT(
@@ -82,14 +82,12 @@ export async function DELETE(
 }
 
 // PATCH /api/admin/feria-sectores/[id]/toggle - Cambiar estado activo/inactivo
-export async function PATCH(
+export async function PATCH1(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = params.id
-    const body = await request.json()
-    const { direction } = body
 
     // Obtener sector actual
     const currentSector = await db
@@ -162,14 +160,14 @@ export async function REORDER(
       neighborQuery = db
         .select({ id: feriaSectores.id, orden: feriaSectores.orden })
         .from(feriaSectores)
-        .where(feriaSectores.orden.lt(currentOrder))
+        .where(lt(feriaSectores.orden, currentOrder))
         .orderBy(desc(feriaSectores.orden))
         .limit(1)
     } else {
       neighborQuery = db
         .select({ id: feriaSectores.id, orden: feriaSectores.orden })
         .from(feriaSectores)
-        .where(feriaSectores.orden.gt(currentOrder))
+        .where(gt(feriaSectores.orden, currentOrder))
         .orderBy(asc(feriaSectores.orden))
         .limit(1)
     }
@@ -204,4 +202,24 @@ export async function REORDER(
       { status: 500 }
     )
   }
+}
+
+// PATCH /api/admin/feria-sectores/[id] - Toggle y Reorder
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const url = new URL(request.url)
+  const action = url.pathname.split('/').pop()
+  
+  if (action === 'toggle') {
+    return PATCH1(request, { params })
+  } else if (url.pathname.includes('/reorder')) {
+    return REORDER(request, { params })
+  }
+  
+  return NextResponse.json(
+    { error: 'Endpoint no encontrado' },
+    { status: 404 }
+  )
 }

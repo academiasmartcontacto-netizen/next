@@ -18,32 +18,72 @@ const DEPARTMENTS = {
   'PND': 'Pando'
 }
 
-// Datos de ejemplo - vendrán de la API
-const SECTORES = [
-  {
-    id: 'tech',
-    titulo: 'Celulares',
-    slug: 'tech',
-    descripcion: 'Las mejores tiendas y marcas',
-    colorHex: '#FF6B35',
-    imagenBanner: null,
-    capacidad: 12,
-    tiendas: Array(12).fill(null).map((_, i) => ({
-      id: `tech-${i}`,
-      nombre: null,
-      logo: null,
-      url: null,
-      ocupado: false
-    }))
-  }
-]
+interface Sector {
+  id: string
+  slug: string
+  titulo: string
+  descripcion: string
+  colorHex: string
+  imagenBanner: string | null
+  orden: number
+  capacidad: number
+  categoriaDefaultId: string | null
+  activo: boolean
+  createdAt: string
+  updatedAt: string
+  tiendas: Tienda[]
+}
+
+interface Tienda {
+  id: string
+  nombre: string | null
+  logo: string | null
+  url: string | null
+  ocupado: boolean
+}
 
 export default function FeriaVirtualPage() {
   const [currentDept, setCurrentDept] = useState('LPZ')
   const [showDeptMenu, setShowDeptMenu] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [selectedSector, setSelectedSector] = useState(null)
-  const [selectedSlot, setSelectedSlot] = useState(null)
+  const [selectedSector, setSelectedSector] = useState<Sector | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null)
+  const [sectores, setSectores] = useState<Sector[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Cargar sectores desde la API
+  useEffect(() => {
+    fetchSectores()
+  }, [])
+
+  const fetchSectores = async () => {
+    try {
+      const response = await fetch('/api/admin/feria-sectores')
+      if (response.ok) {
+        const data = await response.json()
+        // Filtrar solo sectores activos y agregar tiendas vacías
+        const sectoresConTiendas = data
+          .filter((sector: Sector) => sector.activo)
+          .map((sector: Sector) => ({
+            ...sector,
+            tiendas: Array(sector.capacidad).fill(null).map((_, i) => ({
+              id: `${sector.slug}-${i}`,
+              nombre: null,
+              logo: null,
+              url: null,
+              ocupado: false
+            }))
+          }))
+        setSectores(sectoresConTiendas)
+      } else {
+        console.error('Error al cargar sectores')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -61,9 +101,9 @@ export default function FeriaVirtualPage() {
     setShowDeptMenu(false)
   }
 
-  const handleSlotClick = (sector: any, slotIndex: number) => {
+  const handleSlotClick = (sector: Sector, slotIndex: number) => {
     const tienda = sector.tiendas[slotIndex]
-    if (tienda && tienda.ocupado) {
+    if (tienda && tienda.ocupado && tienda.url) {
       // Navegar a la tienda
       window.open(tienda.url, '_blank')
     } else {
@@ -120,59 +160,71 @@ export default function FeriaVirtualPage() {
 
       {/* Bento Grid de Sectores */}
       <div className="bento-grid">
-        {SECTORES.map((sector) => (
-          <div key={sector.id} className="sector-block" style={{ '--sector-color': sector.colorHex } as any}>
-            <div className="sector-header-split">
-              <div className="split-text-col">
-                <h2 className="sector-title-pro">{sector.titulo}</h2>
-                <p className="sector-desc-pro">{sector.descripcion}</p>
-              </div>
-              <div className="split-image-col">
-                <div className="image-box">
-                  {sector.imagenBanner ? (
-                    <img src={sector.imagenBanner} alt={sector.titulo} />
-                  ) : (
-                    <div className="image-placeholder" style={{ 
-                      backgroundColor: sector.colorHex, 
-                      opacity: 0.2, 
-                      width: '100%', 
-                      height: '100%' 
-                    }}></div>
-                  )}
-                  <a href={`/sector/${sector.slug}?dept=${currentDept}`} className="view-all-pill" title="Ver todo">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 9V3h6"></path><path d="M3 3l7 7"></path><path d="M21 9V3h-6"></path><path d="M21 3l-7 7"></path>
-                      <path d="M21 15v6h-6"></path><path d="M21 21l-7-7"></path><path d="M3 15v6h6"></path><path d="M3 21l7-7"></path>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="stores-inner-grid">
-              {sector.tiendas.map((tienda, index) => (
-                <div
-                  key={index}
-                  className={`store-item ${tienda?.ocupado ? 'real' : 'empty'}`}
-                  onClick={() => handleSlotClick(sector, index)}
-                  title={tienda?.ocupado ? tienda.nombre : 'Espacio Disponible'}
-                >
-                  {tienda?.ocupado ? (
-                    <div className="store-logo-wrap">
-                      {tienda.logo ? (
-                        <img src={tienda.logo} alt={tienda.nombre} className="store-img fade-in-fast" />
-                      ) : (
-                        <Store style={{ fontSize: '48px', color: '#e5e5e5' }} />
-                      )}
-                    </div>
-                  ) : (
-                    <span className="empty-text">LIBRE</span>
-                  )}
-                </div>
-              ))}
-            </div>
+        {sectores.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <Store className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No hay sectores disponibles
+            </h3>
+            <p className="text-gray-500">
+              Los administradores están configurando la feria virtual.
+            </p>
           </div>
-        ))}
+        ) : (
+          sectores.map((sector) => (
+            <div key={sector.id} className="sector-block" style={{ '--sector-color': sector.colorHex } as any}>
+              <div className="sector-header-split">
+                <div className="split-text-col">
+                  <h2 className="sector-title-pro">{sector.titulo}</h2>
+                  <p className="sector-desc-pro">{sector.descripcion}</p>
+                </div>
+                <div className="split-image-col">
+                  <div className="image-box">
+                    {sector.imagenBanner ? (
+                      <img src={sector.imagenBanner} alt={sector.titulo} />
+                    ) : (
+                      <div className="image-placeholder" style={{ 
+                        backgroundColor: sector.colorHex, 
+                        opacity: 0.2, 
+                        width: '100%', 
+                        height: '100%' 
+                      }}></div>
+                    )}
+                    <a href={`/sector/${sector.slug}?dept=${currentDept}`} className="view-all-pill" title="Ver todo">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 9V3h6"></path><path d="M3 3l7 7"></path><path d="M21 9V3h-6"></path><path d="M21 3l-7 7"></path>
+                        <path d="M21 15v6h-6"></path><path d="M21 21l-7-7"></path><path d="M3 15v6h6"></path><path d="M3 21l7-7"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="stores-inner-grid">
+                {sector.tiendas.map((tienda: Tienda, index: number) => (
+                  <div
+                    key={index}
+                    className={`store-item ${tienda?.ocupado ? 'real' : 'empty'}`}
+                    onClick={() => handleSlotClick(sector, index)}
+                    title={tienda?.ocupado ? tienda.nombre || 'Tienda' : 'Espacio Disponible'}
+                  >
+                    {tienda?.ocupado ? (
+                      <div className="store-logo-wrap">
+                        {tienda.logo ? (
+                          <img src={tienda.logo} alt={tienda.nombre || 'Tienda'} className="store-img fade-in-fast" />
+                        ) : (
+                          <Store style={{ fontSize: '48px', color: '#e5e5e5' }} />
+                        )}
+                      </div>
+                    ) : (
+                      <span className="empty-text">LIBRE</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Modal para ocupar espacio */}
