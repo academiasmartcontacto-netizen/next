@@ -160,6 +160,7 @@ export async function POST(
     const {
       name, phone, whatsapp, emailContacto, direccion, googleMapsUrl,
       descripcion, slogan, colorPrimario, navbarColor, logo, logoPrincipal,
+      logo_feria_url,
       mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
       bannerImagen4, mostrarBanner, redesSociales, settings, theme,
       seoTitle, seoDescription, favicon, estado,
@@ -170,6 +171,7 @@ export async function POST(
     const updateData: { [key: string]: any } = {
       name, phone, whatsapp, emailContacto, direccion, googleMapsUrl,
       descripcion, slogan, colorPrimario, navbarColor, logo, logoPrincipal,
+      logo_feria_url,
       mostrarLogo, mostrarNombre, bannerImagen, bannerImagen2, bannerImagen3,
       bannerImagen4, mostrarBanner, redesSociales, settings, theme,
       seoTitle, seoDescription, favicon, estado,
