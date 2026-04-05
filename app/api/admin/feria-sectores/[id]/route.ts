@@ -13,12 +13,39 @@ export async function PUT(
     const body = await request.json()
     const { titulo, slug, descripcion, colorHex, categoriaDefaultId, imagenBanner } = body
 
+    console.log('📝 [PUT] Actualizando sector:', { id, titulo, slug })
+    console.log('📝 [PUT] Datos recibidos:', {
+      titulo,
+      slug,
+      descripcion: descripcion?.substring(0, 50) + '...',
+      colorHex,
+      categoriaDefaultId,
+      imagenBanner: imagenBanner ? 'SÍ' : 'NO'
+    })
+
     if (!titulo || !slug) {
+      console.log('❌ [PUT] Validación fallida: título o slug vacíos')
       return NextResponse.json(
         { error: 'Título y slug son obligatorios' },
         { status: 400 }
       )
     }
+
+    // Verificar si el sector existe antes de actualizar
+    const existingSector = await db
+      .select()
+      .from(feriaSectores)
+      .where(eq(feriaSectores.id, id))
+
+    if (existingSector.length === 0) {
+      console.log('❌ [PUT] Sector no encontrado para actualizar')
+      return NextResponse.json(
+        { error: 'Sector no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    console.log('📋 [PUT] Sector encontrado, procediendo con actualización')
 
     const updatedSector = await db
       .update(feriaSectores)
@@ -34,18 +61,28 @@ export async function PUT(
       .where(eq(feriaSectores.id, id))
       .returning()
 
+    console.log('✅ [PUT] Sector actualizado:', updatedSector.length > 0 ? 'SÍ' : 'NO')
+    console.log('📊 [PUT] Registros afectados:', updatedSector.length)
+
     if (updatedSector.length === 0) {
+      console.log('❌ [PUT] No se pudo actualizar el sector')
       return NextResponse.json(
-        { error: 'Sector no encontrado' },
-        { status: 404 }
+        { error: 'No se pudo actualizar el sector' },
+        { status: 500 }
       )
     }
 
+    console.log('🎉 [PUT] Actualización exitosa:', updatedSector[0].titulo)
     return NextResponse.json(updatedSector[0])
   } catch (error) {
-    console.error('Error al actualizar sector:', error)
+    console.error('❌ [PUT] Error al actualizar sector:', error)
+    console.error('❌ [PUT] Stack trace:', error.stack)
     return NextResponse.json(
-      { error: 'Error al actualizar sector' },
+      { 
+        error: 'Error al actualizar sector',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }
@@ -58,24 +95,54 @@ export async function DELETE(
 ) {
   try {
     const id = params.id
+    console.log('🗑️ [DELETE] Intentando eliminar sector con ID:', id)
+
+    // Primero verificar si el sector existe
+    const existingSector = await db
+      .select()
+      .from(feriaSectores)
+      .where(eq(feriaSectores.id, id))
+
+    console.log('📋 [DELETE] Sector encontrado:', existingSector.length > 0 ? 'SÍ' : 'NO')
+    if (existingSector.length > 0) {
+      console.log('📋 [DELETE] Datos del sector:', {
+        id: existingSector[0].id,
+        titulo: existingSector[0].titulo,
+        slug: existingSector[0].slug
+      })
+    }
 
     const deletedSector = await db
       .delete(feriaSectores)
       .where(eq(feriaSectores.id, id))
       .returning()
 
+    console.log('✅ [DELETE] Sector eliminado:', deletedSector.length > 0 ? 'SÍ' : 'NO')
+    console.log('📊 [DELETE] Registros afectados:', deletedSector.length)
+
     if (deletedSector.length === 0) {
+      console.log('❌ [DELETE] No se encontró el sector para eliminar')
       return NextResponse.json(
         { error: 'Sector no encontrado' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ success: true })
+    console.log('🎉 [DELETE] Eliminación exitosa del sector:', deletedSector[0].titulo)
+    return NextResponse.json({ 
+      success: true,
+      message: 'Sector eliminado correctamente',
+      deletedSector: deletedSector[0]
+    })
   } catch (error) {
-    console.error('Error al eliminar sector:', error)
+    console.error('❌ [DELETE] Error al eliminar sector:', error)
+    console.error('❌ [DELETE] Stack trace:', error.stack)
     return NextResponse.json(
-      { error: 'Error al eliminar sector' },
+      { 
+        error: 'Error al eliminar sector',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }

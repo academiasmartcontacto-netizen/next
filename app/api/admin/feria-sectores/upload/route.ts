@@ -15,7 +15,17 @@ export async function POST(request: NextRequest) {
     const sectorId = formData.get('sectorId') as string
     const slug = formData.get('slug') as string
 
+    console.log('📤 [UPLOAD] Iniciando upload de banner')
+    console.log('📤 [UPLOAD] Datos recibidos:', {
+      sectorId,
+      slug,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type
+    })
+
     if (!file || !sectorId || !slug) {
+      console.log('❌ [UPLOAD] Faltan datos requeridos')
       return NextResponse.json(
         { error: 'Faltan datos requeridos: file, sectorId, slug' },
         { status: 400 }
@@ -25,6 +35,7 @@ export async function POST(request: NextRequest) {
     // Validar tipo de archivo
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
     if (!allowedTypes.includes(file.type)) {
+      console.log('❌ [UPLOAD] Tipo de archivo no permitido:', file.type)
       return NextResponse.json(
         { error: 'Tipo de archivo no permitido. Solo JPG, PNG, WebP' },
         { status: 400 }
@@ -34,11 +45,14 @@ export async function POST(request: NextRequest) {
     // Validar tamaño (máximo 5MB)
     const maxSize = 5 * 1024 * 1024 // 5MB
     if (file.size > maxSize) {
+      console.log('❌ [UPLOAD] Archivo demasiado grande:', file.size, 'bytes')
       return NextResponse.json(
         { error: 'Archivo demasiado grande. Máximo 5MB' },
         { status: 400 }
       )
     }
+
+    console.log('✅ [UPLOAD] Validaciones pasadas, procesando imagen')
 
     // Convertir a AVIF con Sharp
     const buffer = await file.arrayBuffer()
@@ -50,30 +64,38 @@ export async function POST(request: NextRequest) {
       })
       .toBuffer()
 
-    // Generar nombre de archivo con UUID
-    const fileName = `banner.avif`
+    // Generar nombre de archivo único con timestamp y slug
+    const timestamp = Date.now()
+    const fileName = `${slug}-${timestamp}.avif`
     const filePath = `banners/sector-${sectorId}/${fileName}`
+
+    console.log('📁 [UPLOAD] Path del archivo:', filePath)
+    console.log('📁 [UPLOAD] Nombre único:', fileName)
 
     // Subir a Supabase Storage
     const { data, error } = await supabase.storage
       .from('feria')
       .upload(filePath, convertedBuffer, {
         contentType: 'image/avif',
-        upsert: true // Sobreescribir si existe
+        upsert: false // No sobreescribir, crear nuevo archivo
       })
 
     if (error) {
-      console.error('Error al subir a Supabase:', error)
+      console.error('❌ [UPLOAD] Error al subir a Supabase:', error)
       return NextResponse.json(
-        { error: 'Error al subir la imagen' },
+        { error: 'Error al subir la imagen', details: error.message },
         { status: 500 }
       )
     }
+
+    console.log('✅ [UPLOAD] Archivo subido exitosamente a Supabase')
 
     // Obtener URL pública
     const { data: { publicUrl } } = supabase.storage
       .from('feria')
       .getPublicUrl(filePath)
+
+    console.log('🔗 [UPLOAD] URL pública generada:', publicUrl)
 
     // Devolver información del archivo
     return NextResponse.json({
@@ -84,13 +106,20 @@ export async function POST(request: NextRequest) {
       originalSize: file.size,
       compressedSize: convertedBuffer.length,
       compressionRatio: ((file.size - convertedBuffer.length) / file.size * 100).toFixed(1) + '%',
-      format: 'AVIF'
+      format: 'AVIF',
+      sectorId,
+      slug
     })
 
-  } catch (error) {
-    console.error('Error en upload de banner:', error)
+  } catch (error: unknown) {
+    console.error('❌ [UPLOAD] Error en upload de banner:', error)
+    console.error('❌ [UPLOAD] Stack trace:', (error as Error).stack)
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { 
+        error: 'Error interno del servidor',
+        details: (error as Error).message,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }
