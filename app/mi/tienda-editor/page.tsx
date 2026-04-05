@@ -9,6 +9,7 @@ import SeccionesDrawer from '@/components/editor/drawers/SeccionesDrawer'
 import LogoUploader from '@/components/editor/LogoUploader'
 import ColorPickerNew from '@/components/editor/ColorPickerNew'
 import ContactanosDrawer from '@/components/editor/drawers/ContactanosDrawer'
+import FeriaVirtualDrawer from '@/components/editor/drawers/FeriaVirtualDrawer'
 import EditorTiles from './components/EditorTiles'
 import { useEditorData } from './hooks/useEditorData'
 
@@ -55,6 +56,7 @@ export default function TiendaEditorPage() {
   const [isProductosDrawerOpen, setIsProductosDrawerOpen] = useState(false)
   const [isInventarioDrawerOpen, setIsInventarioDrawerOpen] = useState(false)
   const [isContactanosDrawerOpen, setIsContactanosDrawerOpen] = useState(false)
+  const [isFeriaVirtualDrawerOpen, setIsFeriaVirtualDrawerOpen] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [showNewSectionForm, setShowNewSectionForm] = useState(false)
   const [showNewProductForm, setShowNewProductForm] = useState(false)
@@ -343,6 +345,8 @@ export default function TiendaEditorPage() {
                 />
               ) : isContactanosDrawerOpen ? (
                 <ContactanosDrawer onClose={() => setIsContactanosDrawerOpen(false)} store={store} updateStore={updateStore} />
+              ) : isFeriaVirtualDrawerOpen ? (
+                <FeriaVirtualDrawer onClose={() => setIsFeriaVirtualDrawerOpen(false)} store={store} updateStore={updateStore} />
               ) : (
                 <EditorTiles 
                   onOpenNavbar={() => setIsNavbarDrawerOpen(true)}
@@ -352,6 +356,7 @@ export default function TiendaEditorPage() {
                   onOpenProductos={() => setIsProductosDrawerOpen(true)}
                   onOpenInventario={() => setIsInventarioDrawerOpen(true)}
                   onOpenContactanos={() => setIsContactanosDrawerOpen(true)}
+                  onOpenFeriaVirtual={() => setIsFeriaVirtualDrawerOpen(true)}
                 />
               )}
             </div>

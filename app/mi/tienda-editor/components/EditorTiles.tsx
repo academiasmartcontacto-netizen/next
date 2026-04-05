@@ -7,6 +7,7 @@ import AppearanceTile from './tiles/AppearanceTile'
 import ProductsTile from './tiles/ProductsTile'
 import InventoryTile from './tiles/InventoryTile'
 import ContactanosTile from './tiles/ContactanosTile'
+import FeriaVirtualTile from './tiles/FeriaVirtualTile'
 import PlaceholderTile from './tiles/PlaceholderTile'
 
 interface EditorTilesProps {
@@ -17,6 +18,7 @@ interface EditorTilesProps {
   onOpenProductos: () => void
   onOpenInventario: () => void
   onOpenContactanos: () => void
+  onOpenFeriaVirtual: () => void
 }
 
 export default function EditorTiles({ 
@@ -26,7 +28,8 @@ export default function EditorTiles({
   onOpenApariencia, 
   onOpenProductos, 
   onOpenInventario,
-  onOpenContactanos
+  onOpenContactanos,
+  onOpenFeriaVirtual
 }: EditorTilesProps) {
   return (
     <>
@@ -41,6 +44,7 @@ export default function EditorTiles({
         <ProductsTile onClick={onOpenProductos} />
         <InventoryTile onClick={onOpenInventario} />
         <ContactanosTile onClick={onOpenContactanos} />
+        <FeriaVirtualTile onClick={onOpenFeriaVirtual} />
       </div>
     </>
   )
