@@ -238,6 +238,7 @@ export async function GET(request: NextRequest) {
           isPublished: stores.isPublished,
           theme: stores.theme,
           logo: stores.logo,
+          logo_feria_url: stores.logo_feria_url,
           navbarColor: stores.navbarColor,
           createdAt: stores.createdAt,
         })
