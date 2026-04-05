@@ -6,10 +6,13 @@ import { eq, desc, asc, lt, gt } from 'drizzle-orm'
 // PUT /api/admin/feria-sectores/[id] - Actualizar sector
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    // Next.js 15+ requiere await para params
+    const resolvedParams = await params
+    const id = resolvedParams.id
+    
     const body = await request.json()
     const { titulo, slug, descripcion, colorHex, categoriaDefaultId, imagenBanner } = body
 
@@ -91,11 +94,22 @@ export async function PUT(
 // DELETE /api/admin/feria-sectores/[id] - Eliminar sector
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    // Next.js 15+ requiere await para params
+    const resolvedParams = await params
+    const id = resolvedParams.id
+    
     console.log('🗑️ [DELETE] Intentando eliminar sector con ID:', id)
+
+    if (!id) {
+      console.error('❌ [DELETE] ID no proporcionado en params')
+      return NextResponse.json(
+        { error: 'ID no proporcionado' },
+        { status: 400 }
+      )
+    }
 
     // Primero verificar si el sector existe
     const existingSector = await db
@@ -151,10 +165,12 @@ export async function DELETE(
 // PATCH /api/admin/feria-sectores/[id]/toggle - Cambiar estado activo/inactivo
 export async function PATCH1(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    // Next.js 15+ requiere await para params
+    const resolvedParams = await params
+    const id = resolvedParams.id
 
     // Obtener sector actual
     const currentSector = await db
@@ -192,10 +208,12 @@ export async function PATCH1(
 // PATCH /api/admin/feria-sectores/[id]/reorder - Reordenar sectores
 export async function REORDER(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    // Next.js 15+ requiere await para params
+    const resolvedParams = await params
+    const id = resolvedParams.id
     const body = await request.json()
     const { direction } = body
 
@@ -274,15 +292,16 @@ export async function REORDER(
 // PATCH /api/admin/feria-sectores/[id] - Toggle y Reorder
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params
   const url = new URL(request.url)
   const action = url.pathname.split('/').pop()
   
   if (action === 'toggle') {
-    return PATCH1(request, { params })
+    return PATCH1(request, { params: Promise.resolve(resolvedParams) })
   } else if (url.pathname.includes('/reorder')) {
-    return REORDER(request, { params })
+    return REORDER(request, { params: Promise.resolve(resolvedParams) })
   }
   
   return NextResponse.json(
