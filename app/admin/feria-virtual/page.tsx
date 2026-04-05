@@ -256,8 +256,18 @@ export default function AdminFeriaVirtualPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sectores.map((sector, index) => (
-                  <tr key={sector.id} className="hover:bg-gray-50">
+                {sectores.map((sector: any, index: number) => {
+                  // Log para depurar cada sector en el renderizado
+                  console.log(`🎨 [RENDER] Sector #${index}:`, {
+                    id: sector.id,
+                    titulo: sector.titulo,
+                    slug: sector.slug,
+                    tieneId: !!sector.id,
+                    tipoDeId: typeof sector.id
+                  })
+                  
+                  return (
+                  <tr key={sector.id || `sector-${index}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
                         {index > 0 && (
@@ -361,7 +371,8 @@ export default function AdminFeriaVirtualPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
