@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { X, Heart, Share2, ChevronLeft, ChevronRight, MapPin, Clock, Eye, User, Star, Shield, MessageCircle } from 'lucide-react'
-import Image from 'next/image'
 
 interface ProductModalProps {
   isOpen: boolean
@@ -39,10 +38,23 @@ export default function ProductModal({ isOpen, onClose, product, store }: Produc
 
   // Debug: Ver qué datos están llegando
   console.log('=== DEBUG PRODUCT MODAL ===')
-  console.log('Product:', product)
+  console.log('Product ID:', product.id)
+  console.log('Product Name:', product.name)
+  console.log('Product.image:', product.image)
+  console.log('Product.imagen:', product.imagen)
+  console.log('Product.productImages:', product.productImages)
   console.log('All Images:', allImages)
+  console.log('All Images Length:', allImages.length)
   console.log('Current Image Index:', currentImageIndex)
   console.log('Current Image:', currentImage)
+  
+  // Verificar si hay URLs de Supabase
+  const hasSupabaseUrl = currentImage && currentImage.includes('supabase')
+  console.log('Has Supabase URL:', hasSupabaseUrl)
+  if (currentImage) {
+    console.log('Current Image URL:', currentImage)
+    console.log('URL starts with http:', currentImage.startsWith('http'))
+  }
 
   // Navegación de imágenes
   const nextImage = () => {
@@ -151,13 +163,10 @@ export default function ProductModal({ isOpen, onClose, product, store }: Produc
               <div className="relative aspect-square lg:aspect-auto lg:h-full">
                 {currentImage ? (
                   <>
-                    <Image
+                    <img
                       src={currentImage}
                       alt={product.name}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      priority
+                      className="w-full h-full object-contain"
                       onError={(e) => {
                         console.error('Error cargando imagen:', currentImage)
                         // Intentar con la imagen principal si falla la actual
@@ -192,7 +201,7 @@ export default function ProductModal({ isOpen, onClose, product, store }: Produc
                   <div className="w-full h-full flex items-center justify-center bg-gray-100">
                     <div className="text-center">
                       <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Image 
+                        <img 
                           src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E"
                           alt="Sin imagen"
                           width={48}
@@ -218,12 +227,10 @@ export default function ProductModal({ isOpen, onClose, product, store }: Produc
                             : 'border-transparent opacity-60 hover:opacity-100'
                         }`}
                       >
-                        <Image
+                        <img
                           src={img.url || img}
                           alt={`Miniatura ${index + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
+                          className="w-full h-full object-cover"
                           onError={(e) => {
                             console.error('Error cargando miniatura:', img.url || img)
                             // Ocultar miniatura si falla
