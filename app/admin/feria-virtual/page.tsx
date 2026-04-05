@@ -31,16 +31,23 @@ export default function AdminFeriaVirtualPage() {
   }, [])
 
   const fetchSectores = async () => {
+    console.log('📡 [FRONTEND] Cargando sectores desde API...')
     try {
       const response = await fetch('/api/admin/feria-sectores')
       if (response.ok) {
         const data = await response.json()
+        console.log('📊 [FRONTEND] Sectores cargados:', {
+          cantidad: data.length,
+          sectores: data.map((s: any) => ({ id: s.id, titulo: s.titulo, slug: s.slug }))
+        })
         setSectores(data)
       } else {
-        console.error('Error al cargar sectores')
+        console.error('❌ [FRONTEND] Error HTTP al cargar sectores:', response.status)
+        alert('Error al cargar los sectores')
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('❌ [FRONTEND] Error de red al cargar sectores:', error)
+      alert('Error de conexión al cargar los sectores')
     } finally {
       setLoading(false)
     }
@@ -58,11 +65,25 @@ export default function AdminFeriaVirtualPage() {
 
   const handleSaveSector = async (sectorData: any) => {
     setIsSubmitting(true)
+    
+    console.log('💾 [FRONTEND] Guardando sector:', {
+      isEditing: !!selectedSector?.id,
+      sectorId: selectedSector?.id,
+      sectorData: {
+        titulo: sectorData.titulo,
+        slug: sectorData.slug,
+        colorHex: sectorData.colorHex,
+        categoriaDefaultId: sectorData.categoriaDefaultId
+      }
+    })
+    
     try {
       const method = selectedSector?.id ? 'PUT' : 'POST'
       const url = selectedSector?.id 
         ? `/api/admin/feria-sectores/${selectedSector.id}`
         : '/api/admin/feria-sectores'
+
+      console.log('🌐 [FRONTEND] Enviando petición:', { method, url })
 
       const response = await fetch(url, {
         method,
@@ -72,22 +93,39 @@ export default function AdminFeriaVirtualPage() {
         body: JSON.stringify(sectorData)
       })
 
+      const responseData = await response.json()
+      console.log('📨 [FRONTEND] Respuesta del servidor:', responseData)
+
       if (response.ok) {
+        console.log('✅ [FRONTEND] Sector guardado exitosamente')
         await fetchSectores()
         setIsModalOpen(false)
         setSelectedSector(null)
       } else {
-        alert('Error al guardar el sector')
+        console.error('❌ [FRONTEND] Error del servidor:', responseData)
+        alert(`Error al guardar el sector: ${responseData.error || 'Error desconocido'}`)
       }
     } catch (error) {
-      console.error('Error:', error)
-      alert('Error al guardar el sector')
+      console.error('❌ [FRONTEND] Error en la petición:', error)
+      alert('Error de conexión al guardar el sector')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleDeleteSector = async (sector: FeriaSector) => {
+    console.log('🗑️ [FRONTEND] Intentando eliminar sector:', {
+      id: sector.id,
+      titulo: sector.titulo,
+      slug: sector.slug
+    })
+    
+    if (!sector.id) {
+      console.error('❌ [FRONTEND] El sector no tiene ID:', sector)
+      alert('Error: El sector no tiene un ID válido')
+      return
+    }
+    
     if (!confirm(`¿Estás seguro de eliminar el sector "${sector.titulo}"?`)) {
       return
     }
@@ -98,13 +136,16 @@ export default function AdminFeriaVirtualPage() {
       })
 
       if (response.ok) {
+        console.log('✅ [FRONTEND] Sector eliminado exitosamente')
         await fetchSectores()
       } else {
-        alert('Error al eliminar el sector')
+        const errorData = await response.json()
+        console.error('❌ [FRONTEND] Error del servidor:', errorData)
+        alert(`Error al eliminar el sector: ${errorData.error || 'Error desconocido'}`)
       }
     } catch (error) {
-      console.error('Error:', error)
-      alert('Error al eliminar el sector')
+      console.error('❌ [FRONTEND] Error en la petición:', error)
+      alert('Error de conexión al eliminar el sector')
     }
   }
 

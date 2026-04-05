@@ -53,7 +53,9 @@ export async function POST(request: NextRequest) {
     if (existingSector.length > 0) {
       console.log('❌ [POST] Ya existe un sector con el slug:', slug)
       return NextResponse.json(
-        { error: 'Ya existe un sector con este slug' },
+        { 
+          error: `El slug "${slug}" ya está en uso. Por favor usa un slug diferente como "${slug}-2" o "${slug}-2024".` 
+        },
         { status: 400 }
       )
     }

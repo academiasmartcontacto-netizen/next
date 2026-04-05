@@ -8,14 +8,14 @@
 - **Logs**: Verás logs detallados en consola del proceso de upload
 
 ### 2. ✅ **Error al Eliminar Sector** 
-- **Problema**: Sin logs para identificar la causa del error
-- **Solución**: Logs detallados para verificar existencia del sector y operación de eliminación
-- **Logs**: Busca `🗑️ [DELETE]` en la consola
+- **Problema**: ID llegaba como `undefined` al backend
+- **Solución**: Logs en frontend para verificar que el sector tenga ID antes de enviar
+- **Logs**: Busca `🗑️ [FRONTEND]` y `🗑️ [DELETE]` en la consola
 
 ### 3. ✅ **Error al Guardar Sector**
 - **Problema**: Sin validación de slug duplicado ni logs del proceso
-- **Solución**: Validación de slug único + logs completos del proceso de creación
-- **Logs**: Busca `➕ [POST]` en la consola
+- **Solución**: Validación de slug único + logs completos del proceso
+- **Logs**: Busca `💾 [FRONTEND]` y `➕ [POST]` en la consola
 
 ## 🔍 Cómo Probar y Ver Logs
 
@@ -30,6 +30,19 @@ npm run dev
 3. Mantén la consola abierta mientras pruebas
 
 ### **Paso 3: Probar Cada Funcionalidad**
+
+#### **📡 Carga Inicial de Sectores**
+Al cargar `/admin/feria-virtual`, verás:
+```
+📡 [FRONTEND] Cargando sectores desde API...
+📊 [FRONTEND] Sectores cargados: {
+  cantidad: X,
+  sectores: [
+    { id: "uuid-1", titulo: "Sector 1", slug: "sector-1" },
+    { id: "uuid-2", titulo: "Sector 2", slug: "sector-2" }
+  ]
+}
+```
 
 #### **📤 Probar Upload de Banners:**
 1. Ve a `/admin/feria-virtual`
@@ -50,6 +63,12 @@ npm run dev
 2. Llena el formulario y envía
 3. **Busca estos logs en consola:**
    ```
+   💾 [FRONTEND] Guardando sector: {
+     isEditing: false,
+     sectorId: null,
+     sectorData: { titulo, slug, colorHex, categoriaDefaultId }
+   }
+   🌐 [FRONTEND] Enviando petición: { method: "POST", url: "/api/admin/feria-sectores" }
    ➕ [POST] Creando nuevo sector: { titulo, slug }
    ➕ [POST] Datos recibidos: { titulo, slug, descripcion, colorHex, categoriaDefaultId }
    📋 [POST] Verificando último orden para asignar nuevo
@@ -57,6 +76,8 @@ npm run dev
    💾 [POST] Insertando nuevo sector en base de datos
    ✅ [POST] Sector creado exitosamente: Título del sector
    🆔 [POST] ID del nuevo sector: uuid-del-sector
+   📨 [FRONTEND] Respuesta del servidor: { id, titulo, slug, ... }
+   ✅ [FRONTEND] Sector guardado exitosamente
    ```
 
 #### **🗑️ Probar Eliminar Sector:**
@@ -64,12 +85,18 @@ npm run dev
 2. Confirma la eliminación
 3. **Busca estos logs en consola:**
    ```
+   🗑️ [FRONTEND] Intentando eliminar sector: {
+     id: "uuid-del-sector",
+     titulo: "Título del sector",
+     slug: "slug-del-sector"
+   }
    🗑️ [DELETE] Intentando eliminar sector con ID: uuid-del-sector
    📋 [DELETE] Sector encontrado: SÍ/NO
    📋 [DELETE] Datos del sector: { id, titulo, slug }
    ✅ [DELETE] Sector eliminado: SÍ/NO
    📊 [DELETE] Registros afectados: X
    🎉 [DELETE] Eliminación exitosa del sector: Título del sector
+   ✅ [FRONTEND] Sector eliminado exitosamente
    ```
 
 #### **📝 Probar Actualizar Sector:**
@@ -77,12 +104,20 @@ npm run dev
 2. Modifica los datos y guarda
 3. **Busca estos logs en consola:**
    ```
+   💾 [FRONTEND] Guardando sector: {
+     isEditing: true,
+     sectorId: "uuid-del-sector",
+     sectorData: { titulo, slug, colorHex, categoriaDefaultId }
+   }
+   🌐 [FRONTEND] Enviando petición: { method: "PUT", url: "/api/admin/feria-sectores/uuid" }
    📝 [PUT] Actualizando sector: { id, titulo, slug }
    📝 [PUT] Datos recibidos: { titulo, slug, descripcion, colorHex, categoriaDefaultId, imagenBanner }
    📋 [PUT] Sector encontrado, procediendo con actualización
    ✅ [PUT] Sector actualizado: SÍ/NO
    📊 [PUT] Registros afectados: X
    🎉 [PUT] Actualización exitosa: Título del sector
+   📨 [FRONTEND] Respuesta del servidor: { id, titulo, slug, ... }
+   ✅ [FRONTEND] Sector guardado exitosamente
    ```
 
 ## 🚨 Mensajes de Error Comunes
@@ -102,12 +137,15 @@ npm run dev
 ❌ [POST] Validación fallida: título o slug vacíos
 ❌ [POST] Ya existe un sector con el slug: tech
 ❌ [POST] Error al crear sector: {error details}
+💾 [FRONTEND] Error del servidor: El slug "lotes" ya está en uso. Por favor usa un slug diferente como "lotes-2" o "lotes-2024".
 ```
 
 #### **❌ Eliminar Sector:**
 ```
+❌ [FRONTEND] El sector no tiene ID: {sector}
 ❌ [DELETE] No se encontró el sector para eliminar
 ❌ [DELETE] Error al eliminar sector: {error details}
+❌ [FRONTEND] Error del servidor: Sector no encontrado
 ```
 
 #### **❌ Actualizar Sector:**
@@ -115,25 +153,27 @@ npm run dev
 ❌ [PUT] Sector no encontrado para actualizar
 ❌ [PUT] No se pudo actualizar el sector
 ❌ [PUT] Error al actualizar sector: {error details}
+💾 [FRONTEND] Error del servidor: Error al actualizar sector
 ```
 
 ## 🛠️ Soluciones a Problemas Comunes
 
-### **Problema: "Error al subir la imagen"**
-- **Causa**: Archivo demasiado grande o formato no soportado
-- **Solución**: Usa JPG/PNG/WebP máximo 5MB
+### **Problema: "El sector no tiene ID"**
+- **Causa**: Los datos no se cargaron correctamente desde la API
+- **Solución**: Recarga la página y verifica que aparezcan los logs de `📊 [FRONTEND] Sectores cargados`
 
-### **Problema: "Ya existe un sector con este slug"**
+### **Problema: "El slug ya está en uso"**
 - **Causa**: El slug debe ser único
 - **Solución**: Usa un slug diferente como "tech-2" o "celulares-2024"
-
-### **Problema: "Sector no encontrado"**
-- **Causa**: El sector fue eliminado o hay un problema con la BD
-- **Solución**: Recarga la página y vuelve a intentar
+- **Mensaje mejorado**: Ahora sugiere alternativas automáticamente
 
 ### **Problema: "Error interno del servidor"**
 - **Causa**: Problema de conexión con la base de datos
 - **Solución**: Revisa las variables de entorno de Supabase
+
+### **Problema: ID llega como undefined**
+- **Causa**: Los sectores no se cargaron correctamente o el ID es nulo
+- **Solución**: Verifica los logs de `📊 [FRONTEND] Sectores cargados` para confirmar IDs
 
 ## 📁 Estructura de Archivos en Supabase Storage
 
@@ -156,15 +196,15 @@ feria/
 - [ ] Los logs aparecen en la consola del navegador
 - [ ] Los banners se suben con nombres únicos
 - [ ] Los sectores se crean sin errores
-- [ ] Los sectores se eliminan correctamente
+- [ ] Los sectores se eliminan correctamente (con ID válido)
 - [ ] Los sectores se actualizan sin problemas
 - [ ] La vista pública muestra los sectores activos
 
 ## 🆘 Si Sigue Habiendo Problemas
 
 1. **Captura de pantalla**: Toma una captura de los logs en la consola
-2. **Detalles del error**: Anota el mensaje exacto del error
-3. **Pasos reproducibles**: Describe exactamente qué hiciste
-4. **Datos de prueba**: Qué datos intentaste guardar
+2. **Verifica IDs**: Confirma que los sectores tengan IDs en los logs de `📊 [FRONTEND] Sectores cargados`
+3. **Detalles del error**: Anota el mensaje exacto del error
+4. **Pasos reproducibles**: Describe exactamente qué hiciste
 
 Con esta información, podré identificar y solucionar cualquier problema restante.
