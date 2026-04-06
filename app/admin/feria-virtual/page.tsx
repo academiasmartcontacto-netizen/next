@@ -66,7 +66,7 @@ export default function AdminFeriaVirtualPage() {
   const handleSaveSector = async (sectorData: any) => {
     setIsSubmitting(true)
     
-    console.log('💾 [FRONTEND] Guardando sector:', {
+    console.log('💾 [FRONTEND] Procesando sector:', {
       isEditing: !!selectedSector?.id,
       sectorId: selectedSector?.id,
       sectorData: {
@@ -78,32 +78,36 @@ export default function AdminFeriaVirtualPage() {
     })
     
     try {
-      const method = selectedSector?.id ? 'PUT' : 'POST'
-      const url = selectedSector?.id 
-        ? `/api/admin/feria-sectores/${selectedSector.id}`
-        : '/api/admin/feria-sectores'
+      // SOLO actualizar si es un sector existente
+      if (selectedSector?.id) {
+        console.log('🔄 [FRONTEND] Actualizando sector existente')
+        
+        const response = await fetch(`/api/admin/feria-sectores/${selectedSector.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(sectorData)
+        })
 
-      console.log('🌐 [FRONTEND] Enviando petición:', { method, url })
+        const responseData = await response.json()
+        console.log('📨 [FRONTEND] Respuesta del servidor:', responseData)
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(sectorData)
-      })
-
-      const responseData = await response.json()
-      console.log('📨 [FRONTEND] Respuesta del servidor:', responseData)
-
-      if (response.ok) {
-        console.log('✅ [FRONTEND] Sector guardado exitosamente')
+        if (response.ok) {
+          console.log('✅ [FRONTEND] Sector actualizado exitosamente')
+          await fetchSectores()
+          setIsModalOpen(false)
+          setSelectedSector(null)
+        } else {
+          console.error('❌ [FRONTEND] Error del servidor:', responseData)
+          alert(`Error al actualizar el sector: ${responseData.error || 'Error desconocido'}`)
+        }
+      } else {
+        // Si es un sector nuevo, el modal ya lo creó en handleSubmit
+        console.log('➕ [FRONTEND] Sector nuevo, el modal ya lo creó. Solo recargando.')
         await fetchSectores()
         setIsModalOpen(false)
         setSelectedSector(null)
-      } else {
-        console.error('❌ [FRONTEND] Error del servidor:', responseData)
-        alert(`Error al guardar el sector: ${responseData.error || 'Error desconocido'}`)
       }
     } catch (error) {
       console.error('❌ [FRONTEND] Error en la petición:', error)
