@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { feriaSectores } from '@/lib/db/schema'
 import { eq, desc, asc, lt, gt } from 'drizzle-orm'
+import { FeriaStorageService } from '@/lib/services/FeriaStorageService'
 
 // PUT /api/admin/feria-sectores/[id] - Actualizar sector
 export async function PUT(
@@ -122,8 +123,25 @@ export async function DELETE(
       console.log('📋 [DELETE] Datos del sector:', {
         id: existingSector[0].id,
         titulo: existingSector[0].titulo,
-        slug: existingSector[0].slug
+        slug: existingSector[0].slug,
+        imagenBanner: existingSector[0].imagenBanner
       })
+
+      // Eliminar la imagen del storage si existe
+      if (existingSector[0].imagenBanner) {
+        console.log('🗑️ [DELETE] Eliminando imagen del storage...')
+        const storageService = new FeriaStorageService()
+        
+        try {
+          await storageService.deleteFileByUrl(existingSector[0].imagenBanner)
+          console.log('✅ [DELETE] Imagen eliminada del storage')
+        } catch (error) {
+          console.error('❌ [DELETE] Error eliminando imagen del storage:', error)
+          // Continuar con la eliminación del sector aunque falle la imagen
+        }
+      } else {
+        console.log('ℹ️ [DELETE] El sector no tiene imagen para eliminar')
+      }
     }
 
     const deletedSector = await db

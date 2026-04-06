@@ -70,6 +70,49 @@ export class SupabaseStorageService {
     }
   }
 
+  async deleteFile(filePath: string): Promise<boolean> {
+    try {
+      console.log(`🗑️ Eliminando archivo de Supabase Storage: ${filePath}`)
+
+      const { error } = await this.supabase.storage
+        .from(this.bucket)
+        .remove([filePath])
+
+      if (error) {
+        console.error('❌ Error eliminando archivo de Supabase:', error)
+        throw new Error(`Error eliminando archivo: ${error.message}`)
+      }
+
+      console.log(`✅ Archivo eliminado exitosamente: ${filePath}`)
+      return true
+
+    } catch (error: any) {
+      console.error('❌ Error en deleteFile:', error)
+      throw new Error(`Error eliminando archivo: ${error.message}`)
+    }
+  }
+
+  async deleteFileByUrl(url: string): Promise<boolean> {
+    try {
+      // Extraer el path de la URL de Supabase
+      const urlObj = new URL(url)
+      const pathParts = urlObj.pathname.split('/')
+      
+      // Buscar el bucket y el path
+      const bucketIndex = pathParts.findIndex((part, index) => part === 'object' && pathParts[index - 1] === 'public')
+      if (bucketIndex === -1) {
+        throw new Error('URL no válida de Supabase Storage')
+      }
+      
+      const filePath = pathParts.slice(bucketIndex + 2).join('/')
+      return await this.deleteFile(filePath)
+      
+    } catch (error: any) {
+      console.error('❌ Error en deleteFileByUrl:', error)
+      throw new Error(`Error eliminando archivo por URL: ${error.message}`)
+    }
+  }
+
   async uploadMultipleImages(files: File[], storeId: string, productId: string, folder: string = ''): Promise<UploadResult[]> {
     const results: UploadResult[] = []
     
