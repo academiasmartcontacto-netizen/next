@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Upload, Palette } from 'lucide-react'
 
 interface FeriaSectorModalProps {
@@ -36,6 +36,30 @@ export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: Fe
   })
 
   const [isLoading, setIsLoading] = useState(false)
+
+  // Reiniciar formData cuando cambia el sector (para crear o editar)
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        titulo: sector?.titulo || '',
+        slug: sector?.slug || '',
+        descripcion: sector?.descripcion || '',
+        colorHex: sector?.colorHex || '#FF6B35',
+        categoriaDefaultId: sector?.categoriaDefaultId || '',
+        imagenBanner: sector?.imagenBanner || ''
+      })
+      
+      console.log('🔄 [MODAL] Formulario reiniciado:', {
+        isEditing: !!sector,
+        sectorId: sector?.id,
+        formData: {
+          titulo: sector?.titulo || '',
+          slug: sector?.slug || '',
+          tieneImagen: !!sector?.imagenBanner
+        }
+      })
+    }
+  }, [sector, isOpen])
 
   // Categorías hardcoded (como en tu sistema actual)
   const categories = [
