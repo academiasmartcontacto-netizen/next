@@ -147,33 +147,24 @@ export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: Fe
     const file = e.target.files?.[0]
     if (!file) return
 
+    // NO subir automáticamente, solo guardar en estado como base64
     setIsLoading(true)
     try {
-      const uploadFormData = new FormData()
-      uploadFormData.append('file', file)
-      uploadFormData.append('sectorId', sector?.id || 'temp')
-      uploadFormData.append('slug', formData.slug || 'temp')
-
-      const response = await fetch('/api/admin/feria-sectores/upload', {
-        method: 'POST',
-        body: uploadFormData
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setFormData(prev => ({ ...prev, imagenBanner: data.url }))
-        
-        // Mostrar información de compresión
-        if (data.compressionRatio) {
-          console.log(`✅ Imagen optimizada: ${data.compressionRatio} de reducción`)
-        }
-      } else {
-        const error = await response.json()
-        alert(`Error al subir la imagen: ${error.error}`)
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string
+        setFormData(prev => ({ ...prev, imagenBanner: base64 }))
+        console.log('📤 [MODAL] Imagen seleccionada (base64):', {
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          base64Length: base64.length
+        })
       }
+      reader.readAsDataURL(file)
     } catch (error) {
-      console.error('Error:', error)
-      alert('Error al subir la imagen')
+      console.error('Error al leer archivo:', error)
+      alert('Error al procesar la imagen')
     } finally {
       setIsLoading(false)
     }
