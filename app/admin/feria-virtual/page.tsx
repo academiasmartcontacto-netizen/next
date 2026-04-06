@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2, Power, ArrowUp, ArrowDown, Package } from 'lucide-react'
 import FeriaSectorModal from '@/components/feria/FeriaSectorModal'
 
@@ -25,10 +26,16 @@ export default function AdminFeriaVirtualPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSector, setSelectedSector] = useState<FeriaSector | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     fetchSectores()
   }, [])
+
+  const handleGestionarPuestos = (sector: FeriaSector) => {
+    console.log('📋 [FRONTEND] Navegando a gestión de puestos:', sector.titulo)
+    router.push(`/admin/feria-virtual/puestos/${sector.id}`)
+  }
 
   const fetchSectores = async () => {
     console.log('📡 [FRONTEND] Cargando sectores desde API...')
@@ -373,7 +380,7 @@ export default function AdminFeriaVirtualPage() {
                           <Power size={16} />
                         </button>
                         <button
-                          onClick={() => handleEditSector(sector)}
+                          onClick={() => handleGestionarPuestos(sector)}
                           className="p-2 text-indigo-600 hover:text-indigo-800"
                           title="Gestionar Puestos"
                         >

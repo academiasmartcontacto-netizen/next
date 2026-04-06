@@ -25,11 +25,23 @@ export const feriaSectores = pgTable('feria_sectores', {
   updatedAt: timestamp('updated_at').defaultNow(),
 })
 
+// Bloques de la Feria Virtual
+export const feriaBloques = pgTable('feria_bloques', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sectorId: uuid('sector_id').notNull().references(() => feriaSectores.id, { onDelete: 'cascade' }),
+  nombre: text('nombre').notNull(), // Ej: "Bloque 1", "Tiwanaku", "Illimani"
+  orden: integer('orden').notNull().default(1), // Orden de visualización
+  capacidad: integer('capacidad').notNull().default(12), // Cantidad de puestos
+  activo: boolean('activo').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
 // Puestos/Ocupaciones de la Feria
 export const feriaPuestos = pgTable('feria_puestos', {
   id: uuid('id').primaryKey().defaultRandom(),
   sectorId: uuid('sector_id').notNull().references(() => feriaSectores.id, { onDelete: 'cascade' }),
-  bloqueId: integer('bloque_id').notNull().default(1), // Número de bloque (1-N)
+  bloqueId: uuid('bloque_id').notNull().references(() => feriaBloques.id, { onDelete: 'cascade' }), // Cambiado a UUID
   posicion: integer('posicion').notNull(), // Posición dentro del bloque (1-12)
   usuarioId: uuid('usuario_id').references(() => users.id, { onDelete: 'cascade' }), // Dueño de la tienda
   ciudad: text('ciudad').notNull().default('LPZ'), // Código de departamento
@@ -41,6 +53,15 @@ export const feriaPuestos = pgTable('feria_puestos', {
 
 // Relaciones para la feria
 export const feriaSectoresRelations = relations(feriaSectores, ({ many }) => ({
+  bloques: many(feriaBloques),
+  puestos: many(feriaPuestos),
+}))
+
+export const feriaBloquesRelations = relations(feriaBloques, ({ one, many }) => ({
+  sector: one(feriaSectores, {
+    fields: [feriaBloques.sectorId],
+    references: [feriaSectores.id],
+  }),
   puestos: many(feriaPuestos),
 }))
 
@@ -48,6 +69,10 @@ export const feriaPuestosRelations = relations(feriaPuestos, ({ one }) => ({
   sector: one(feriaSectores, {
     fields: [feriaPuestos.sectorId],
     references: [feriaSectores.id],
+  }),
+  bloque: one(feriaBloques, {
+    fields: [feriaPuestos.bloqueId],
+    references: [feriaBloques.id],
   }),
   usuario: one(users, {
     fields: [feriaPuestos.usuarioId],
