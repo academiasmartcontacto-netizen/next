@@ -4,6 +4,44 @@ import { feriaSectores } from '@/lib/db/schema'
 import { eq, desc, asc, lt, gt } from 'drizzle-orm'
 import { FeriaStorageService } from '@/lib/services/FeriaStorageService'
 
+// GET /api/admin/feria-sectores/[id] - Obtener sector por ID
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Next.js 15+ requiere await para params
+    const resolvedParams = await params
+    const id = resolvedParams.id
+
+    console.log('🔍 [GET] Buscando sector:', id)
+
+    const sector = await db
+      .select()
+      .from(feriaSectores)
+      .where(eq(feriaSectores.id, id))
+      .limit(1)
+
+    if (sector.length === 0) {
+      console.log('❌ [GET] Sector no encontrado:', id)
+      return NextResponse.json(
+        { error: 'Sector no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    console.log('✅ [GET] Sector encontrado:', sector[0].titulo)
+    return NextResponse.json(sector[0])
+
+  } catch (error: any) {
+    console.error('❌ [GET] Error al obtener sector:', error)
+    return NextResponse.json(
+      { error: 'Error al obtener sector', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
 // PUT /api/admin/feria-sectores/[id] - Actualizar sector
 export async function PUT(
   request: NextRequest,
