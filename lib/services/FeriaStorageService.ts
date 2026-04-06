@@ -16,18 +16,23 @@ export class FeriaStorageService {
   async deleteFileByUrl(url: string): Promise<boolean> {
     try {
       console.log(`🗑️ [FERIA] Eliminando banner de feria: ${url}`)
-
-      // Extraer el path de la URL de Supabase
-      const urlObj = new URL(url)
-      const pathParts = urlObj.pathname.split('/')
       
-      // Buscar el bucket y el path
-      const bucketIndex = pathParts.findIndex((part, index) => part === 'object' && pathParts[index - 1] === 'public')
-      if (bucketIndex === -1) {
-        throw new Error('URL no válida de Supabase Storage')
+      if (!url || !url.includes('/storage/v1/object/public/')) {
+        console.warn(`⚠️ [FERIA] URL no válida para Supabase Storage: ${url}`)
+        return true
       }
+
+      // Extraer path después del nombre del bucket
+      // El formato suele ser: .../storage/v1/object/public/[bucket]/[path]
+      const bucketSearchStr = `/storage/v1/object/public/${this.bucket}/`
+      const pathParts = url.split(bucketSearchStr)
       
-      const filePath = pathParts.slice(bucketIndex + 2).join('/')
+      if (pathParts.length < 2) {
+        console.warn(`⚠️ [FERIA] No se pudo extraer el path de la URL: ${url}`)
+        return true
+      }
+
+      const filePath = pathParts[pathParts.length - 1]
       console.log(`🗑️ [FERIA] Path extraído: ${filePath}`)
 
       const { error } = await this.supabase.storage
