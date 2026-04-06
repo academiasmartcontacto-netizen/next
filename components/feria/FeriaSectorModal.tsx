@@ -85,8 +85,20 @@ export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: Fe
         descripcion: formData.descripcion,
         colorHex: formData.colorHex,
         categoriaDefaultId: formData.categoriaDefaultId,
+        imagenBanner: formData.imagenBanner && !formData.imagenBanner.startsWith('data:') 
+          ? formData.imagenBanner 
+          : undefined, // Mantener imagen existente si no es base64
         activo: true
       }
+
+      console.log('📝 [MODAL] Datos a guardar:', {
+        isEditing: !!sector?.id,
+        sectorData: {
+          ...sectorData,
+          tieneImagenExistente: !!sectorData.imagenBanner,
+          esImagenBase64: formData.imagenBanner?.startsWith('data:')
+        }
+      })
 
       const method = sector?.id ? 'PUT' : 'POST'
       const url = sector?.id 
