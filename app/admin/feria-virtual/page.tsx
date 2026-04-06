@@ -267,7 +267,10 @@ export default function AdminFeriaVirtualPage() {
                     titulo: sector.titulo,
                     slug: sector.slug,
                     tieneId: !!sector.id,
-                    tipoDeId: typeof sector.id
+                    tipoDeId: typeof sector.id,
+                    imagenBanner: sector.imagenBanner,
+                    tieneImagenBanner: !!sector.imagenBanner,
+                    tipoDeImagenBanner: typeof sector.imagenBanner
                   })
                   
                   return (
@@ -295,12 +298,30 @@ export default function AdminFeriaVirtualPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <img 
-                        src={sector.imagenBanner || '/api/placeholder/60x40?text=Sin+Banner'} 
-                        alt={sector.titulo}
-                        className="w-15 h-10 object-cover rounded bg-gray-100"
-                        style={{ width: '60px', height: '40px' }}
-                      />
+                      {(() => {
+                        const imageUrl = sector.imagenBanner
+                        console.log(`🖼️ [RENDER] Imagen del sector "${sector.titulo}":`, {
+                          url: imageUrl,
+                          existe: !!imageUrl,
+                          esUrlValida: imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'))
+                        })
+                        
+                        return (
+                          <img 
+                            src={imageUrl || '/api/placeholder/60x40?text=Sin+Banner'} 
+                            alt={sector.titulo}
+                            className="w-15 h-10 object-cover rounded bg-gray-100"
+                            style={{ width: '60px', height: '40px' }}
+                            onError={(e) => {
+                              console.error(`❌ [RENDER] Error cargando imagen para "${sector.titulo}":`, imageUrl)
+                              e.currentTarget.src = '/api/placeholder/60x40?text=Error'
+                            }}
+                            onLoad={(e) => {
+                              console.log(`✅ [RENDER] Imagen cargada para "${sector.titulo}":`, imageUrl)
+                            }}
+                          />
+                        )
+                      })()}
                     </td>
                     <td className="px-6 py-4">
                       <div>
