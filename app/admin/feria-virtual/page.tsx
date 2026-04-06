@@ -308,13 +308,13 @@ export default function AdminFeriaVirtualPage() {
                         
                         return (
                           <img 
-                            src={imageUrl || '/api/placeholder/60x40?text=Sin+Banner'} 
+                            src={imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA2MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNSAxMkwxNSAyMEgzVjI4SDIwVjIwSDI2VjI4SDMwVjIwSDM1VjI4SDQ1VjIwSDQ1VjEySDM1VjIwSDMwVjEySDI2VjIwSDIwVjEySDI1WiIgZmlsbD0iI0QxRDVEQiIvPgo8dGV4dCB4PSIzMCIgeT0iMzQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0EzQUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCI+U2luIEJhbm5lcjwvdGV4dD4KPC9zdmc+'} 
                             alt={sector.titulo}
                             className="w-15 h-10 object-cover rounded bg-gray-100"
                             style={{ width: '60px', height: '40px' }}
                             onError={(e) => {
                               console.error(`❌ [RENDER] Error cargando imagen para "${sector.titulo}":`, imageUrl)
-                              e.currentTarget.src = '/api/placeholder/60x40?text=Error'
+                              e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA2MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRUY0NDQ0Ii8+CjxwYXRoIGQ9Ik0yNSAxMkwxNSAyMEgzVjI4SDIwVjIwSDI2VjI4SDMwVjIwSDM1VjI4SDQ1VjIwSDQ1VjEySDM1VjIwSDMwVjEySDI2VjIwSDIwVjEySDI1WiIgZmlsbD0iI0ZGRkZGRiIvPgo8dGV4dCB4PSIzMCIgeT0iMzQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCI+RXJyb3I8L3RleHQ+Cjwvc3ZnPg=='
                             }}
                             onLoad={(e) => {
                               console.log(`✅ [RENDER] Imagen cargada para "${sector.titulo}":`, imageUrl)

@@ -97,8 +97,10 @@ export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: Fe
 
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json()
+          console.log('📤 [MODAL] Imagen subida:', uploadData.url)
+          
           // Actualizar el sector con la URL del banner
-          await fetch(`/api/admin/feria-sectores/${savedSector.id}`, {
+          const updateResponse = await fetch(`/api/admin/feria-sectores/${savedSector.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -106,10 +108,31 @@ export default function FeriaSectorModal({ isOpen, onClose, sector, onSave }: Fe
               imagenBanner: uploadData.url
             })
           })
+          
+          if (updateResponse.ok) {
+            const updatedSector = await updateResponse.json()
+            console.log('✅ [MODAL] Sector actualizado con imagen:', updatedSector.imagenBanner)
+            
+            // Pasar el sector actualizado con la imagen
+            onSave(updatedSector)
+          } else {
+            console.error('❌ [MODAL] Error actualizando sector con imagen')
+            // Si falla la actualización, pasar el sector sin imagen
+            onSave(savedSector)
+          }
+        } else {
+          console.log('⚠️ [MODAL] Error subiendo imagen, guardando sector sin imagen')
+          // Si falla el upload, pasar el sector sin imagen
+          onSave(savedSector)
         }
       }
 
-      onSave(savedSector)
+      // Si no hay imagen, solo pasar el sector guardado
+      if (!formData.imagenBanner || !formData.imagenBanner.startsWith('data:')) {
+        console.log('✅ [MODAL] Sector guardado sin imagen')
+        onSave(savedSector)
+      }
+
       onClose()
 
     } catch (error) {
