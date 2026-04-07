@@ -43,7 +43,16 @@ interface Tienda {
 }
 
 export default function FeriaVirtualPage() {
-  const [currentDept, setCurrentDept] = useState('LPZ')
+  // Leer parámetro dept de la URL
+  const getInitialDept = () => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      return params.get('dept') || 'LPZ'
+    }
+    return 'LPZ'
+  }
+  
+  const [currentDept, setCurrentDept] = useState(getInitialDept())
   const [showDeptMenu, setShowDeptMenu] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null)
@@ -135,8 +144,27 @@ export default function FeriaVirtualPage() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
+  // Escuchar cambios de URL (back/forward browser)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search)
+      const deptFromUrl = params.get('dept') || 'LPZ'
+      console.log('🔄 [URL] Cambio de URL detectado:', deptFromUrl)
+      setCurrentDept(deptFromUrl)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   const handleDeptChange = (deptCode: string) => {
     console.log('🔄 [DROPDOWN] Cambiando departamento:', currentDept, '→', deptCode)
+    
+    // Cambiar la URL con el parámetro dept
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.set('dept', deptCode)
+    window.history.pushState({}, '', newUrl.toString())
+    
     setCurrentDept(deptCode)
     setShowDeptMenu(false)
   }
@@ -182,12 +210,8 @@ export default function FeriaVirtualPage() {
                 {Object.entries(DEPARTMENTS).map(([code, name]) => (
                   <a
                     key={code}
-                    href="#"
+                    href={`?dept=${code}`}
                     className="dept-item"
-                    onClick={(e: any) => {
-                      e.preventDefault()
-                      handleDeptChange(code)
-                    }}
                   >
                     {name}
                   </a>
