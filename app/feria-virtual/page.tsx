@@ -56,28 +56,67 @@ export default function FeriaVirtualPage() {
     fetchSectores()
   }, [])
 
+  // Recargar datos cuando cambia el departamento
+  useEffect(() => {
+    fetchSectores()
+  }, [currentDept])
+
   const fetchSectores = async () => {
     try {
-      const response = await fetch('/api/admin/feria-sectores')
-      if (response.ok) {
-        const data = await response.json()
-        // Filtrar solo sectores activos y agregar tiendas vacías
-        const sectoresConTiendas = data
+      setLoading(true)
+      
+      // 1. Obtener sectores
+      const sectoresResponse = await fetch('/api/admin/feria-sectores')
+      if (!sectoresResponse.ok) {
+        throw new Error('Error al cargar sectores')
+      }
+      const sectoresData = await sectoresResponse.json()
+      
+      // 2. Para cada sector, obtener sus puestos ocupados en la ciudad actual
+      const sectoresConTiendas = await Promise.all(
+        sectoresData
           .filter((sector: Sector) => sector.activo)
-          .map((sector: Sector) => ({
-            ...sector,
-            tiendas: Array(sector.capacidad).fill(null).map((_, i) => ({
+          .map(async (sector: Sector) => {
+            // Obtener bloques y puestos del sector
+            const bloquesResponse = await fetch(`/api/admin/feria-bloques?sectorId=${sector.id}&ciudad=${currentDept}`)
+            let tiendas: Tienda[] = Array(sector.capacidad).fill(null).map((_, i) => ({
               id: `${sector.slug}-${i}`,
               nombre: null,
               logo: null,
               url: null,
               ocupado: false
             }))
-          }))
-        setSectores(sectoresConTiendas)
-      } else {
-        console.error('Error al cargar sectores')
-      }
+            
+            if (bloquesResponse.ok) {
+              const bloquesData = await bloquesResponse.json()
+              
+              // Mapear puestos ocupados a las posiciones del primer bloque
+              bloquesData.forEach((bloque: any) => {
+                if (bloque.orden === 1) { // Solo primer bloque como en el PHP
+                  bloque.puestos.forEach((puesto: any) => {
+                    const posicion = puesto.posicion - 1 // Convertir a 0-based
+                    if (posicion >= 0 && posicion < tiendas.length) {
+                      tiendas[posicion] = {
+                        id: puesto.id,
+                        nombre: puesto.tiendaNombre || null,
+                        logo: puesto.tiendaLogo || null,
+                        url: puesto.tiendaSlug ? `/tienda/${puesto.tiendaSlug}` : null,
+                        ocupado: true
+                      }
+                    }
+                  })
+                }
+              })
+            }
+            
+            return {
+              ...sector,
+              tiendas
+            }
+          })
+      )
+      
+      setSectores(sectoresConTiendas)
     } catch (error) {
       console.error('Error:', error)
     } finally {
