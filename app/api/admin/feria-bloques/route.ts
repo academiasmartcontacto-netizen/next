@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     // Para cada bloque, obtener sus puestos
     const bloquesConPuestos = await Promise.all(
       bloques.map(async (bloque) => {
-        // Obtener puestos ocupados de este bloque
+        // Obtener puestos ocupados de este bloque (con datos de tiendas)
         const puestosResult = await db
           .select({
             id: feriaPuestos.id,
