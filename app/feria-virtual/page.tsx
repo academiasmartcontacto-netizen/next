@@ -81,13 +81,12 @@ export default function FeriaVirtualPage() {
       }
       const sectoresData = await sectoresResponse.json()
       
-      // 2. Para cada sector, obtener sus puestos ocupados en la ciudad actual
+      // 2. Para cada sector, obtener sus puestos ocupados en la ciudad actual (OPTIMIZADO)
       const sectoresConTiendas = await Promise.all(
         sectoresData
           .filter((sector: Sector) => sector.activo)
           .map(async (sector: Sector) => {
-            // Obtener bloques y puestos del sector
-            const bloquesResponse = await fetch(`/api/admin/feria-bloques?sectorId=${sector.id}&ciudad=${currentDept}`)
+            // Crear array base de tiendas vacías
             let tiendas: Tienda[] = Array(sector.capacidad).fill(null).map((_, i) => ({
               id: `${sector.slug}-${i}`,
               nombre: null,
@@ -96,26 +95,41 @@ export default function FeriaVirtualPage() {
               ocupado: false
             }))
             
-            if (bloquesResponse.ok) {
-              const bloquesData = await bloquesResponse.json()
+            try {
+              // Obtener bloques y puestos del sector (CON TIMEOUT)
+              const controller = new AbortController()
+              const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 segundos max
               
-              // Mapear puestos ocupados a las posiciones del primer bloque
-              bloquesData.forEach((bloque: any) => {
-                if (bloque.orden === 1) { // Solo primer bloque como en el PHP
-                  bloque.puestos.forEach((puesto: any) => {
-                    const posicion = puesto.posicion - 1 // Convertir a 0-based
-                    if (posicion >= 0 && posicion < tiendas.length) {
-                      tiendas[posicion] = {
-                        id: puesto.id,
-                        nombre: puesto.tiendaNombre || null,
-                        logo: puesto.tiendaLogo || null,
-                        url: puesto.tiendaSlug ? `/tienda/${puesto.tiendaSlug}` : null,
-                        ocupado: true
-                      }
-                    }
-                  })
-                }
+              const bloquesResponse = await fetch(`/api/admin/feria-bloques?sectorId=${sector.id}&ciudad=${currentDept}`, {
+                signal: controller.signal
               })
+              
+              clearTimeout(timeoutId)
+              
+              if (bloquesResponse.ok) {
+                const bloquesData = await bloquesResponse.json()
+                
+                // Mapear puestos ocupados a las posiciones del primer bloque
+                bloquesData.forEach((bloque: any) => {
+                  if (bloque.orden === 1) { // Solo primer bloque como en el PHP
+                    bloque.puestos.forEach((puesto: any) => {
+                      const posicion = puesto.posicion - 1 // Convertir a 0-based
+                      if (posicion >= 0 && posicion < tiendas.length) {
+                        tiendas[posicion] = {
+                          id: puesto.id,
+                          nombre: puesto.tiendaNombre || null,
+                          logo: puesto.tiendaLogo || null,
+                          url: puesto.tiendaSlug ? `/tienda/${puesto.tiendaSlug}` : null,
+                          ocupado: true
+                        }
+                      }
+                    })
+                  }
+                })
+              }
+            } catch (error) {
+              console.warn(`⚠️ Timeout o error cargando puestos para ${sector.titulo}:`, error)
+              // Continuar con tiendas vacías
             }
             
             return {
