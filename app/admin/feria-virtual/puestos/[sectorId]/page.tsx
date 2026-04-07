@@ -74,12 +74,25 @@ export default function GestionPuestosPage() {
         setSector(sectorData)
       }
 
-      // Cargar bloques con puestos
-      const bloquesResponse = await fetch(`/api/admin/feria-bloques?sectorId=${sectorId}&ciudad=${currentDept}`)
-      if (bloquesResponse.ok) {
-        const bloquesData = await bloquesResponse.json()
-        setBloques(bloquesData)
+      // Obtener bloques del sector (SOLO PRIMER BLOQUE como en /feria-virtual)
+      const response = await fetch(`/api/admin/feria-bloques?sectorId=${sectorId}&ciudad=${currentDept}`)
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar bloques')
       }
+      
+      const allBloques = await response.json()
+      
+      // FILTRAR SOLO EL PRIMER BLOQUE (orden = 1) como en la página principal
+      const primerBloque = allBloques.find((bloque: any) => bloque.orden === 1)
+      
+      if (!primerBloque) {
+        throw new Error('No hay bloques definidos para este sector')
+      }
+      
+      console.log(`📋 [PUESTOS GET] Mostrando solo primer bloque: ${primerBloque.nombre} (${primerBloque.puestos.length} puestos ocupados)`)
+      
+      setBloques([primerBloque]) // Solo el primer bloque
     } catch (error) {
       console.error('Error cargando datos:', error)
     } finally {
