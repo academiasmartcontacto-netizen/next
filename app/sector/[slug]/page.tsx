@@ -84,15 +84,23 @@ export default function SectorDetallePage() {
       const sectorData = await sectorResponse.json()
       setSector(sectorData)
       
-      // 2. Obtener todos los bloques del sector
+      // 2. Obtener bloques del sector (SOLO PRIMER BLOQUE como en /feria-virtual)
       const bloquesResponse = await fetch(`/api/admin/feria-bloques?sectorId=${sectorData.id}&ciudad=${dept}`)
       if (!bloquesResponse.ok) {
         throw new Error('Error al cargar bloques')
       }
-      const bloquesData = await bloquesResponse.json()
-      setBloques(bloquesData)
+      const allBloques = await bloquesResponse.json()
       
-      console.log(`📋 [SECTOR DETALLE] ${bloquesData.length} bloques cargados para ${sectorData.titulo} en ${dept}`)
+      // FILTRAR SOLO EL PRIMER BLOQUE (orden = 1) como en la página principal
+      const primerBloque = allBloques.find((bloque: any) => bloque.orden === 1)
+      
+      if (!primerBloque) {
+        throw new Error('No hay bloques definidos para este sector')
+      }
+      
+      console.log(`📋 [SECTOR DETALLE] Mostrando solo primer bloque: ${primerBloque.nombre} (${primerBloque.puestos.length} puestos ocupados)`)
+      
+      setBloques([primerBloque]) // Solo el primer bloque
       
     } catch (error) {
       console.error('Error:', error)
@@ -166,20 +174,22 @@ export default function SectorDetallePage() {
         </button>
       </div>
 
-      {/* GRID DE BLOQUES */}
-      <div className="bento-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: '24px' }}>
+      {/* GRID DE BLOQUES - MANTENER MISMA ESTRUCTURA QUE /feria-virtual */}
+      <div className="bento-grid">
         
         {bloques.length === 0 ? (
-          <div className="col-12 text-center py-5">
-            <p className="text-muted">No hay bloques definidos para este sector.</p>
+          <div className="col-span-full text-center py-12">
+            <Store className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No hay bloques definidos para este sector.
+            </h3>
+            <p className="text-gray-500">
+              Los administradores están configurando la feria virtual.
+            </p>
           </div>
         ) : (
           bloques.map((bloque) => (
-            <div key={bloque.id} className="sector-block" style={{ 
-              '--sector-color': sector.colorHex,
-              display: 'flex',
-              flexDirection: 'column' 
-            } as any}>
+            <div key={bloque.id} className="sector-block" style={{ '--sector-color': sector.colorHex } as any}>
               
               {/* Header Bloque */}
               <div className="sector-header-split">
@@ -190,25 +200,21 @@ export default function SectorDetallePage() {
                 <div className="split-image-col">
                   <div className="image-box">
                     {sector.imagenBanner ? (
-                      <img 
-                        src={sector.imagenBanner} 
-                        alt={sector.titulo}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'brightness(1.02) contrast(1.02)', mixBlendMode: 'multiply' }}
-                      />
+                      <img src={sector.imagenBanner} alt={sector.titulo} />
                     ) : (
-                      <div style={{ 
+                      <div className="image-placeholder" style={{ 
+                        backgroundColor: sector.colorHex, 
+                        opacity: 0.2, 
                         width: '100%', 
-                        height: '100%', 
-                        background: `linear-gradient(135deg, ${sector.colorHex} 0%, #ffffff 100%)`, 
-                        opacity: 0.8 
+                        height: '100%' 
                       }}></div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Grid de Tiendas */}
-              <div className="stores-inner-grid-wrapper">
+              {/* Grid de Tiendas - MISMA ESTRUCTURA 3x4 */}
+              <div className="stores-inner-grid">
                 {Array.from({ length: bloque.capacidad }, (_, i) => {
                   const puesto = bloque.puestos.find(p => p.posicion === i + 1)
                   const tiendaNombre = puesto?.tiendaNombre
