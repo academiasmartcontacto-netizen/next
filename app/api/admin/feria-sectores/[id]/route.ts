@@ -19,7 +19,7 @@ export async function GET(
     const sector = await db
       .select()
       .from(feriaSectores)
-      .where(eq(feriaSectores.slug, id))
+      .where(eq(feriaSectores.id, id))
       .limit(1)
 
     if (sector.length === 0) {

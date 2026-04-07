@@ -76,8 +76,8 @@ export default function SectorDetallePage() {
     try {
       setLoading(true)
       
-      // 1. Obtener datos del sector
-      const sectorResponse = await fetch(`/api/admin/feria-sectores/${slug}`)
+      // 1. Obtener datos del sector por SLUG
+      const sectorResponse = await fetch(`/api/admin/feria-sectores/slug/${slug}`)
       if (!sectorResponse.ok) {
         throw new Error('Sector no encontrado')
       }
@@ -213,7 +213,7 @@ export default function SectorDetallePage() {
                 </div>
               </div>
 
-              {/* Grid de Tiendas - MISMA ESTRUCTURA 3x4 */}
+              {/* Grid de Tiendas - EXACTAMENTE COMO /feria-virtual */}
               <div className="stores-inner-grid">
                 {Array.from({ length: bloque.capacidad }, (_, i) => {
                   const puesto = bloque.puestos.find(p => p.posicion === i + 1)
@@ -222,26 +222,23 @@ export default function SectorDetallePage() {
                   const tiendaUrl = puesto?.tiendaSlug ? `/tienda/${puesto.tiendaSlug}` : null
                   
                   return (
-                    <div key={i} className="store-item">
+                    <div
+                      key={i}
+                      className={`store-item ${tiendaNombre ? 'real' : 'empty'}`}
+                      title={tiendaNombre || undefined}
+                    >
                       {tiendaNombre ? (
                         <a href={tiendaUrl} className="store-item real" title={tiendaNombre} target="_blank">
                           <div className="store-logo-wrap">
                             {tiendaLogo ? (
-                              <img src={tiendaLogo} alt={tiendaNombre} />
+                              <img src={tiendaLogo} alt={tiendaNombre} className="store-img fade-in-fast" />
                             ) : (
-                              <div className="store-placeholder">
-                                <Store className="w-6 h-6" />
-                              </div>
+                              <Store style={{ fontSize: '48px', color: '#e5e5e5' }} />
                             )}
                           </div>
-                          <span className="store-name">{tiendaNombre}</span>
                         </a>
                       ) : (
-                        <div className="store-item empty">
-                          <div className="store-placeholder">
-                            <Store className="w-6 h-6" />
-                          </div>
-                        </div>
+                        <span className="empty-text">LIBRE</span>
                       )}
                     </div>
                   )
