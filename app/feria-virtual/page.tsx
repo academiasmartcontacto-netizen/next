@@ -136,6 +136,7 @@ export default function FeriaVirtualPage() {
   }, [])
 
   const handleDeptChange = (deptCode: string) => {
+    console.log('🔄 [DROPDOWN] Cambiando departamento:', currentDept, '→', deptCode)
     setCurrentDept(deptCode)
     setShowDeptMenu(false)
   }
